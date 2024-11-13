@@ -1,4 +1,50 @@
-# Main entrypoint of the workflow. 
-# Please follow the best practices: 
-# https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
-# in particular regarding the standardized folder structure mentioned there. 
+include: "scripts/general_functions.smk"
+
+# Workflow version
+VERSION = "v0.5.0" 
+
+# Set minimum snakemake version
+min_version("8.13.0")
+
+# Wrapper version
+wrapper_version = "v5.0.2"
+
+logger.info(f"Workflow version: {VERSION}")
+logger.info(f"Wrapper version: {wrapper_version}")
+
+# Define report file
+#report: "report/workflow.rst"
+
+# Define Docker container
+containerized: f"docker://niekwit/crispr-screens:{VERSION}"
+
+# Load config file
+configfile: "config/config.yml"
+validate(config, "schemas/config.schema.yaml")
+
+# Load fasta
+fasta = fasta()
+csv = csv()
+orfeome_name = config["orfeome_name"]
+
+# Import rules
+include: "rules/qc.smk"
+include: "rules/count.smk"
+include: "rules/stats.smk"
+
+# Set target rule
+rule all:
+    input:
+        targets()
+
+# Save snakemake terminal output to log file
+time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+snake_log = f"logs/snakemake/{time}_snakemake.log"
+os.makedirs("logs/snakemake", exist_ok=True)
+
+onsuccess: 
+    shell("cp -v {log} {snake_log}")
+    logger.info("Analysis finished successfully!")
+onerror:
+    shell("cp -v {log} {snake_log}")
+    logger.info(f"Analysis failed...\nCheck {snake_log} for details")

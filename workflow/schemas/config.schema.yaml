@@ -1,0 +1,148 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: Snakemake configuration file
+
+type: object
+
+properties:
+  bin_number:
+    description: Number of bins set during sorting of cells (should be the same for each sample)
+    type: integer
+    minimum: 1
+    default: 1
+
+  cutadapt:
+    description: Adapter trimming settings
+    type: object
+    properties:
+      
+      five_prime_adapter:
+        description: Sequence of an adapter ligated to the 5' end. The adapter and any preceding bases are trimmed.
+        type: string
+        pattern: "^[ACGTNacgtn]+$"
+      
+      three_prime_adapter:
+        description: Sequence of an adapter ligated to the 3' end. The adapter and subsequent bases are trimmed.
+        type: string
+        pattern: "^[ACGTNacgtn]+$"
+
+      extra:
+        description: Extra cutadapt arguments
+        type: string
+  
+    required:
+      - five_prime_adapter
+      - three_prime_adapter
+      - extra
+  
+  csv:
+    description: CSV file settings
+    type: object
+    properties:
+      
+      name_column:
+        description: Column number with barcode names
+        type: integer
+        minimum: 1
+      
+      sequence_column:
+        description: Column number with barcode sequences
+        type: integer
+        minimum: 1
+  
+    required:
+      - name_column
+      - sequence_column
+
+  mismatch:
+    description: Mismatches allowed during alignment
+    type: integer
+    minimum: 0
+    maximum: 2
+    default: 0
+      
+  mageck:
+    description: MAGeCK settings
+    type: object
+    properties:
+      
+      extra_mageck_arguments:
+        description: Additional arguments for MAGeCK
+        type: string
+      
+      mageck_control_barcodes:
+        description: Control genes for MAGeCK
+        type: string
+        enum:
+          - all
+          - file
+      
+      fdr:
+        description: FDR threshold for downstream MAGeCK analysis
+        type: number
+        minimum: 0
+        maximum: 1
+        default: 0.25
+    
+    required:
+      - extra_mageck_arguments
+      - mageck_control_barcodes
+      - fdr
+
+  bins:
+    description: Settings for the protein stability analysis when bin number is higher than 1
+    type: object
+    properties:
+      
+      sob_threshold:
+        description: Minimum value of sum of barcode counts across all bins to keep
+        type: integer
+        minimum: 1
+      
+      stringent_hit_threshold:
+        description: deltaPSI threshold for hits
+        type: number
+        minimum: 0
+      
+      hit_threshold:
+        description: deltaPSI threshold for hits
+        type: number
+        minimum: 0
+      
+      control_threshold:
+        description: deltaPSI threshold for controls
+        type: number
+        minimum: 0
+      
+      stringent_negative_hit_threshold:
+        description: deltaPSI threshold for negative hits
+        type: number
+        maximum: 0
+      
+      negative_hit_threshold:
+        description: deltaPSI threshold for negative hits
+        type: number
+        maximum: 0
+      
+      negative_control_threshold:
+        description: deltaPSI threshold for negative controls
+        type: number
+        maximum: 0
+
+    required:
+      - sob_threshold
+      - stringent_hit_threshold
+      - hit_threshold
+      - control_threshold
+      - stringent_negative_hit_threshold
+      - negative_hit_threshold
+      - negative_control_threshold
+
+required:
+  - bin_number
+  - cutadapt
+  - csv
+  - mismatch
+  - mageck
+  - bins
+        
