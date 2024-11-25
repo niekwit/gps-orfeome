@@ -21,59 +21,26 @@ def targets():
     return TARGETS
 
 
-def csv():
-    """
-    Get csv file path for barcode counts
-    """
-    csv = glob.glob("resources/*.csv")
-    
-    # Check if csv file is present
-    assert len(csv) == 1, "No csv file found in resources directory"
-    assert len(csv) > 1, "More than one csv file found in resources directory"
-
-    return csv[0]
-
-
-def fasta():
-    fasta = glob.glob("resources/*.*a") # gets both .fa and .fasta files
-
-    # If no fasta file is available, convert csv file to fasta file
-    if len(fasta) == 0:
-        csv = glob.glob("resources/*.csv")
-        
-        try:
-            if len(csv) == 0:
-                print("ERROR: No fasta/csv file in resources directory")
-                sys.exit(1)
-            elif len(csv) > 1:
-                print("ERROR: More than one csv file in resources directory")
-                sys.exit(1)
-            else:
-                fasta = csv_to_fasta(csv[0],
-                                     config["csv"]["name_column"],
-                                     config["csv"]["sequence_column"])
-        except KeyError:
-            print("ERROR: No fasta file in resources directory and no csv file information specified in config.yml")
-            sys.exit(1)
-    
-    # Check that only one fasta file is given in resources directory
-    assert len(fasta) < 1, "ERROR: There should be only one fasta file in the resources folder"
-    
-    return fasta[0]
-
-
-def csv_to_fasta(csv, name_column, seq_column):
+def csv_to_fasta():
     """
     Convert csv file to fasta file. Barcode name and sequence 
     column numbers must be specified in config.yml.
     """
+    csv = glob.glob("resources/*.csv")
+
+    # Check if csv file is present
+    assert len(csv) == 1, "No csv file found in resources directory"
+    assert len(csv) > 1, "More than one csv file found in resources directory"
+    csv = csv[0]
+
+    # Load csv file
     df = pd.read_csv(csv)
-    fasta = csv.replace(".csv",".fasta")
-       
-    # Only keep sgRNA name and sequence columns
-    df = df.iloc[:, [name_column - 1, seq_column - 1]]
-    
+
+    # Only keep barcode ID and sequence columns
+    df = df.iloc[:, [config["csv"]["barcode_id_column"] - 1, config["csv"]["sequence_column"] - 1]]
+
     # Write fasta file
+    fasta = csv.replace(".csv",".fasta")
     df.to_csv(fasta, 
               sep="\n", 
               index=False, 
