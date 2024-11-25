@@ -100,11 +100,11 @@ for reference, test in zip(REFERENCE_CONDITIONS, TEST_CONDITIONS):
     # Calculate deltaPSI for each single ORF
     df["deltaPSI"] = df[f"PSI_{test}"] - df[f"PSI_{reference}"]
         
-    # Calculate SD of PSI values for each condition of each ORF
-    df["delta_PSI_SD"] = df.groupby("orf")["deltaPSI"].transform("std")
-    
-    # Caclulate mean deltaPSI values for each ORF
+    # Calculate mean deltaPSI values for each ORF
     df["delta_PSI_mean"] = df.groupby("orf")["deltaPSI"].transform("mean")
+    
+    # Calculate SD of PSI values for each condition of each ORF
+    df["delta_PSI_SD"] = df.groupby("orf")["deltaPSI"].transform("std") 
     
     # Add total number of barcodes for each ORF
     df["num_barcodes"] = df.groupby("orf")["barcode"].transform("count")
@@ -141,11 +141,11 @@ for reference, test in zip(REFERENCE_CONDITIONS, TEST_CONDITIONS):
     logger.info(f" Number of destabilised ORFs in {test}: {sum_}")
     
     # Identify high confidence hits for destabilised ORFs
-    df[f"destabilised_in_{test}_hc"] = (df["delta_PSI_mean"] < destab_th) & (df["delta_PSI_mean"] > sd_th * df["delta_PSI_SD"])
+    df[f"destabilised_in_{test}_hc"] = (df["delta_PSI_mean"] < destab_th) & (abs(df["delta_PSI_mean"]) > sd_th * df["delta_PSI_SD"])
     sum_ = df[["orf", f"destabilised_in_{test}_hc"]].drop_duplicates()
     sum_ = sum_[f"destabilised_in_{test}_hc"].sum()
     logger.info(f" Number of high confidence destabilised ORFs in {test}: {sum_}")
-    
+       
     # Write to file
     file = [x for x in OUTPUT_FILES if f"{test}_vs_{reference}" in x][0]
     logger.info(f" Writing to {file}")
