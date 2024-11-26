@@ -49,7 +49,7 @@ def cut_adapt_arg():
     length = f"--length {config['cutadapt']['barcode_length']}"
     extra = config["cutadapt"]["extra"]
     
-    if length != 0:
+    if config['cutadapt']['barcode_length'] != 0:
         return f"{five_prime} {three_prime} {extra}"
     else:
         return f"{five_prime} {length} {extra}"
