@@ -26,6 +26,7 @@ OUTPUT_FILES = snakemake.output
 def compute_psi(row, condition, num_bins):
     """
     Compute PSI values for a row and one condition.
+    https://www.science.org/doi/10.1126/science.aaw4912#sec-11
     """
     sob = row[f"SOB_{condition}"]
     psi_score = 0
@@ -72,8 +73,8 @@ for reference, test in zip(REFERENCE_CONDITIONS, TEST_CONDITIONS):
         sample_sums[f"SOB_{sample}"] = df.filter(regex=f"^{sample}_").sum(axis=1)
     df = pd.concat([df, pd.DataFrame(sample_sums)], axis=1)  
     
-   # Remove barcodes where there are low counts in the reference sample
-    df = df[df[f"SOB_{reference}"] > MIN_SOB_THRESHOLD].reset_index()
+    # Remove barcodes where there are low counts in the reference sample
+    df = df[df[f"SOB_{reference}"] > MIN_SOB_THRESHOLD].reset_index(drop=True)
     nrows_low_counts = nrows_zero_counts - df.shape[0]
     logger.info(f" Barcodes with low counts in {reference}: {nrows_low_counts} ")
 
@@ -91,7 +92,7 @@ for reference, test in zip(REFERENCE_CONDITIONS, TEST_CONDITIONS):
         # It is assumed that the bins are numbered from 1 to max_bin!
         max_bin = max(sample_bins)
         # Iterate over rows to compute PSI values
-        df[f"PSI_{sample}"] = df.apply(lambda row: compute_psi(row, sample, max_bin), axis=1)
+        df[f"PSI_{sample}"] = df.apply(lambda row: compute_psi(row, sample, max_bin), axis=1).reset_index(drop=True)
     
     # Calculate mean PSI values for each ORF
     df[f"PSI_{reference}_mean"] = df.groupby("orf")[f"PSI_{reference}"].transform("mean")
@@ -114,13 +115,14 @@ for reference, test in zip(REFERENCE_CONDITIONS, TEST_CONDITIONS):
     nrows_single_barcode = nrows_no_test_counts - df.shape[0]
     logger.info(f" ORFs removed that have only one barcode after filtering: {nrows_single_barcode}")
     
+    #IS THIS NEEDED?
     # Sum of read counts for each ORF and each bin
-    for sample in [reference, test]:
-        # Get columns with bin counts
-        sample_bins = df.filter(regex=f"^{sample}_").columns
-        # Get sum of read counts for each ORF and each bin
-        for bin in sample_bins:
-            df[bin] = df.groupby("orf")[bin].transform("sum")
+    #for sample in [reference, test]:
+    #    # Get columns with bin counts
+    #    sample_bins = df.filter(regex=f"^{sample}_").columns
+    #    # Get sum of read counts for each ORF and each bin
+    #    for bin in sample_bins:
+    #        df[bin] = df.groupby("orf")[bin].transform("sum")
     
     # Identify ORFs that are stabilised in test condition
     df[f"stabilised_in_{test}"] = df["delta_PSI_mean"] > stab_th
