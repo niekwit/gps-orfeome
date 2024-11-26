@@ -13,40 +13,30 @@ def targets():
     TARGETS = [
         "results/qc/multiqc.html",
         "results/qc/alignment-rates.pdf",
-        "results/qc/sequence-coverage.pdf",
-        "results/qc/gini-index.pdf",
-        "results/qc/missed-barcodes.pdf",
-    ]   
-    
+        #"results/qc/sequence-coverage.pdf",
+        #"results/qc/gini-index.pdf",
+        #"results/qc/missed-barcodes.pdf",
+    ]
+    if config["bin_number"] == 1:
+        TARGETS.extend([
+            expand("results/mageck/temp/{comparison}/{comparison}.gene_summary.txt", comparison=COMPARISONS),
+        ])
+    else:
+        TARGETS.extend([
+            expand("results/psi_plots/{comparison}/", comparison=COMPARISONS),
+        ])
     return TARGETS
 
 
-def csv_to_fasta():
+def csv():
     """
-    Convert csv file to fasta file. Barcode name and sequence 
-    column numbers must be specified in config.yml.
+    Locate CSV file
     """
     csv = glob.glob("resources/*.csv")
 
     # Check if csv file is present
-    assert len(csv) == 1, "No csv file found in resources directory"
-    assert len(csv) > 1, "More than one csv file found in resources directory"
-    csv = csv[0]
-
-    # Load csv file
-    df = pd.read_csv(csv)
-
-    # Only keep barcode ID and sequence columns
-    df = df.iloc[:, [config["csv"]["barcode_id_column"] - 1, config["csv"]["sequence_column"] - 1]]
-
-    # Write fasta file
-    fasta = csv.replace(".csv",".fasta")
-    df.to_csv(fasta, 
-              sep="\n", 
-              index=False, 
-              header=False)
-
-    return fasta
+    assert len(csv) == 1, "Only one CSV file should be present in resources directory"
+    return csv[0], csv[0].replace(".csv", ".fasta")
 
 
 def cut_adapt_arg():
@@ -56,9 +46,13 @@ def cut_adapt_arg():
     """
     five_prime = f"-g {config['cutadapt']['five_prime_adapter']}"
     three_prime = f"-a {config['cutadapt']['three_prime_adapter']}"
+    length = f"--length {config['cutadapt']['barcode_length']}"
     extra = config["cutadapt"]["extra"]
     
-    return f"{five_prime} {three_prime} {extra}"
+    if length != 0:
+        return f"{five_prime} {three_prime} {extra}"
+    else:
+        return f"{five_prime} {length} {extra}"
 
 
 def sample_names():
@@ -99,10 +93,10 @@ def mageck_control():
     """
     Load control genes for MAGeCK
     """
-    if config["stats"]["mageck"]["mageck_control_genes"] == "all": # Use all genes as controls
+    if config["mageck"]["mageck_control_barcodes"] == "all": # Use all genes as controls
         control = ""
     else: # Use genes from file set in config
-        file = config["stats"]["mageck"]["mageck_control_genes"]
+        file = config["mageck"]["mageck_control_barcodes"]
 
         # Check if file exists
         assert os.path.exists(file), f"Control gene file ({file}) does not exist"

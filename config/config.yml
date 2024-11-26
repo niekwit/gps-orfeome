@@ -5,25 +5,32 @@ orfeome_name: uORFbarcodes
 # With bin_number higher than 1, it is assumed that the user wants to perform
 # a protein stability analysis using PSI (Protein Stability Index) as a metric.
 # With bin_number = 1, the user wants to perform a pairwise comparison 
-# of orf count between two conditions using MAGeCK.
+# of ORF counts between two conditions using MAGeCK.
 bin_number: 1
 
 cutadapt:
   # Sequence of an adapter ligated to the 5' end. 
   # The adapter and any preceding bases are trimmed.
-  five_prime_adapter: AGATCGGAAGAGCAC
+  five_prime_adapter: CCAGTAGGTCCACTATGAGT
   
   # Sequence of an adapter ligated to the 3' end.
   # The adapter and subsequent bases are trimmed.
-  three_prime_adapter: AGATCGGAAGAGCGTCGTG
+  three_prime_adapter: AGCTGTGTAAGCGGAACTAG
+
+  # Length of barcode sequence
+  # This option will override 3'adapter sequence trimming if > 0
+  barcode_length: 24
   
   # Extra cutadapt arguments
   extra: "--discard-untrimmed" 
 
 csv: 
-  # If no fasta is available, provide a csv file with barcode sequences/names
-  name_column: 3 # Column number with barcode names
-  sequence_column: 2 # Column number with barcode sequences
+  # CSV file with the gene/ORF/barcode information
+  # 0-indexed column numbers (First column is 0)
+  gene_column: 0 # Column number with gene names
+  orf_column: 2 # Column number with unique ORF names
+  barcode_id_column: 3 # Column number with barcode IDs (format: ORFID_GeneID_[0-9])
+  sequence_column: 1 # Column number with barcode sequences
 
 # Mismatches allowed during alignment
 mismatch: 0 
@@ -31,11 +38,11 @@ mismatch: 0
 # MAGeCK is used when bin_number is set to 1
 mageck:
   extra_mageck_arguments: "" 
-  mageck_control_barcodes: all # All or file with control genes
+  mageck_control_barcodes: all # All or file with control barcodes
   fdr: 0.25 # FDR threshold for downstream mageck analysis
 
 # Settings for the protein stability analysis when bin number is higher than 1
-bins:
+psi:
   # Minimum value of sum of barcode counts across all bins to keep
   sob_threshold: 100
 
@@ -47,3 +54,7 @@ bins:
   stringent_negative_hit_threshold: -1
   negative_hit_threshold: -0.5
   negative_control_threshold: -0.25
+
+  # SD threshold for most stringent hits
+  # mean deltaPSI > x * sd
+  sd_th = 2
