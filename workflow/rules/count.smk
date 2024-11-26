@@ -1,6 +1,19 @@
+rule create_fasta:
+    input:
+        csv=csv,
+    output:
+        fasta=fasta
+    conda:
+        "../envs/count.yaml"
+    log:
+        "logs/create_fasta.log"
+    script:
+        "../scripts/csv_to_fasta.py"
+
+
 rule bowtie2_index:
     input:
-        fasta = fasta,
+        ref=fasta,
     output:
         multiext(
             "resources/bowtie2_index/barcodes",
@@ -32,7 +45,7 @@ rule cutadapt:
         extra=f"-q 20 {cut_adapt_arg()}",
     log:
         "logs/cutadapt/{sample}.log",
-    threads: 4  # set desired number of threads here
+    threads: 4  # Set desired number of threads here
     resources:
         runtime=25
     wrapper:
@@ -80,15 +93,16 @@ rule count_barcodes:
 
 rule create_count_table:
     input:
-        files=expand("results/count/{sample}.barcode.counts.txt", sample=SAMPLES)
-    output:
-        "results/count/counts-aggregated.tsv"
-    params:
-        fa=fasta,
+        files=expand("results/count/{sample}.barcode.counts.txt", sample=SAMPLES),
         csv=csv,
+    output:
+        temp("results/count/counts-aggregated.tsv"),
+    threads: 1
+    resources:
+        runtime=10
     conda:
         "../envs/count.yaml"
     log:
         "logs/count/aggregate_counts.log"
     script:
-        "../scripts/join.py"
+        "../scripts/create_count_table.py"
