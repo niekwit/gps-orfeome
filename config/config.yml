@@ -19,7 +19,7 @@ cutadapt:
 
   # Length of barcode sequence
   # This option will override 3'adapter sequence trimming if > 0
-  barcode_length: 24
+  barcode_length: 20
   
   # Extra cutadapt arguments
   extra: "--discard-untrimmed" 
@@ -37,7 +37,7 @@ mismatch: 0
 
 # MAGeCK is used when bin_number is set to 1
 mageck:
-  extra_mageck_arguments: "" 
+  extra_mageck_arguments: "--sort-criteria pos" 
   mageck_control_barcodes: all # All or file with control barcodes
   fdr: 0.25 # FDR threshold for downstream mageck analysis
 
@@ -56,5 +56,5 @@ psi:
   negative_control_threshold: -0.25
 
   # SD threshold for most stringent hits
-  # mean deltaPSI > x * sd
-  sd_th = 2
+  # mean deltaPSI > sd_th * sd
+  sd_th: 2
