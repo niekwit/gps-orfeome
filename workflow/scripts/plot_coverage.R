@@ -7,8 +7,8 @@ library(tidyverse)
 library(cowplot)
 
 # Get data
-fasta <- snakemake@params[["fasta"]]
-data <- read.delim(snakemake@input[[1]]) %>% # count table
+fasta <- snakemake@input[["fasta"]]
+data <- read.delim(snakemake@input[["tsv"]]) %>% # count table
   dplyr::select(-c(1,2))
 
 # Create df to store coverage
