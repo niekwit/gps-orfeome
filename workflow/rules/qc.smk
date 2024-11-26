@@ -51,11 +51,10 @@ rule plot_alignment_rate:
 
 rule plot_coverage:
     input:
-        "results/count/counts-aggregated.tsv"
+        tsv="results/count/counts-aggregated.tsv",
+        fasta=fasta,
     output:
         report("results/qc/sequence-coverage.pdf", caption="../report/plot-coverage.rst", category="Sequence coverage")
-    params:
-        fasta=fasta
     threads: 1
     resources:
         runtime=5,
@@ -89,7 +88,7 @@ rule plot_missed_barcodes:
     input:
         "results/count/counts-aggregated.tsv"
     output:
-        report("results/qc/missed-rgrnas.pdf", caption="../report/missed-rgrnas.rst", category="Missed sgRNAs")
+        report("results/qc/missed-barcodes.pdf", caption="../report/missed-barcodes.rst", category="Missed barcodes")
     threads: 1
     resources:
         runtime=5,
