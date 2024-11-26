@@ -46,12 +46,13 @@ def cut_adapt_arg():
     """
     five_prime = f"-g {config['cutadapt']['five_prime_adapter']}"
     three_prime = f"-a {config['cutadapt']['three_prime_adapter']}"
-    length = f"--length {config['cutadapt']['barcode_length']}"
+    length = config['cutadapt']['barcode_length']
     extra = config["cutadapt"]["extra"]
     
-    if config['cutadapt']['barcode_length'] != 0:
+    if length == 0:
         return f"{five_prime} {three_prime} {extra}"
     else:
+        length = f"--length {length}"
         return f"{five_prime} {length} {extra}"
 
 
