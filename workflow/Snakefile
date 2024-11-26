@@ -20,12 +20,13 @@ containerized: f"docker://niekwit/crispr-screens:{VERSION}"
 
 # Load config file
 configfile: "config/config.yml"
-validate(config, "schemas/config.schema.yaml")
+#validate(config, "schemas/config.schema.yaml")
 
-# Load fasta
-fasta = fasta()
-csv = csv()
+# Load stuff
+csv,fasta = csv()
 orfeome_name = config["orfeome_name"]
+SAMPLES = sample_names()
+COMPARISONS = comparisons()
 
 # Import rules
 include: "rules/qc.smk"
