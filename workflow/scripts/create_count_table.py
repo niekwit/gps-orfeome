@@ -11,24 +11,33 @@ Otherwise, the count table will be created with the first column as the barcode 
 and the second the ORF name.
 '''
 
-if snakemake.config["bin_number"] == 1:
+# Load Snakemake variables
+csv_file = snakemake.input["csv"]
+count_files = snakemake.input["files"]
+bin_number = snakemake.config["bin_number"]
+barcode_id_column = snakemake.config["csv"]["barcode_id_column"]
+orf_column = snakemake.config["csv"]["orf_column"]
+gene_column = snakemake.config["csv"]["gene_column"]
+out_file = snakemake.output[0]
+
+if bin_number == 1:
     # For use with MAGeCK
     name = "sgRNA"
-    gene = "gene"
 else:
     name = "barcode"
-    gene = "gene"
 
 # Read all barcode names from csv and create ORF column
-df = pd.read_csv(snakemake.input["csv"], header=None)
-df = df[snakemake.config["csv"]["barcode_column"] - 1]
-df[gene] = df[0].str.rsplit(pat="_", n=1, expand=True)[0]
+csv = pd.read_csv(csv_file)
 
-# Rename first column 
-df = df.rename(columns={0: name})
+# With MAGeCK, use ORF names as gene names
+if bin_number == 1:
+    df = csv.iloc[:, [barcode_id_column, orf_column]]
+else:
+    df = csv.iloc[:, [barcode_id_column, gene_column]]
+df.columns = [name, "gene"]
 
 # Merge all count files to df to create count table
-for file in snakemake.input["files"]:
+for file in count_files:
     # Read count file
     tmp = pd.read_csv(file, sep=" ", header=None)
     
@@ -42,5 +51,9 @@ for file in snakemake.input["files"]:
 # Replace missing values with zero
 df = df.fillna(0)
 
+# For non-MAGeCK data, add ORF column as 3rd column
+if bin_number != 1:
+    df.insert(1, "orf", csv[orf_column])
+
 # Save data frame to file
-df.to_csv(snakemake.output[0], sep='\t', index=False)
+df.to_csv(out_file, sep='\t', index=False)
