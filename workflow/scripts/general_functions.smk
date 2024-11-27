@@ -25,6 +25,8 @@ def targets():
                 expand("results/mageck/{comparison}/{comparison}.gene_summary.txt", comparison=COMPARISONS),
                 expand("results/mageck/{comparison}/{comparison}.barcode_summary.txt", comparison=COMPARISONS),
                 expand("results/mageck/{comparison}/{comparison}.normalized.txt", comparison=COMPARISONS),
+                expand("results/mageck_plots/{comparison}/barcode_rank.pdf", comparison=COMPARISONS),
+                expand("results/mageck_plots/{comparison}/{comparison}.lfc_{val}.pdf", comparison=COMPARISONS, val=["pos", "neg"]),
             ])
         if config["drugz"]["run"]:
             TARGETS.extend([
