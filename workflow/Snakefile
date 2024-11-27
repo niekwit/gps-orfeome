@@ -16,7 +16,7 @@ logger.info(f"Wrapper version: {wrapper_version}")
 #report: "report/workflow.rst"
 
 # Define Docker container
-containerized: f"docker://niekwit/crispr-screens:{VERSION}"
+containerized: f"docker://niekwit/gps-orfeome:{VERSION}"
 
 # Load config file
 configfile: "config/config.yml"
