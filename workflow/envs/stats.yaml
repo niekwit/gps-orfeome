@@ -12,3 +12,5 @@ dependencies:
   - r-reshape2=1.4.4
   - python=3.10.12
   - bioconda::mageck=0.5.9
+  - pandas=2.2.2
+  - scipy=1.14.1

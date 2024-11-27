@@ -35,11 +35,17 @@ csv:
 # Mismatches allowed during alignment
 mismatch: 0 
 
-# MAGeCK is used when bin_number is set to 1
+# MAGeCK/drugZ can be used when bin_number is set to 1
 mageck:
+  run: True # Run MAGeCK analysis
   extra_mageck_arguments: "--sort-criteria pos" 
   mageck_control_barcodes: all # All or file with control barcodes
   fdr: 0.25 # FDR threshold for downstream mageck analysis
+
+# drugZ can be used when bin_number is set to 1
+drugz:
+  run: True # Run drugZ analysis
+  extra: "" # Extra drugZ arguments
 
 # Settings for the protein stability analysis when bin number is higher than 1
 psi:

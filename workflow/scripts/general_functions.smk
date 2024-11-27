@@ -18,13 +18,18 @@ def targets():
         "results/qc/missed-barcodes.pdf",
     ]
     if config["bin_number"] == 1:
-        TARGETS.extend([
-            expand("results/mageck/temp/{comparison}/{comparison}.gene_summary.txt", comparison=COMPARISONS),
-            "results/count/barcode-counts-aggregated.tsv",
-            expand("results/mageck/{comparison}/{comparison}.gene_summary.txt", comparison=COMPARISONS),
-            expand("results/mageck/{comparison}/{comparison}.barcode_summary.txt", comparison=COMPARISONS),
-            expand("results/mageck/{comparison}/{comparison}.normalized.txt", comparison=COMPARISONS),
-        ])
+        if config["mageck"]["run"]:
+            TARGETS.extend([
+                expand("results/mageck/temp/{comparison}/{comparison}.gene_summary.txt", comparison=COMPARISONS),
+                "results/count/barcode-counts-aggregated.tsv",
+                expand("results/mageck/{comparison}/{comparison}.gene_summary.txt", comparison=COMPARISONS),
+                expand("results/mageck/{comparison}/{comparison}.barcode_summary.txt", comparison=COMPARISONS),
+                expand("results/mageck/{comparison}/{comparison}.normalized.txt", comparison=COMPARISONS),
+            ])
+        if config["drugz"]["run"]:
+            TARGETS.extend([
+                expand("results/drugz/{comparison}.txt", comparison=COMPARISONS),
+            ])
     else:
         TARGETS.extend([
             expand("results/psi_plots/{comparison}/", comparison=COMPARISONS),
