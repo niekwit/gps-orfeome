@@ -33,9 +33,26 @@ if config["bin_number"] == 1:
                 "2> {log}"
 
 
+        rule lfc_plots:
+            input:
+                "results/mageck/temp/{comparison}/{comparison}.gene_summary.txt",
+            output:
+                pos=report("results/mageck_plots/{comparison}/{comparison}.lfc_pos.pdf", caption="../report/lfc_pos.rst", category="MAGeCK plots", subcategory="{comparison}", labels={"Comparison":"{comparison}","Figure": "lfc plot enriched genes"}),
+                neg=report("results/mageck_plots/{comparison}/{comparison}.lfc_neg.pdf", caption="../report/lfc_neg.rst", category="MAGeCK plots", subcategory="{comparison}", labels={"Comparison":"{comparison}","Figure": "lfc plot depleted genes"}),
+            threads: 1
+            resources:
+                runtime=5
+            conda:
+                "../envs/stats.yaml"
+            log:
+                "logs/mageck_plots/lfc_{comparison}.log"
+            script:
+                "../scripts/lfc_plots.R"
+
+
         rule barcode_rank_plot:
             input:
-                "results/temp/mageck/{comparison}/{comparison}.sgrna_summary.txt",
+                "results/mageck/temp/{comparison}/{comparison}.sgrna_summary.txt",
             output:
                 report("results/mageck_plots/{comparison}/barcode_rank.pdf", caption="../report/barcoderank.rst", category="MAGeCK plots", subcategory="{comparison}", labels={"Comparison":"{comparison}","Figure": "Barcode rank plot"})
             threads: 1
