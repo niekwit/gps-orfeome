@@ -24,7 +24,7 @@ if bin_number == 1:
     # For use with MAGeCK
     name = "sgRNA"
 else:
-    name = "barcode"
+    name = "barcode_id"
 
 # Read all barcode names from csv and create ORF column
 csv = pd.read_csv(csv_file)
@@ -53,7 +53,7 @@ df = df.fillna(0)
 
 # For non-MAGeCK data, add ORF column as 3rd column
 if bin_number != 1:
-    df.insert(1, "orf", csv[orf_column])
+    df.insert(1, "orf_id", csv[csv.columns[orf_column]])
 
 # Save data frame to file
 df.to_csv(out_file, sep='\t', index=False)
