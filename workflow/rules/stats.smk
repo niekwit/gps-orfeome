@@ -101,6 +101,7 @@ if config["bin_number"] == 1:
                 "../envs/count.yaml"
             shell:
                 "sed 's/sgRNA/barcode/' {input} > {output} 2> {log}"
+
     if config["drugz"]["run"]:
         rule install_drugz:
             output:
@@ -140,12 +141,13 @@ if config["bin_number"] == 1:
                 "-x {params.test} "
                 "{params.extra} "
                 "-o {output} 2> {log} "
+
 else:
     rule psi:
         input:
             counts="results/count/counts-aggregated.tsv",
         output:
-            expand("results/psi/{comparison}.csv", comparison=COMPARISONS),
+            csv="results/psi/{comparison}.csv",
         threads: 1
         resources:
             runtime=10
