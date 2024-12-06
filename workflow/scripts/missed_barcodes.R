@@ -7,9 +7,16 @@ library(tidyverse)
 library(reshape2)
 library(cowplot)
 
+bin.number <- snakemake@params[["bin_number"]]
+
 # Load count table
-counts <- read.delim(snakemake@input[[1]]) %>%
-  dplyr::select(-c("sgRNA", "gene"))
+if (bin.number == 1) {
+  counts <- read.delim(snakemake@input[[1]]) %>%
+  dplyr::select(-all_of(c("sgRNA", "gene")))
+} else {
+  counts <- read.delim(snakemake@input[[1]]) %>%
+  dplyr::select(-all_of(c("barcode_id", "orf_id", "gene")))
+}
 
 # Get number of sgRNAs with zero counts
 df <- colSums(counts == 0) %>%
@@ -33,7 +40,3 @@ ggsave(snakemake@output[[1]], p)
 # Close redirection of output/messages
 sink(log, type = "output")
 sink(log, type = "message")
-
-
-
-

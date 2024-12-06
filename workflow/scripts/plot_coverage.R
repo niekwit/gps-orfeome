@@ -6,10 +6,17 @@ sink(log, type = "message")
 library(tidyverse)
 library(cowplot)
 
-# Get data
 fasta <- snakemake@input[["fasta"]]
-data <- read.delim(snakemake@input[["tsv"]]) %>% # count table
-  dplyr::select(-c(1,2))
+bin.number <- snakemake@params[["bin_number"]]
+
+# Load count table
+if (bin.number == 1) {
+  data <- read.delim(snakemake@input[["tsv"]]) %>%
+  dplyr::select(-all_of(c("sgRNA", "gene")))
+} else {
+  data <- read.delim(snakemake@input[[1]]) %>%
+  dplyr::select(-all_of(c("barcode_id", "orf_id", "gene")))
+}
 
 # Create df to store coverage
 # Remove prepended X from samples names (only happens when they start with a number)
@@ -51,4 +58,3 @@ ggsave(snakemake@output[[1]], p)
 # Close log file
 sink(log, type = "output")
 sink(log, type = "message")
-

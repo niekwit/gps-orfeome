@@ -55,6 +55,8 @@ rule plot_coverage:
         fasta=fasta,
     output:
         report("results/qc/sequence-coverage.pdf", caption="../report/plot-coverage.rst", category="Sequence coverage")
+    params:
+        bin_number=config["bin_number"]
     threads: 1
     resources:
         runtime=5,
@@ -66,29 +68,13 @@ rule plot_coverage:
         "../scripts/plot_coverage.R"
 
 
-rule plot_gini_index:
-    input:
-        "results/count/counts-aggregated.tsv"
-    output:
-        report("results/qc/gini-index.pdf", caption="../report/gini-index.rst", category="Gini index")
-    params:
-        yaml="workflow/envs/plot_settings.yaml"
-    threads: 1
-    resources:
-        runtime=5,
-    log:
-        "logs/gini-index.log"
-    conda:
-        "../envs/stats.yaml"
-    script:
-        "../scripts/plot_gini_index.R"
-
-
 rule plot_missed_barcodes:
     input:
         "results/count/counts-aggregated.tsv"
     output:
         report("results/qc/missed-barcodes.pdf", caption="../report/missed-barcodes.rst", category="Missed barcodes")
+    params:
+        bin_number=config["bin_number"]
     threads: 1
     resources:
         runtime=5,
