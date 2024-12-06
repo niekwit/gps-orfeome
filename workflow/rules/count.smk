@@ -96,7 +96,7 @@ rule create_count_table:
         files=expand("results/count/{sample}.barcode.counts.txt", sample=SAMPLES),
         csv=csv,
     output:
-        temp("results/count/counts-aggregated.tsv"),
+        "results/count/counts-aggregated.tsv",
     threads: 1
     resources:
         runtime=10
