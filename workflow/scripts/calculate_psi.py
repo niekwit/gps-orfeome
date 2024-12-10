@@ -18,10 +18,11 @@ MIN_SOB_THRESHOLD = snakemake.config["psi"]["sob_threshold"]
 comparison = snakemake.wildcards["comparison"]
 reference = comparison.split("_vs_")[1] 
 test = comparison.split("_vs_")[0]
-stab_th = snakemake.config["psi"]["stringent_hit_threshold"]
-destab_th = snakemake.config["psi"]["stringent_negative_hit_threshold"]
+stab_th = snakemake.config["psi"]["hit_threshold"]
+destab_th = -(snakemake.config["psi"]["hit_threshold"])
 sd_th = snakemake.config["psi"]["sd_th"]
-output_file = snakemake.output["csv"]
+output_file_csv = snakemake.output["csv"]
+output_file_rank = snakemake.output["ranked"]
 
 
 def compute_psi(row, condition, num_bins):
@@ -40,13 +41,14 @@ def compute_psi(row, condition, num_bins):
 # Read count for all samples
 df = pd.read_csv(counts, sep="\t")
 
+### Filtering of data
 logging.info(f"Filtering data for {test} vs {reference}")
 
 # Select columns that are part of the comparison
 df = df.filter(regex=f"{reference}|{test}|^barcode_id|^orf_id|^gene")
 nrows = df.shape[0]
 logging.info(f"  Barcodes present pre-filtering: {nrows}")
-    
+
 # Remove barcodes where there are no counts accross all samples
 df = df[df.iloc[:,3:].sum(axis=1) > 0].reset_index(drop=True)
 nrows_zero_counts = nrows - df.shape[0]
@@ -81,13 +83,24 @@ logging.info(f"  Barcodes with low counts in {reference}: {low_counts}")
 # Remove barcodes with no test count reads in any bin (to avoid division by zero)
 nrows = df.shape[0]
 df = df[df.filter(regex=f"{test}_").sum(axis=1) > 0].reset_index(drop=True)
-nrows_no_test_counts = df.shape[0] - nrows
+nrows_no_test_counts = nrows - df.shape[0]
 logging.info(f"  Barcodes with no counts for {test} in any bin: {nrows_no_test_counts}")
 
-# Compute PSI values:
+# Add total number of barcodes for each ORF
+df["num_barcodes"] = df.groupby("orf_id")["barcode_id"].transform("count")
+
+# Remove ORFs with only one barcode
+df = df[df["num_barcodes"] > 1].reset_index(drop=True)
+nrows = df.shape[0]
+nrows_single_barcode = nrows - df.shape[0]
+logging.info(f"  ORFs removed that have only one barcode after filtering: {nrows_single_barcode}")
+
+logging.info(f"  Number of barcodes present post-filtering: {nrows}")
+
+### Compute PSI values:
 # For each sample bin, divide the bin count by the sum of all bins for that sample
 # Multiple by bin number and sum all values for each sample
-logging.info("Computing PSI values")
+logging.info(f"Computing PSI values for {test} vs {reference}")
 for sample in [reference, test]:
     sample_bins = df.filter(regex=f"^{sample}").columns
     sample_bins = [int(x.replace(f"{sample}_", "")) for x in sample_bins]
@@ -109,14 +122,6 @@ df["delta_PSI_mean"] = df.groupby("orf_id")["deltaPSI"].transform("mean")
 # Calculate SD of PSI values for each condition of each ORF
 df["delta_PSI_SD"] = df.groupby("orf_id")["deltaPSI"].transform("std") 
 
-# Add total number of barcodes for each ORF
-df["num_barcodes"] = df.groupby("orf_id")["barcode_id"].transform("count")
-
-# Remove ORFs with only one barcode
-df = df[df["num_barcodes"] > 1].reset_index(drop=True)
-nrows_single_barcode = nrows_no_test_counts - df.shape[0]
-logging.info(f"  ORFs removed that have only one barcode after filtering: {nrows_single_barcode}")
-
 #IS THIS NEEDED?
 # Sum of read counts for each ORF and each bin
 #for sample in [reference, test]:
@@ -126,6 +131,7 @@ logging.info(f"  ORFs removed that have only one barcode after filtering: {nrows
 #    for bin in sample_bins:
 #        df[bin] = df.groupby("orf_id")[bin].transform("sum")
 
+### Hit identification
 # Identify ORFs that are stabilised in test condition
 df[f"stabilised_in_{test}"] = df["delta_PSI_mean"] > stab_th
 sum_ = df[["orf_id", f"stabilised_in_{test}"]].drop_duplicates()
@@ -149,9 +155,42 @@ df[f"destabilised_in_{test}_hc"] = (df["delta_PSI_mean"] < destab_th) & (abs(df[
 sum_ = df[["orf_id", f"destabilised_in_{test}_hc"]].drop_duplicates()
 sum_ = sum_[f"destabilised_in_{test}_hc"].sum()
 logging.info(f"  Number of high confidence destabilised ORFs in {test}: {sum_}")
-    
-# Write to file
-logging.info(f"Writing to {output_file}")
-df.to_csv(output_file, index=False)
 
-logging.info("Done.")
+# Save to file
+logging.info(f"Writing pre-ranked results to {output_file_csv}")
+df.to_csv(output_file_csv, index=False)
+
+### Ranking of hits
+logging.info("Ranking hits")
+# Remove all non-hit ORFs
+df_rank = df[(df[f"stabilised_in_{test}"]) | (df[f"destabilised_in_{test}"])].reset_index(drop=True)
+
+# Collapse data to ORF level
+df_rank = df_rank[["orf_id", "gene", "delta_PSI_mean", "delta_PSI_SD", 
+                   "num_barcodes", f"stabilised_in_{test}", 
+                   f"stabilised_in_{test}_hc", f"destabilised_in_{test}", f"destabilised_in_{test}_hc"]].drop_duplicates().reset_index(drop=True)
+
+# Calculate absolute rank based on signal-to-noise ratio
+df_rank["SNR"] = abs(df_rank["delta_PSI_mean"]) / df_rank["delta_PSI_SD"]
+df_rank = df_rank.sort_values(by="SNR", ascending=False).reset_index(drop=True)
+df_rank["absolute_rank"] = df_rank.index + 1
+
+# Create separate rankings for stabilised and destabilised hits
+df_rank_stab = df_rank[df_rank[f"stabilised_in_{test}"]].sort_values(by="SNR", ascending=False).reset_index(drop=True)
+df_rank_stab["stabilised_rank"] = df_rank_stab.index + 1
+
+df_rank_destab = df_rank[df_rank[f"destabilised_in_{test}"]].sort_values(by="SNR", ascending=False).reset_index(drop=True)
+df_rank_destab["destabilised_rank"] = df_rank_destab.index + 1
+
+# Add these rankings to df_rank (NA for non-hits)
+df_rank = pd.merge(df_rank, df_rank_stab[["orf_id", "stabilised_rank"]], on="orf_id", how="left")
+df_rank = pd.merge(df_rank, df_rank_destab[["orf_id", "destabilised_rank"]], on="orf_id", how="left")
+
+# Replace all missing values with NA
+df_rank = df_rank.fillna("NA")
+
+# Write to file
+logging.info(f"Writing ranked results to {output_file_rank}")
+df_rank.to_csv(output_file_rank, index=False)
+
+logging.info("Done")

@@ -147,21 +147,22 @@ else:
         input:
             counts="results/count/counts-aggregated.tsv",
         output:
-            csv="results/psi/{comparison}.csv",
+            csv="results/psi/{comparison}_{threshold}.csv",
+            ranked="results/psi/{comparison}_{threshold}_ranked.csv",
         threads: 1
         resources:
             runtime=10
         conda:
             "../envs/stats.yaml"
         log:
-            "logs/calculate_psi_{comparison}.log"
+            "logs/calculate_psi_{comparison}_{threshold}.log"
         script:
             "../scripts/calculate_psi.py"
 
-
+"""
     rule plot_barcode_profiles:
         input:
-            csv="results/psi/{comparison}.csv",
+            csv="results/psi/{comparison}_{threshold}.csv",
         output:
             outdir=dir("results/psi_plots/{comparison}/"),
         threads: 1
@@ -170,7 +171,7 @@ else:
         conda:
             "../envs/stats.yaml"
         log:
-            "logs/plot_psi_{comparison}.log"
+            "logs/plot_psi_{comparison}_{threshold}.log"
         script:
             "../scripts/plot_barcode_profiles.R"
-
+"""

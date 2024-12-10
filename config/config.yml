@@ -27,9 +27,9 @@ cutadapt:
 csv: 
   # CSV file with the gene/ORF/barcode information
   # 0-indexed column numbers (First column is 0)
-  gene_column: 0 # Column number with gene names
-  orf_column: 2 # Column number with unique ORF names
-  barcode_id_column: 3 # Column number with barcode IDs (format: ORFID_GeneID_[0-9])
+  gene_column: 5 # Column number with gene names
+  orf_column: 3 # Column number with unique ORF names
+  barcode_id_column: 0 # Column number with barcode IDs (format: ORFID_GeneID_[0-9])
   sequence_column: 1 # Column number with barcode sequences
 
 # Mismatches allowed during alignment
@@ -52,14 +52,8 @@ psi:
   # Minimum value of sum of barcode counts across all bins to keep
   sob_threshold: 100
 
-  # deltaPSI thresholds for hits and controls
-  stringent_hit_threshold: 1
-  hit_threshold: 0.5
-  control_threshold: 0.25
-  
-  stringent_negative_hit_threshold: -1
-  negative_hit_threshold: -0.5
-  negative_control_threshold: -0.25
+  # deltaPSI thresholds for hits
+  hit_threshold: 0.75
 
   # SD threshold for most stringent hits
   # mean deltaPSI > sd_th * sd

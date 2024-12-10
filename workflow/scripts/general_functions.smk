@@ -14,7 +14,6 @@ def targets():
         "results/qc/multiqc.html",
         "results/qc/alignment-rates.pdf",
         "results/qc/sequence-coverage.pdf",
-        "results/qc/gini-index.pdf",
         "results/qc/missed-barcodes.pdf",
     ]
     if config["bin_number"] == 1:
@@ -34,7 +33,9 @@ def targets():
             ])
     else:
         TARGETS.extend([
-            expand("results/psi_plots/{comparison}/", comparison=COMPARISONS),
+            expand("results/psi/{comparison}_{threshold}.csv", comparison=COMPARISONS, threshold=THRESHOLD),
+            expand("results/psi/{comparison}_{threshold}_ranked.csv", comparison=COMPARISONS, threshold=THRESHOLD),
+            #expand("results/psi_plots/{comparison}/", comparison=COMPARISONS),
         ])
     return TARGETS
 
