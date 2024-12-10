@@ -27,6 +27,7 @@ csv,fasta = csv()
 orfeome_name = config["orfeome_name"]
 SAMPLES = sample_names()
 COMPARISONS = comparisons()
+THRESHOLD = [config["psi"]["hit_threshold"]]
 
 # Import rules
 include: "rules/qc.smk"
