@@ -35,7 +35,7 @@ def targets():
         TARGETS.extend([
             expand("results/psi/{comparison}_{threshold}.csv", comparison=COMPARISONS, threshold=THRESHOLD),
             expand("results/psi/{comparison}_{threshold}_ranked.csv", comparison=COMPARISONS, threshold=THRESHOLD),
-            #expand("results/psi_plots/{comparison}/", comparison=COMPARISONS),
+            expand("results/psi_plots/{comparison}_{threshold}/plotting_done.txt", comparison=COMPARISONS, threshold=THRESHOLD),
         ])
     return TARGETS
 

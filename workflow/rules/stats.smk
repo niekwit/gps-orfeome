@@ -159,19 +159,21 @@ else:
         script:
             "../scripts/calculate_psi.py"
 
-"""
+
     rule plot_barcode_profiles:
         input:
             csv="results/psi/{comparison}_{threshold}.csv",
         output:
-            outdir=dir("results/psi_plots/{comparison}/"),
-        threads: 1
+            flag="results/psi_plots/{comparison}_{threshold}/plotting_done.txt",
+        params:
+            outdir=lambda wc,output: os.path.dirname(output["flag"]),
+        threads: 1,
         resources:
-            runtime=30
+            runtime=60,
         conda:
-            "../envs/stats.yaml"
+            "../envs/stats.yaml",
         log:
-            "logs/plot_psi_{comparison}_{threshold}.log"
+            "logs/plot_psi_{comparison}_{threshold}.log",
         script:
             "../scripts/plot_barcode_profiles.R"
-"""
+
