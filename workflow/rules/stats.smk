@@ -167,9 +167,9 @@ else:
             flag="results/psi_plots/{comparison}_{threshold}/plotting_done.txt",
         params:
             outdir=lambda wc,output: os.path.dirname(output["flag"]),
-        threads: 1,
+        threads: 24,
         resources:
-            runtime=60,
+            runtime=15,
         conda:
             "../envs/stats.yaml",
         log:

@@ -8,6 +8,8 @@ print(Sys.time())
 library(tidyverse)
 library(reshape2)
 library(cowplot)
+library(doParallel)
+library(foreach)
 
 # Load Snakemake variables
 data.file <- snakemake@input[["csv"]]
@@ -15,6 +17,12 @@ comparison <- snakemake@wildcards[["comparison"]]
 test.sample <- str_split(comparison, "_vs_")[[1]][1]
 ref.sample <- str_split(comparison, "_vs_")[[1]][2]
 outdir <- snakemake@params[["outdir"]]
+threads <- snakemake@threads
+
+# Set up parallel backend
+print(paste0("Setting up parallel backend with ", threads, " threads"))
+cl <- makeCluster(threads)
+registerDoParallel(cl)
 
 # Create output directory
 print(paste0("Creating output directory: ", outdir))
@@ -49,7 +57,7 @@ info.columns <- data %>%
 for (column in info.columns[3:length(info.columns)]) {
   # Create sub directory for each column
   dir <- file.path(outdir, column)
-  dir.create(dir, showWarnings = FALSE)
+  dir.create(dir, showWarnings = FALSE, recursive = TRUE)
 
   # Subset genes/ORF IDs
   tmp <- data %>%
@@ -59,7 +67,11 @@ for (column in info.columns[3:length(info.columns)]) {
   tmp <- tmp %>%
     mutate(gene.id = paste0(gene, "_", orf_id))
 
-  for (id in tmp$gene.id) {
+  #for (id in tmp$gene.id) {
+  foreach(id = tmp$gene.id, .packages = c("tidyverse", 
+                                          "reshape2", 
+                                          "cowplot", 
+                                          "scales")) %dopar% {
     print(paste0("Plotting ORF ID: ", id))
     df <- tmp[tmp$gene.id == id,] %>%
       select(gene.id, starts_with(ref.sample), starts_with(test.sample)) %>%
@@ -96,6 +108,9 @@ for (column in info.columns[3:length(info.columns)]) {
             bg = "white")
   }
 }
+
+# Stop the parallel backend
+stopCluster(cl)
 
 # Create an empty file to signal that the script has completed
 file.create(snakemake@output[["flag"]])

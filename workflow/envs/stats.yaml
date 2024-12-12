@@ -10,6 +10,8 @@ dependencies:
   - r-ggrepel=0.9.4
   - r-ineq=0.2_13
   - r-reshape2=1.4.4
+  - conda-forge::r-foreach=1.5.2
+  - conda-forge::r-doparallel=1.0.17
   - python=3.10.12
   - bioconda::mageck=0.5.9
   - pandas=2.2.2
