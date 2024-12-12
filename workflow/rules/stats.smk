@@ -169,7 +169,7 @@ else:
             outdir=lambda wc,output: os.path.dirname(output["flag"]),
         threads: 24,
         resources:
-            runtime=15,
+            runtime=30,
         conda:
             "../envs/stats.yaml",
         log:
