@@ -5,6 +5,8 @@
 """
 import logging
 import pandas as pd
+import numpy as np
+from itertools import combinations
 
 # Set up logging
 log = snakemake.log[0]
@@ -18,9 +20,9 @@ MIN_SOB_THRESHOLD = snakemake.config["psi"]["sob_threshold"]
 comparison = snakemake.wildcards["comparison"]
 reference = comparison.split("_vs_")[1] 
 test = comparison.split("_vs_")[0]
-stab_th = snakemake.config["psi"]["hit_threshold"]
-destab_th = -(snakemake.config["psi"]["hit_threshold"])
+hit_th = snakemake.config["psi"]["hit_threshold"]
 sd_th = snakemake.config["psi"]["sd_th"]
+bc_th = snakemake.config["psi"]["bc_th"]
 output_file_csv = snakemake.output["csv"]
 output_file_rank = snakemake.output["ranked"]
 
@@ -36,6 +38,46 @@ def compute_psi(row, condition, num_bins):
         bin_prop = row[f"{condition}_{i}"] / sob
         psi_score += bin_prop * i
     return psi_score
+
+
+def compute_euclidean_distance(curves):
+    """
+    Calculate the pairwise Euclidean distances between n line curves.
+
+    Parameters:
+        curves (list of list of tuples): A list of curves (only the y dimension as x dimension (bin) is the same for all samples), where each curve is a list of points (tuples or lists of coordinates).
+
+    Returns:
+        dict: A dictionary with keys as tuple pairs of curve indices and values as the Euclidean distance between those curves.
+    """
+    def euclidean_distance(curve1, curve2):
+        return np.sqrt(np.sum((np.array(curve1) - np.array(curve2))**2))
+    
+    # Calculate the pairwise distances
+    distances = {}
+    for i, j in combinations(range(len(curves)), 2):
+        distances[(i, j)] = euclidean_distance(curves[i], curves[j])
+
+    # Calculate the mean distance
+    mean = np.mean(list(distances.values()))
+    
+    # Calculate the standard deviation of the distances
+    std = np.std(list(distances.values()))
+    
+    return mean, std
+
+
+def stringent_hit(mean1, mean2, sd1, sd2, th, stabilised):
+    """
+    Determine if a hit is significant based on the mean and SD of two conditions.
+    """
+    if mean1 > mean2:
+        if abs(mean1 - mean2) > th * sd2:
+            return True
+    else:
+        if abs(mean1 - mean2) > th * sd1:
+            return True
+    return False
 
 
 # Read count for all samples
@@ -95,6 +137,12 @@ nrows = df.shape[0]
 nrows_single_barcode = nrows - df.shape[0]
 logging.info(f"  ORFs removed that have only one barcode after filtering: {nrows_single_barcode}")
 
+# Remove ORFs with less than a specified number of barcodes
+nrows = df.shape[0]
+df = df[df["num_barcodes"] >= bc_th].reset_index(drop=True)
+nrows_low_barcodes = nrows - df.shape[0]
+logging.info(f"  ORFs removed with less than {bc_th} barcodes after filtering: {nrows_low_barcodes}")
+
 logging.info(f"  Number of barcodes present post-filtering: {nrows}")
 
 ### Compute PSI values:
@@ -133,25 +181,29 @@ df["delta_PSI_SD"] = df.groupby("orf_id")["deltaPSI"].transform("std")
 
 ### Hit identification
 # Identify ORFs that are stabilised in test condition
-df[f"stabilised_in_{test}"] = df["delta_PSI_mean"] > stab_th
+df[f"stabilised_in_{test}"] = df["delta_PSI_mean"] > hit_th
 sum_ = df[["orf_id", f"stabilised_in_{test}"]].drop_duplicates()
 sum_ = sum_[f"stabilised_in_{test}"].sum()
 logging.info(f"  Number of stabilised ORFs in {test}: {sum_}")
 
 # Identify high confidence hits for stabilised ORFs
-df[f"stabilised_in_{test}_hc"] = (df["delta_PSI_mean"] > stab_th) & (df["delta_PSI_mean"] > sd_th * df["delta_PSI_SD"])
+df[f"stabilised_in_{test}_hc"] = (df["delta_PSI_mean"] > hit_th) & (df["delta_PSI_mean"] > sd_th * df["delta_PSI_SD"])
 sum_ = df[["orf_id", f"stabilised_in_{test}_hc"]].drop_duplicates()
 sum_ = sum_[f"stabilised_in_{test}_hc"].sum()
 logging.info(f"  Number of high confidence stabilised ORFs in {test}: {sum_}")
 
 # Identify ORFs that are destabilised in test condition
-df[f"destabilised_in_{test}"] = df["delta_PSI_mean"] < destab_th
+df[f"destabilised_in_{test}"] = df["delta_PSI_mean"] < -hit_th
 sum_ = df[["orf_id", f"destabilised_in_{test}"]].drop_duplicates()
 sum_ = sum_[f"destabilised_in_{test}"].sum()
 logging.info(f"  Number of destabilised ORFs in {test}: {sum_}")
 
-# Identify high confidence hits for destabilised ORFs
-df[f"destabilised_in_{test}_hc"] = (df["delta_PSI_mean"] < destab_th) & (abs(df["delta_PSI_mean"]) > sd_th * df["delta_PSI_SD"])
+## Identify high confidence hits for destabilised ORFs
+# Compare deltaPSI to the threshold and the SD
+#df[f"destabilised_in_{test}_hc1"] = (df["delta_PSI_mean"] < -(hit_th)) & (abs(df["delta_PSI_mean"]) > sd_th * df["delta_PSI_SD"])
+# Compare 
+
+
 sum_ = df[["orf_id", f"destabilised_in_{test}_hc"]].drop_duplicates()
 sum_ = sum_[f"destabilised_in_{test}_hc"].sum()
 logging.info(f"  Number of high confidence destabilised ORFs in {test}: {sum_}")
