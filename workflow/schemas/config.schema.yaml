@@ -40,19 +40,25 @@ properties:
     type: object
     properties:
       
-      name_column:
-        description: Column number with barcode names (0-indexed)
+      gene_column:
+        description: Column number with gene names
         type: integer
-        minimum: 1
+        minimum: 0
+      
+      orf_column:
+        description: Column number with unique ORF names
+        type: integer
+        minimum: 0
+      
+      barcode_id_column:
+        description: Column number with barcode IDs
+        type: integer
+        minimum: 0
       
       sequence_column:
-        description: Column number with barcode sequences (0-indexed)
+        description: Column number with barcode sequences
         type: integer
-        minimum: 1
-  
-    required:
-      - name_column
-      - sequence_column
+        minimum: 0
 
   mismatch:
     description: Mismatches allowed during alignment
