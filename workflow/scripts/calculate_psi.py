@@ -4,9 +4,10 @@
 3. Compute PSI values.
 """
 import logging
+import random
+from itertools import combinations
 import pandas as pd
 import numpy as np
-from itertools import combinations
 
 # Set up logging
 log = snakemake.log[0]
@@ -23,6 +24,8 @@ test = comparison.split("_vs_")[0]
 hit_th = snakemake.config["psi"]["hit_threshold"]
 sd_th = snakemake.config["psi"]["sd_th"]
 bc_th = snakemake.config["psi"]["bc_th"]
+bin_number = snakemake.config["bin_number"]
+cf = snakemake.config["psi"]["correction_factor"]
 output_file_csv = snakemake.output["csv"]
 output_file_rank = snakemake.output["ranked"]
 
@@ -40,23 +43,32 @@ def compute_psi(row, condition, num_bins):
     return psi_score
 
 
-def compute_euclidean_distance(curves):
+def compute_euclidean_distance(curves_):
     """
     Calculate the pairwise Euclidean distances between n line curves.
-
-    Parameters:
-        curves (list of list of tuples): A list of curves (only the y dimension as x dimension (bin) is the same for all samples), where each curve is a list of points (tuples or lists of coordinates).
-
-    Returns:
-        dict: A dictionary with keys as tuple pairs of curve indices and values as the Euclidean distance between those curves.
     """
     def euclidean_distance(curve1, curve2):
         return np.sqrt(np.sum((np.array(curve1) - np.array(curve2))**2))
     
+    # For lists with just two curves, add a third data set
+    # This is picked randomly from the two existing curves
+    # But this value is multiplied by a specified factor
+    # This is to punish orfs with just two barcodes
+    # And to avoid not being able to calculate the mean/SD with just one distance
+    length = len(curves_)
+    if length == 2:
+        seeds = range(0, 25)[0:bin_number]
+        new_curve = []
+        for i in seeds:
+            random.seed(i)
+            data_set = curves_[random.randint(0, 1)]
+            new_curve.append(data_set[i] * cf)
+        curves_.append(new_curve)       
+        
     # Calculate the pairwise distances
     distances = {}
-    for i, j in combinations(range(len(curves)), 2):
-        distances[(i, j)] = euclidean_distance(curves[i], curves[j])
+    for i, j in combinations(range(len(curves_)), 2):
+        distances[(i, j)] = euclidean_distance(curves_[i], curves_[j])
 
     # Calculate the mean distance
     mean = np.mean(list(distances.values()))
@@ -64,20 +76,22 @@ def compute_euclidean_distance(curves):
     # Calculate the standard deviation of the distances
     std = np.std(list(distances.values()))
     
-    return mean, std
+    return length * [[mean, std]]
 
 
-def stringent_hit(mean1, mean2, sd1, sd2, th, stabilised):
+def stringent_hit(row, test, reference, th):
     """
     Determine if a hit is significant based on the mean and SD of two conditions.
     """
-    if mean1 > mean2:
-        if abs(mean1 - mean2) > th * sd2:
-            return True
+    mean1 = row[f"{test}_mean_distance"]
+    mean2 = row[f"{reference}_mean_distance"]
+    sd1 = row[f"{test}_sd_distance"]
+    sd2 = row[f"{reference}_sd_distance"]
+    
+    if mean1 > th * sd1 and mean2 > th * sd2:
+        return True
     else:
-        if abs(mean1 - mean2) > th * sd1:
-            return True
-    return False
+        return False
 
 
 # Read count for all samples
@@ -180,17 +194,29 @@ df["delta_PSI_SD"] = df.groupby("orf_id")["deltaPSI"].transform("std")
 #        df[bin] = df.groupby("orf_id")[bin].transform("sum")
 
 ### Hit identification
+# Calculate the Euclidean distances between the barcodes
+for sample in [reference, test]:
+    # Get columns with normalised bin counts
+    sample_columns = list(df.filter(regex=f"^{sample}").columns)
+    sample_columns.sort()
+    
+    # Create a list of lists with the normalised bin counts for each ORF
+    curves = [group[sample_columns].values.tolist() for _, group in df.groupby("orf_id", sort=False)]
+    
+    # Calculate the Euclidean distance between the curves
+    ed_results = list(map(compute_euclidean_distance, curves))
+    # Flatten the list of lists
+    ed_results = [item for sublist in ed_results for item in sublist]
+    
+    # Add the mean and SD to the dataframe
+    df[f"{sample}_mean_distance"] = [x[0] for x in ed_results]
+    df[f"{sample}_sd_distance"] = [x[1] for x in ed_results]
+
 # Identify ORFs that are stabilised in test condition
 df[f"stabilised_in_{test}"] = df["delta_PSI_mean"] > hit_th
 sum_ = df[["orf_id", f"stabilised_in_{test}"]].drop_duplicates()
 sum_ = sum_[f"stabilised_in_{test}"].sum()
 logging.info(f"  Number of stabilised ORFs in {test}: {sum_}")
-
-# Identify high confidence hits for stabilised ORFs
-df[f"stabilised_in_{test}_hc"] = (df["delta_PSI_mean"] > hit_th) & (df["delta_PSI_mean"] > sd_th * df["delta_PSI_SD"])
-sum_ = df[["orf_id", f"stabilised_in_{test}_hc"]].drop_duplicates()
-sum_ = sum_[f"stabilised_in_{test}_hc"].sum()
-logging.info(f"  Number of high confidence stabilised ORFs in {test}: {sum_}")
 
 # Identify ORFs that are destabilised in test condition
 df[f"destabilised_in_{test}"] = df["delta_PSI_mean"] < -hit_th
@@ -198,15 +224,17 @@ sum_ = df[["orf_id", f"destabilised_in_{test}"]].drop_duplicates()
 sum_ = sum_[f"destabilised_in_{test}"].sum()
 logging.info(f"  Number of destabilised ORFs in {test}: {sum_}")
 
-## Identify high confidence hits for destabilised ORFs
-# Compare deltaPSI to the threshold and the SD
-#df[f"destabilised_in_{test}_hc1"] = (df["delta_PSI_mean"] < -(hit_th)) & (abs(df["delta_PSI_mean"]) > sd_th * df["delta_PSI_SD"])
-# Compare 
+# Identify high confidence hits based on Ecclidean distances between barcodes
+df["high_confidence"] = df.apply(lambda row: stringent_hit(row, test, reference, sd_th), axis=1).reset_index(drop=True)
+hc_stabilised = len(df[(df[f"stabilised_in_{test}"]) & (df["high_confidence"])])
+logging.info(f"  Number of high confidence stabilised ORFs in {test}: {hc_stabilised}")
+hc_destabilised = len(df[(df[f"destabilised_in_{test}"]) & (df["high_confidence"])])
+logging.info(f"  Number of high confidence destabilised ORFs in {test}: {hc_destabilised}")
 
-
-sum_ = df[["orf_id", f"destabilised_in_{test}_hc"]].drop_duplicates()
-sum_ = sum_[f"destabilised_in_{test}_hc"].sum()
-logging.info(f"  Number of high confidence destabilised ORFs in {test}: {sum_}")
+# Make separate columns for high confidence hits (easier for plotting)
+df[f"stabilised_in_{test}_hc"] = df[f"stabilised_in_{test}"] & df["high_confidence"]
+df[f"destabilised_in_{test}_hc"] = df[f"destabilised_in_{test}"] & df["high_confidence"]
+df = df.drop(columns=["high_confidence"])
 
 # Save to file
 logging.info(f"Writing pre-ranked results to {output_file_csv}")

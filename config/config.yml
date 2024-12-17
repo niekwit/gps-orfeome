@@ -58,7 +58,11 @@ psi:
   # Barcode threshold for hits
   # Only keep ORFs with at least bc_th barcodes
   bc_th: 2
+
+  # Correction factor for creating a random third barcode
+  # for orfs with only two barcodes
+  correction_factor: 1.2
   
   # SD threshold for most stringent hits
-  # mean deltaPSI > sd_th * sd
-  sd_th: 2
+  # mean Euclidian distance test&control > sd_th * SD
+  sd_th: 4

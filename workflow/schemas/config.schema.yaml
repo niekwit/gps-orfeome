@@ -41,12 +41,12 @@ properties:
     properties:
       
       name_column:
-        description: Column number with barcode names
+        description: Column number with barcode names (0-indexed)
         type: integer
         minimum: 1
       
       sequence_column:
-        description: Column number with barcode sequences
+        description: Column number with barcode sequences (0-indexed)
         type: integer
         minimum: 1
   
@@ -66,31 +66,53 @@ properties:
     type: object
     properties:
       
+      run:
+        description: Run MAGeCK analysis
+        type: boolean
+      
       extra_mageck_arguments:
-        description: Additional arguments for MAGeCK
+        description: Extra MAGeCK arguments
         type: string
       
       mageck_control_barcodes:
-        description: Control genes for MAGeCK
+        description: All or file with control barcodes
         type: string
         enum:
           - all
           - file
       
       fdr:
-        description: FDR threshold for downstream MAGeCK analysis
+        description: FDR threshold for downstream mageck analysis
         type: number
         minimum: 0
         maximum: 1
         default: 0.25
-    
+  
     required:
+      - run
       - extra_mageck_arguments
       - mageck_control_barcodes
       - fdr
+  
+  drugz:
+    description: drugZ settings
+    type: object
+    properties:
+      
+      run:
+        description: Run drugZ analysis
+        type: boolean
+      
+      extra:
+        description: Extra drugZ arguments
+        type: string
+  
+    required:
+      - run
+      - extra
 
-  bins:
-    description: Settings for the protein stability analysis when bin number is higher than 1
+  psi:
+    description: Protein stability analysis settings
     type: object
     properties:
       
@@ -99,50 +121,29 @@ properties:
         type: integer
         minimum: 1
       
-      stringent_hit_threshold:
-        description: deltaPSI threshold for hits
-        type: number
-        minimum: 0
-      
       hit_threshold:
-        description: deltaPSI threshold for hits
+        description: deltaPSI thresholds for hits
         type: number
         minimum: 0
       
-      control_threshold:
-        description: deltaPSI threshold for controls
-        type: number
-        minimum: 0
+      bc_th:
+        description: Barcode threshold for hits
+        type: integer
+        minimum: 1
       
-      stringent_negative_hit_threshold:
-        description: deltaPSI threshold for negative hits
+      correction_factor:
+        description: Correction factor for creating a random third barcode for orfs with only two barcodes
         type: number
-        maximum: 0
+        minimum: 1
       
-      negative_hit_threshold:
-        description: deltaPSI threshold for negative hits
+      sd_th:
+        description: SD threshold for most stringent hits
         type: number
-        maximum: 0
+        minimum: 1
       
-      negative_control_threshold:
-        description: deltaPSI threshold for negative controls
-        type: number
-        maximum: 0
-
     required:
       - sob_threshold
-      - stringent_hit_threshold
       - hit_threshold
-      - control_threshold
-      - stringent_negative_hit_threshold
-      - negative_hit_threshold
-      - negative_control_threshold
-
-required:
-  - bin_number
-  - cutadapt
-  - csv
-  - mismatch
-  - mageck
-  - bins
-        
+      - bc_th
+      - correction_factor
+      - sd_th
