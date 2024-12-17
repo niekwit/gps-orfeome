@@ -4,7 +4,7 @@ rule create_fasta:
     output:
         fasta=fasta
     conda:
-        "../envs/count.yaml"
+        "../envs/stats.yaml"
     log:
         "logs/create_fasta.log"
     script:
@@ -75,7 +75,7 @@ rule count_barcodes:
     log:
         "logs/count/{sample}.log"
     conda:
-        "../envs/count.yaml"
+        "../envs/stats.yaml"
     shell:
         "bowtie2 --no-hd "
         "-p {threads} "
@@ -101,7 +101,7 @@ rule create_count_table:
     resources:
         runtime=10
     conda:
-        "../envs/count.yaml"
+        "../envs/stats.yaml"
     log:
         "logs/count/aggregate_counts.log"
     script:

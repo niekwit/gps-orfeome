@@ -82,7 +82,7 @@ if config["bin_number"] == 1:
             log:
                 "logs/rename_to_barcode/{comparison}.log"
             conda:
-                "../envs/count.yaml"
+                "../envs/stats.yaml"
             script:
                 "../scripts/rename_to_barcode.py"
         
@@ -98,7 +98,7 @@ if config["bin_number"] == 1:
             log:
                 "logs/rename_to_barcode/count_file.log"
             conda:
-                "../envs/count.yaml"
+                "../envs/stats.yaml"
             shell:
                 "sed 's/sgRNA/barcode/' {input} > {output} 2> {log}"
 

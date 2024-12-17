@@ -1,9 +1,0 @@
-name: count
-channels: 
-  - conda-forge
-  - bioconda
-  - defaults
-dependencies:
-  - bioconda::bowtie2=2.5.4
-  - pandas=2.1.1
-  

@@ -16,3 +16,4 @@ dependencies:
   - bioconda::mageck=0.5.9
   - pandas=2.2.2
   - scipy=1.14.1
+  - bioconda::bowtie2=2.5.4
