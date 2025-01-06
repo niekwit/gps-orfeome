@@ -146,6 +146,12 @@ properties:
         description: SD threshold for most stringent hits
         type: number
         minimum: 1
+
+      penalty:
+        description: Penalty for missing barcodes
+        type: number
+        minimum: 0
+        maximum: 1
       
     required:
       - sob_threshold
@@ -153,3 +159,4 @@ properties:
       - bc_th
       - correction_factor
       - sd_th
+      - penalty
