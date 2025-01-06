@@ -14,6 +14,10 @@ df = pd.read_csv(snakemake.input["csv"])
 # Only keep barcode ID and sequence columns
 df = df.iloc[:, [barcode_column, sequence_column]]
 
+# Check if sequence column is a DNA sequence
+if not df.iloc[:, 1].str.match(r"^[ACGTacgt]+$").all():
+    raise ValueError("Sequence column must contain DNA sequences.")
+
 # Prepend ">" to the barcode ID
 df.iloc[:, 0] = ">" + df.iloc[:, 0]
 
