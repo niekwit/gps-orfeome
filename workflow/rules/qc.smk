@@ -83,4 +83,4 @@ rule plot_missed_barcodes:
     conda:
         "../envs/stats.yaml"
     script:
-        "../scripts/missed_barcodes.R"
+        "../scripts/plot_missed_barcodes.R"
