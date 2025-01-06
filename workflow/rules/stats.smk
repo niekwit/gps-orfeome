@@ -164,7 +164,7 @@ else:
         input:
             csv="results/psi/{comparison}_{threshold}.csv",
         output:
-            flag="results/psi_plots/{comparison}_{threshold}/plotting_done.txt",
+            flag=temp("results/psi_plots/{comparison}_{threshold}/plotting_done.txt"),
         params:
             outdir=lambda wc,output: os.path.dirname(output["flag"]),
         threads: 24,
