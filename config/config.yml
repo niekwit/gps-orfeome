@@ -61,8 +61,14 @@ psi:
 
   # Correction factor for creating a random third barcode
   # for orfs with only two barcodes
+  # (otherwise an SD cannot be calculated)
   correction_factor: 1.2
   
   # SD threshold for most stringent hits
-  # mean Euclidian distance test&control > sd_th * SD
+  # mean Euclidian distance test & control > sd_th * SD
   sd_th: 4
+
+  # Ranking penalty value to correct for barcode count differences
+  # This is a fraction of the signal-to-noise ratio
+  # SNR - (penalty * SNR) * (barcode_number_median - number_of_barcodes)
+  penalty: 0.1
