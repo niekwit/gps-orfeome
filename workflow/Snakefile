@@ -20,7 +20,7 @@ containerized: f"docker://niekwit/gps-orfeome:{VERSION}"
 
 # Load config file
 configfile: "config/config.yml"
-#validate(config, "schemas/config.schema.yaml")
+validate(config, "schemas/config.schema.yaml")
 
 # Load stuff
 csv,fasta = csv()
