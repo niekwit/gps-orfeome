@@ -33,7 +33,7 @@ print("Calculating proportion of reads in each bin")
 data <- read_csv(data.file, show_col_types = FALSE) %>%
   group_by(barcode_id) %>%
   mutate(
-    # Precompute row sums for ref.sample and test.sample columns
+    # Pre-compute row sums for ref.sample and test.sample columns
     ref_sum = rowSums(across(starts_with(paste0(ref.sample, "_")), ~ ., .names = "ref_{col}"), na.rm = TRUE),
     test_sum = rowSums(across(starts_with(paste0(test.sample, "_")), ~ ., .names = "test_{col}"), na.rm = TRUE)
   ) %>%
@@ -54,6 +54,7 @@ info.columns <- data %>%
   colnames()
 
 # Plot each gene and its proportion of reads in bins
+print("Plotting gene profiles")
 for (column in info.columns[3:length(info.columns)]) {
   # Create sub directory for each column
   dir <- file.path(outdir, column)
@@ -67,18 +68,17 @@ for (column in info.columns[3:length(info.columns)]) {
   tmp <- tmp %>%
     mutate(gene.id = paste0(gene, "_", orf_id))
 
-  #for (id in tmp$gene.id) {
   foreach(id = tmp$gene.id, .packages = c("tidyverse", 
                                           "reshape2", 
                                           "cowplot", 
                                           "scales")) %dopar% {
-    print(paste0("Plotting ORF ID: ", id))
-    df <- tmp[tmp$gene.id == id,] %>%
+
+    df <- tmp[tmp$gene.id == id, ] %>%
       select(gene.id, starts_with(ref.sample), starts_with(test.sample)) %>%
+      select(-ends_with("distance")) %>%
       reshape2::melt() %>%
       separate(variable, into = c("barcode", "bin"), sep = "\\_") %>%
       group_by(bin, barcode) %>%
-      # add replicate number to condition, e.g. Un_1
       mutate(barcode = paste0(barcode, "_", row_number()))
     
     # Define colour gradient for lines
