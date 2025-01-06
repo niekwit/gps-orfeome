@@ -11,8 +11,9 @@ import numpy as np
 
 # Set up logging
 log = snakemake.log[0]
-logging.basicConfig(format='%(levelname)s:%(message)s', 
+logging.basicConfig(format='%(levelname)s:%(asctime)s:%(message)s', 
                     level=logging.DEBUG,
+                    datefmt='%Y-%m-%d %H:%M:%S',
                     handlers=[logging.FileHandler(log)])
 
 # Load Snakemake variables
@@ -26,6 +27,7 @@ sd_th = snakemake.config["psi"]["sd_th"]
 bc_th = snakemake.config["psi"]["bc_th"]
 bin_number = snakemake.config["bin_number"]
 cf = snakemake.config["psi"]["correction_factor"]
+penalty = snakemake.config["psi"]["penalty"]
 output_file_csv = snakemake.output["csv"]
 output_file_rank = snakemake.output["ranked"]
 
@@ -48,6 +50,7 @@ def compute_euclidean_distance(curves_):
     Calculate the pairwise Euclidean distances between n line curves.
     """
     def euclidean_distance(curve1, curve2):
+        # https://en.wikipedia.org/wiki/Euclidean_distance
         return np.sqrt(np.sum((np.array(curve1) - np.array(curve2))**2))
     
     # For lists with just two curves, add a third data set
@@ -195,6 +198,7 @@ df["delta_PSI_SD"] = df.groupby("orf_id")["deltaPSI"].transform("std")
 
 ### Hit identification
 # Calculate the Euclidean distances between the barcodes
+# This will be used to identify high confidence hits later
 for sample in [reference, test]:
     # Get columns with normalised bin counts
     sample_columns = list(df.filter(regex=f"^{sample}").columns)
@@ -242,16 +246,31 @@ df.to_csv(output_file_csv, index=False)
 
 ### Ranking of hits
 logging.info("Ranking hits")
+
 # Remove all non-hit ORFs
 df_rank = df[(df[f"stabilised_in_{test}"]) | (df[f"destabilised_in_{test}"])].reset_index(drop=True)
 
 # Collapse data to ORF level
-df_rank = df_rank[["orf_id", "gene", "delta_PSI_mean", "delta_PSI_SD", 
+df_rank = df_rank[["orf_id", "gene", "delta_PSI_mean", "delta_PSI_SD",
+                   f"{test}_mean_distance", f"{test}_sd_distance",
+                   f"{reference}_mean_distance", f"{reference}_sd_distance",
                    "num_barcodes", f"stabilised_in_{test}", 
-                   f"stabilised_in_{test}_hc", f"destabilised_in_{test}", f"destabilised_in_{test}_hc"]].drop_duplicates().reset_index(drop=True)
+                   f"stabilised_in_{test}_hc", f"destabilised_in_{test}", 
+                   f"destabilised_in_{test}_hc"]].drop_duplicates().reset_index(drop=True)
 
-# Calculate absolute rank based on signal-to-noise ratio
-df_rank["SNR"] = abs(df_rank["delta_PSI_mean"]) / df_rank["delta_PSI_SD"]
+# Calculate absolute rank based on signal-to-noise ratio (combined deltaPSI and Euclidean distances)
+df_rank["SNR"] = abs(df_rank["delta_PSI_mean"]) / df_rank["delta_PSI_SD"] + df_rank[f"{test}_mean_distance"] / df_rank[f"{test}_sd_distance"] + df_rank[f"{reference}_mean_distance"] / df_rank[f"{reference}_sd_distance"]
+
+# Move SNR column after num_barcodes
+cols = list(df_rank.columns)
+cols.insert(9, cols.pop(cols.index("SNR")))
+df_rank = df_rank[cols]
+
+# Correct SNR for the number of barcodes 
+# SNR - (penalty * SNR) * (expected_barcodes - num_barcodes)
+# Use median number of barcodes as expected number
+df_rank["SNR"] = df_rank["SNR"] - (penalty * df_rank["SNR"]) * (df_rank["num_barcodes"].median() - df_rank["num_barcodes"])
+
 df_rank = df_rank.sort_values(by="SNR", ascending=False).reset_index(drop=True)
 df_rank["absolute_rank"] = df_rank.index + 1
 
