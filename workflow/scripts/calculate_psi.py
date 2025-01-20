@@ -11,16 +11,18 @@ import numpy as np
 
 # Set up logging
 log = snakemake.log[0]
-logging.basicConfig(format='%(levelname)s:%(asctime)s:%(message)s', 
-                    level=logging.DEBUG,
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    handlers=[logging.FileHandler(log)])
+logging.basicConfig(
+    format="%(levelname)s:%(asctime)s:%(message)s",
+    level=logging.DEBUG,
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[logging.FileHandler(log)],
+)
 
 # Load Snakemake variables
 counts = snakemake.input["counts"]
 MIN_SOB_THRESHOLD = snakemake.config["psi"]["sob_threshold"]
 comparison = snakemake.wildcards["comparison"]
-reference = comparison.split("_vs_")[1] 
+reference = comparison.split("_vs_")[1]
 test = comparison.split("_vs_")[0]
 hit_th = snakemake.config["psi"]["hit_threshold"]
 sd_th = snakemake.config["psi"]["sd_th"]
@@ -49,10 +51,11 @@ def compute_euclidean_distance(curves_):
     """
     Calculate the pairwise Euclidean distances between n line curves.
     """
+
     def euclidean_distance(curve1, curve2):
         # https://en.wikipedia.org/wiki/Euclidean_distance
-        return np.sqrt(np.sum((np.array(curve1) - np.array(curve2))**2))
-    
+        return np.sqrt(np.sum((np.array(curve1) - np.array(curve2)) ** 2))
+
     # For lists with just two curves, add a third data set
     # This is picked randomly from the two existing curves
     # But this value is multiplied by a specified factor
@@ -66,8 +69,8 @@ def compute_euclidean_distance(curves_):
             random.seed(i)
             data_set = curves_[random.randint(0, 1)]
             new_curve.append(data_set[i] * cf)
-        curves_.append(new_curve)       
-        
+        curves_.append(new_curve)
+
     # Calculate the pairwise distances
     distances = {}
     for i, j in combinations(range(len(curves_)), 2):
@@ -75,10 +78,10 @@ def compute_euclidean_distance(curves_):
 
     # Calculate the mean distance
     mean = np.mean(list(distances.values()))
-    
+
     # Calculate the standard deviation of the distances
     std = np.std(list(distances.values()))
-    
+
     return length * [[mean, std]]
 
 
@@ -90,7 +93,7 @@ def stringent_hit(row, test, reference, th):
     mean2 = row[f"{reference}_mean_distance"]
     sd1 = row[f"{test}_sd_distance"]
     sd2 = row[f"{reference}_sd_distance"]
-    
+
     if mean1 > th * sd1 and mean2 > th * sd2:
         return True
     else:
@@ -109,13 +112,13 @@ nrows = df.shape[0]
 logging.info(f"  Barcodes present pre-filtering: {nrows}")
 
 # Remove barcodes where there are no counts accross all samples
-df = df[df.iloc[:,3:].sum(axis=1) > 0].reset_index(drop=True)
+df = df[df.iloc[:, 3:].sum(axis=1) > 0].reset_index(drop=True)
 nrows_zero_counts = nrows - df.shape[0]
 logging.info(f"  Barcodes with no counts in any sample: {nrows_zero_counts}")
 
-# Identify the sample with the most reads 
-largest_sum = df.iloc[:,3:].sum().max()
-largest_sample = df.iloc[:,3:].sum().idxmax()
+# Identify the sample with the most reads
+largest_sum = df.iloc[:, 3:].sum().max()
+largest_sample = df.iloc[:, 3:].sum().idxmax()
 logging.info(f"  Largest sample: {largest_sample} with {largest_sum} reads")
 
 # Normalise reads to largest data set
@@ -131,7 +134,7 @@ for col in df.columns:
 sample_sums = {}
 for sample in [reference, test]:
     sample_sums[f"SOB_{sample}"] = df.filter(regex=f"^{sample}_").sum(axis=1)
-df = pd.concat([df, pd.DataFrame(sample_sums)], axis=1)  
+df = pd.concat([df, pd.DataFrame(sample_sums)], axis=1)
 
 # Remove barcodes where there are low counts in the reference sample
 nrows = df.shape[0]
@@ -152,13 +155,17 @@ df["num_barcodes"] = df.groupby("orf_id")["barcode_id"].transform("count")
 df = df[df["num_barcodes"] > 1].reset_index(drop=True)
 nrows = df.shape[0]
 nrows_single_barcode = nrows - df.shape[0]
-logging.info(f"  ORFs removed that have only one barcode after filtering: {nrows_single_barcode}")
+logging.info(
+    f"  ORFs removed that have only one barcode after filtering: {nrows_single_barcode}"
+)
 
 # Remove ORFs with less than a specified number of barcodes
 nrows = df.shape[0]
 df = df[df["num_barcodes"] >= bc_th].reset_index(drop=True)
 nrows_low_barcodes = nrows - df.shape[0]
-logging.info(f"  ORFs removed with less than {bc_th} barcodes after filtering: {nrows_low_barcodes}")
+logging.info(
+    f"  ORFs removed with less than {bc_th} barcodes after filtering: {nrows_low_barcodes}"
+)
 
 logging.info(f"  Number of barcodes present post-filtering: {nrows}")
 
@@ -172,24 +179,26 @@ for sample in [reference, test]:
     # It is assumed that the bins are numbered from 1 to max_bin!
     max_bin = max(sample_bins)
     # Iterate over rows to compute PSI values
-    df[f"PSI_{sample}"] = df.apply(lambda row: compute_psi(row, sample, max_bin), axis=1).reset_index(drop=True)
+    df[f"PSI_{sample}"] = df.apply(
+        lambda row: compute_psi(row, sample, max_bin), axis=1
+    ).reset_index(drop=True)
 
 # Calculate mean PSI values for each ORF
 df[f"PSI_{reference}_mean"] = df.groupby("orf_id")[f"PSI_{reference}"].transform("mean")
 df[f"PSI_{test}_mean"] = df.groupby("orf_id")[f"PSI_{test}"].transform("mean")
-    
+
 # Calculate deltaPSI for each single ORF
 df["deltaPSI"] = df[f"PSI_{test}"] - df[f"PSI_{reference}"]
-    
+
 # Calculate mean deltaPSI values for each ORF
 df["delta_PSI_mean"] = df.groupby("orf_id")["deltaPSI"].transform("mean")
 
 # Calculate SD of PSI values for each condition of each ORF
-df["delta_PSI_SD"] = df.groupby("orf_id")["deltaPSI"].transform("std") 
+df["delta_PSI_SD"] = df.groupby("orf_id")["deltaPSI"].transform("std")
 
-#IS THIS NEEDED?
+# IS THIS NEEDED?
 # Sum of read counts for each ORF and each bin
-#for sample in [reference, test]:
+# for sample in [reference, test]:
 #    # Get columns with bin counts
 #    sample_bins = df.filter(regex=f"^{sample}_").columns
 #    # Get sum of read counts for each ORF and each bin
@@ -203,15 +212,18 @@ for sample in [reference, test]:
     # Get columns with normalised bin counts
     sample_columns = list(df.filter(regex=f"^{sample}").columns)
     sample_columns.sort()
-    
+
     # Create a list of lists with the normalised bin counts for each ORF
-    curves = [group[sample_columns].values.tolist() for _, group in df.groupby("orf_id", sort=False)]
-    
+    curves = [
+        group[sample_columns].values.tolist()
+        for _, group in df.groupby("orf_id", sort=False)
+    ]
+
     # Calculate the Euclidean distance between the curves
     ed_results = list(map(compute_euclidean_distance, curves))
     # Flatten the list of lists
     ed_results = [item for sublist in ed_results for item in sublist]
-    
+
     # Add the mean and SD to the dataframe
     df[f"{sample}_mean_distance"] = [x[0] for x in ed_results]
     df[f"{sample}_sd_distance"] = [x[1] for x in ed_results]
@@ -229,11 +241,15 @@ sum_ = sum_[f"destabilised_in_{test}"].sum()
 logging.info(f"  Number of destabilised ORFs in {test}: {sum_}")
 
 # Identify high confidence hits based on Ecclidean distances between barcodes
-df["high_confidence"] = df.apply(lambda row: stringent_hit(row, test, reference, sd_th), axis=1).reset_index(drop=True)
+df["high_confidence"] = df.apply(
+    lambda row: stringent_hit(row, test, reference, sd_th), axis=1
+).reset_index(drop=True)
 hc_stabilised = len(df[(df[f"stabilised_in_{test}"]) & (df["high_confidence"])])
 logging.info(f"  Number of high confidence stabilised ORFs in {test}: {hc_stabilised}")
 hc_destabilised = len(df[(df[f"destabilised_in_{test}"]) & (df["high_confidence"])])
-logging.info(f"  Number of high confidence destabilised ORFs in {test}: {hc_destabilised}")
+logging.info(
+    f"  Number of high confidence destabilised ORFs in {test}: {hc_destabilised}"
+)
 
 # Make separate columns for high confidence hits (easier for plotting)
 df[f"stabilised_in_{test}_hc"] = df[f"stabilised_in_{test}"] & df["high_confidence"]
@@ -248,42 +264,77 @@ df.to_csv(output_file_csv, index=False)
 logging.info("Ranking hits")
 
 # Remove all non-hit ORFs
-df_rank = df[(df[f"stabilised_in_{test}"]) | (df[f"destabilised_in_{test}"])].reset_index(drop=True)
+df_rank = df[
+    (df[f"stabilised_in_{test}"]) | (df[f"destabilised_in_{test}"])
+].reset_index(drop=True)
 
 # Collapse data to ORF level
-df_rank = df_rank[["orf_id", "gene", "delta_PSI_mean", "delta_PSI_SD",
-                   f"{test}_mean_distance", f"{test}_sd_distance",
-                   f"{reference}_mean_distance", f"{reference}_sd_distance",
-                   "num_barcodes", f"stabilised_in_{test}", 
-                   f"stabilised_in_{test}_hc", f"destabilised_in_{test}", 
-                   f"destabilised_in_{test}_hc"]].drop_duplicates().reset_index(drop=True)
+df_rank = (
+    df_rank[
+        [
+            "orf_id",
+            "gene",
+            "delta_PSI_mean",
+            "delta_PSI_SD",
+            f"{test}_mean_distance",
+            f"{test}_sd_distance",
+            f"{reference}_mean_distance",
+            f"{reference}_sd_distance",
+            "num_barcodes",
+            f"stabilised_in_{test}",
+            f"stabilised_in_{test}_hc",
+            f"destabilised_in_{test}",
+            f"destabilised_in_{test}_hc",
+        ]
+    ]
+    .drop_duplicates()
+    .reset_index(drop=True)
+)
 
 # Calculate absolute rank based on signal-to-noise ratio (combined deltaPSI and Euclidean distances)
-df_rank["SNR"] = abs(df_rank["delta_PSI_mean"]) / df_rank["delta_PSI_SD"] + df_rank[f"{test}_mean_distance"] / df_rank[f"{test}_sd_distance"] + df_rank[f"{reference}_mean_distance"] / df_rank[f"{reference}_sd_distance"]
+df_rank["SNR"] = (
+    abs(df_rank["delta_PSI_mean"]) / df_rank["delta_PSI_SD"]
+    + df_rank[f"{test}_mean_distance"] / df_rank[f"{test}_sd_distance"]
+    + df_rank[f"{reference}_mean_distance"] / df_rank[f"{reference}_sd_distance"]
+)
 
 # Move SNR column after num_barcodes
 cols = list(df_rank.columns)
 cols.insert(9, cols.pop(cols.index("SNR")))
 df_rank = df_rank[cols]
 
-# Correct SNR for the number of barcodes 
+# Correct SNR for the number of barcodes
 # SNR - (penalty * SNR) * (expected_barcodes - num_barcodes)
 # Use median number of barcodes as expected number
-df_rank["SNR"] = df_rank["SNR"] - (penalty * df_rank["SNR"]) * (df_rank["num_barcodes"].median() - df_rank["num_barcodes"])
+df_rank["SNR"] = df_rank["SNR"] - (penalty * df_rank["SNR"]) * (
+    df_rank["num_barcodes"].median() - df_rank["num_barcodes"]
+)
 
 df_rank = df_rank.sort_values(by="SNR", ascending=False).reset_index(drop=True)
 df_rank["absolute_rank"] = df_rank.index + 1
 
 # Create separate rankings for stabilised and destabilised hits
-df_rank_stab = df_rank[df_rank[f"stabilised_in_{test}"]].sort_values(by="SNR", ascending=False).reset_index(drop=True)
+df_rank_stab = (
+    df_rank[df_rank[f"stabilised_in_{test}"]]
+    .sort_values(by="SNR", ascending=False)
+    .reset_index(drop=True)
+)
 df_rank_stab["stabilised_rank"] = df_rank_stab.index + 1
 
-df_rank_destab = df_rank[df_rank[f"destabilised_in_{test}"]].sort_values(by="SNR", ascending=False).reset_index(drop=True)
+df_rank_destab = (
+    df_rank[df_rank[f"destabilised_in_{test}"]]
+    .sort_values(by="SNR", ascending=False)
+    .reset_index(drop=True)
+)
 df_rank_destab["destabilised_rank"] = df_rank_destab.index + 1
 
 # Add these rankings to df_rank (NA for non-hits)
-df_rank = pd.merge(df_rank, df_rank_stab[["orf_id", "stabilised_rank"]], on="orf_id", how="left")
-df_rank = pd.merge(df_rank, df_rank_destab[["orf_id", "destabilised_rank"]], on="orf_id", how="left")
+df_rank = pd.merge(
+    df_rank, df_rank_stab[["orf_id", "stabilised_rank"]], on="orf_id", how="left"
+)
+df_rank = pd.merge(
+    df_rank, df_rank_destab[["orf_id", "destabilised_rank"]], on="orf_id", how="left"
+)
 
 # Replace all missing values with NA
 df_rank = df_rank.fillna("NA")

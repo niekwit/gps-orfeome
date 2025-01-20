@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-''' 
+""" 
 Merge count files to create count table.
 With bin_number = 1,
 MAGeCK requires the first two columns to be sgRNA and gene.
@@ -9,7 +9,7 @@ Will be renamed to barcode and ORF, respectively post-MAGeCK.
 
 Otherwise, the count table will be created with the first column as the barcode name
 and the second the ORF name.
-'''
+"""
 
 # Load Snakemake variables
 csv_file = snakemake.input["csv"]
@@ -40,11 +40,11 @@ df.columns = [name, "gene"]
 for file in count_files:
     # Read count file
     tmp = pd.read_csv(file, sep=" ", header=None)
-    
-    # Rename headers to wildcard value (for counts) and sgRNA 
+
+    # Rename headers to wildcard value (for counts) and sgRNA
     wildcard_value = os.path.basename(file).replace(".barcode.counts.txt", "")
     tmp.columns = [wildcard_value, name]
-    
+
     # Merge to df
     df = pd.merge(df, tmp, on=name, how="left")
 
@@ -56,4 +56,4 @@ if bin_number != 1:
     df.insert(1, "orf_id", csv[csv.columns[orf_column]])
 
 # Save data frame to file
-df.to_csv(out_file, sep='\t', index=False)
+df.to_csv(out_file, sep="\t", index=False)
