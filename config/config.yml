@@ -27,9 +27,9 @@ cutadapt:
 csv: 
   # CSV file with the gene/ORF/barcode information
   # 0-indexed column numbers (First column is 0)
-  gene_column: 5 # Column number with gene names
-  orf_column: 3 # Column number with unique ORF names
-  barcode_id_column: 0 # Column number with barcode IDs
+  gene_column: 4 # Column number with gene names
+  orf_column: 2 # Column number with unique ORF names
+  barcode_id_column: 0 # Column with unique barcode IDs
   sequence_column: 1 # Column number with barcode sequences
 
 # Mismatches allowed during alignment
