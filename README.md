@@ -125,7 +125,7 @@ csv:
   # 0-indexed column numbers (First column is 0)
   gene_column: 5 # Column number with gene names
   orf_column: 3 # Column number with unique ORF names
-  barcode_id_column: 0 # Column number with barcode IDs (format: ORFID_GeneID_[0-9])
+  barcode_id_column: 0 # Column with unique barcode IDs
   sequence_column: 1 # Column number with barcode sequences
 
 # Mismatches allowed during alignment
@@ -157,11 +157,17 @@ psi:
 
   # Correction factor for creating a random third barcode
   # for orfs with only two barcodes
+  # (otherwise an SD cannot be calculated)
   correction_factor: 1.2
   
   # SD threshold for most stringent hits
-  # mean Euclidian distance test&control > sd_th * SD
+  # mean Euclidian distance test & control > sd_th * SD
   sd_th: 4
+
+  # Ranking penalty value to correct for barcode count differences
+  # This is a fraction of the signal-to-noise ratio
+  # SNR - (penalty * SNR) * (barcode_number_median - number_of_barcodes)
+  penalty: 0.1
 ```
 
 The pairwise compatisons for the calculation of deltaPSI values should be defined in `stats.csv`:
