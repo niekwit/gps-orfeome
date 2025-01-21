@@ -66,7 +66,6 @@ Prepare an analysis directory as follows:
 │   └── uORF_ORF81_plusHIF1a.csv
 └── workflow
     ├── envs
-    │   ├── count.yaml
     │   └── stats.yaml
     ├── report
     ├── rules
@@ -80,14 +79,15 @@ Prepare an analysis directory as follows:
     │   ├── create_count_table.py
     │   ├── csv_to_fasta.py
     │   ├── general_functions.smk
-    │   ├── lfc_plots.R
-    │   ├── missed_barcodes.R
     │   ├── plot_alignment_rate.R
     │   ├── plot_barcode_profiles.R
     │   ├── plot_barcoderank.R
     │   ├── plot_coverage.R
+    │   ├── plot_lfc.R
+    │   ├── plot_missed_barcodes.R
     │   └── rename_to_barcode.py
     └── Snakefile
+
 ```
 
 
@@ -174,12 +174,49 @@ The pairwise compatisons for the calculation of deltaPSI values should be define
 
 The sample names in `stats.csv` should match the file names in the reads/ directory and have the extension `fastq.gz`. A sample for a specific bin should be marked with `_[0-9]`. 
 
+
+## ORF library data
+
+Information on the ORF library should be stored in a csv file located in `resources/`.
+
+See below for an example:
+
+| ID                    | sequence                 | IOH_ID    | Gene_ID    |
+|-----------------------|--------------------------|-----------|------------|
+|1_IOH10003_2802_PLD2	  | ATCCGAGTATAGAGACGTAAACTA | IOH10003	 | PLD2       |
+|2_IOH10003_2802_PLD2	  | AACTACGTCATGAGCCGGATACCG | IOH10003	 | PLD2       |
+|3_IOH10003_2802_PLD2	  | TTGCGCGCTGTGTTGTAACGTTAT | IOH10003	 | PLD2       |
+|4_IOH10003_2802_PLD2	  | GACTAGGATGACTACGGAGTTTGC | IOH10003	 | PLD2       |
+|5_IOH10003_2802_PLD2	  | GCGTCCTGTTATTCGTGATTGCGC | IOH10003	 | PLD2       |
+|6_IOH10004_585_RAB22A	| ATACAGAGTAAGTTTCTCAAAATA | IOH10004	 | RAB22A     |
+|7_IOH10004_585_RAB22A	| CGGAGCATCTATTACAGAAAGGTA | IOH10004	 | RAB22A     |
+
+In `config/config.yaml` set the columns for this info as follows:
+
+```yaml
+csv: 
+  # CSV file with the gene/ORF/barcode information
+  # 0-indexed column numbers (First column is 0)
+  gene_column: 5 # Column number with gene names
+  orf_column: 3 # Column number with unique ORF names
+  barcode_id_column: 0 # Column with unique barcode IDs
+  sequence_column: 1 # Column number with barcode sequences
+```
+
+
 ## Usage
 
 To test the workflow, execute a dry-run first:
 
 ```shell
 $ snakemake -np
+```
+
+To create a rule graph:
+
+```shell
+$ mkdir images
+$ snakemake --forceall --rulegraph | grep -v '\-> 0\|0\[label = \"all\"' | dot -Tpng > images/rule_graph.png
 ```
 
 To run the workflow:
