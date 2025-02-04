@@ -129,10 +129,12 @@ properties:
       
       hit_threshold:
         description: deltaPSI thresholds for hits
-        type: number
-        minimum: 0
+        type: array
+        items:
+          type: number
+          minimum: 0
       
-      bc_th:
+      bc_threshold:
         description: Barcode threshold for hits
         type: integer
         minimum: 1
@@ -142,21 +144,24 @@ properties:
         type: number
         minimum: 1
       
-      sd_th:
+      sd_threshold:
         description: SD threshold for most stringent hits
-        type: number
-        minimum: 1
+        type: array
+        items:
+          type: number
+          minimum: 0
 
       penalty:
         description: Penalty for missing barcodes
-        type: number
-        minimum: 0
-        maximum: 1
+        type: array
+        items:
+          type: number
+          minimum: 0
       
     required:
       - sob_threshold
       - hit_threshold
-      - bc_th
+      - bc_threshold
       - correction_factor
-      - sd_th
+      - sd_threshold
       - penalty

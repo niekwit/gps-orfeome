@@ -58,19 +58,11 @@ def targets():
         TARGETS.extend(
             [
                 expand(
-                    "results/psi/{comparison}_{threshold}.csv",
+                    "results/psi_plots/hit-th{ht}_sd-th{st}_penalty{p}/{comparison}/plotting_done.txt",
                     comparison=COMPARISONS,
-                    threshold=THRESHOLD,
-                ),
-                expand(
-                    "results/psi/{comparison}_{threshold}_ranked.csv",
-                    comparison=COMPARISONS,
-                    threshold=THRESHOLD,
-                ),
-                expand(
-                    "results/psi_plots/{comparison}_{threshold}/plotting_done.txt",
-                    comparison=COMPARISONS,
-                    threshold=THRESHOLD,
+                    ht=config["psi"]["hit_threshold"],
+                    st=config["psi"]["sd_threshold"],
+                    p=config["psi"]["penalty"],
                 ),
             ]
         )

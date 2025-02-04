@@ -35,17 +35,17 @@ csv:
 # Mismatches allowed during alignment
 mismatch: 0 
 
-# MAGeCK/drugZ can be used when bin_number is set to 1
+# MAGeCK/DrugZ can be used when bin_number is set to 1
 mageck:
   run: True # Run MAGeCK analysis
   extra_mageck_arguments: "--sort-criteria pos" 
   mageck_control_barcodes: all # All or file with control barcodes
   fdr: 0.25 # FDR threshold for downstream mageck analysis
 
-# drugZ can be used when bin_number is set to 1
+# DrugZ can be used when bin_number is set to 1
 drugz:
-  run: True # Run drugZ analysis
-  extra: "" # Extra drugZ arguments
+  run: True # Run DrugZ analysis
+  extra: "" # Extra DrugZ arguments
 
 # Settings for the protein stability analysis when bin number is higher than 1
 psi:
@@ -53,11 +53,11 @@ psi:
   sob_threshold: 100
 
   # deltaPSI thresholds for hits
-  hit_threshold: 0.75
+  hit_threshold: [0.75, 1.0, 1.25]
 
   # Barcode threshold for hits
-  # Only keep ORFs with at least bc_th barcodes
-  bc_th: 2
+  # Only keep ORFs with at least bc_threshold barcodes
+  bc_thresholdreshold: 2
 
   # Correction factor for creating a random third barcode
   # for orfs with only two barcodes
@@ -66,9 +66,9 @@ psi:
   
   # SD threshold for most stringent hits
   # mean Euclidian distance test & control > sd_th * SD
-  sd_th: 4
+  sd_threshold: [4, 5, 6]
 
   # Ranking penalty value to correct for barcode count differences
   # This is a fraction of the signal-to-noise ratio
   # SNR - (penalty * SNR) * (barcode_number_median - number_of_barcodes)
-  penalty: 0.1
+  penalty: [0.1, 0.2, 0.3]

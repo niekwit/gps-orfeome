@@ -3,6 +3,7 @@
 2. Compute sum of bins for each sample.
 3. Compute PSI values.
 """
+
 import logging
 import random
 from itertools import combinations
@@ -24,12 +25,12 @@ MIN_SOB_THRESHOLD = snakemake.config["psi"]["sob_threshold"]
 comparison = snakemake.wildcards["comparison"]
 reference = comparison.split("_vs_")[1]
 test = comparison.split("_vs_")[0]
-hit_th = snakemake.config["psi"]["hit_threshold"]
-sd_th = snakemake.config["psi"]["sd_th"]
-bc_th = snakemake.config["psi"]["bc_th"]
+hit_th = float(snakemake.wildcards["ht"])
+sd_th = float(snakemake.wildcards["st"])
+bc_threshold = snakemake.config["psi"]["bc_threshold"]
 bin_number = snakemake.config["bin_number"]
 cf = snakemake.config["psi"]["correction_factor"]
-penalty = snakemake.config["psi"]["penalty"]
+penalty = float(snakemake.wildcards["p"])
 output_file_csv = snakemake.output["csv"]
 output_file_rank = snakemake.output["ranked"]
 
@@ -161,10 +162,10 @@ logging.info(
 
 # Remove ORFs with less than a specified number of barcodes
 nrows = df.shape[0]
-df = df[df["num_barcodes"] >= bc_th].reset_index(drop=True)
+df = df[df["num_barcodes"] >= bc_threshold].reset_index(drop=True)
 nrows_low_barcodes = nrows - df.shape[0]
 logging.info(
-    f"  ORFs removed with less than {bc_th} barcodes after filtering: {nrows_low_barcodes}"
+    f"  ORFs removed with less than {bc_threshold} barcodes after filtering: {nrows_low_barcodes}"
 )
 
 logging.info(f"  Number of barcodes present post-filtering: {nrows}")
