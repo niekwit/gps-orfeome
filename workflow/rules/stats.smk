@@ -143,7 +143,7 @@ if config["bin_number"] == 1:
                 "-o {output} 2> {log} "
 
 else:
-    rule psi:
+    rule calculate_psi:
         input:
             counts="results/count/counts-aggregated.tsv",
         output:
