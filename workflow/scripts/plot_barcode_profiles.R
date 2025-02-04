@@ -54,7 +54,6 @@ info.columns <- data %>%
   colnames()
 
 # Plot each gene and its proportion of reads in bins
-print("Plotting gene profiles")
 for (column in info.columns[3:length(info.columns)]) {
   # Create sub directory for each column
   dir <- file.path(outdir, column)
@@ -72,13 +71,14 @@ for (column in info.columns[3:length(info.columns)]) {
                                           "reshape2", 
                                           "cowplot", 
                                           "scales")) %dopar% {
-
+    print(paste0("Plotting ORF ID: ", id))
     df <- tmp[tmp$gene.id == id, ] %>%
       select(gene.id, starts_with(ref.sample), starts_with(test.sample)) %>%
       select(-ends_with("distance")) %>%
       reshape2::melt() %>%
       separate(variable, into = c("barcode", "bin"), sep = "\\_") %>%
       group_by(bin, barcode) %>%
+      # add replicate number to condition, e.g. Un_1
       mutate(barcode = paste0(barcode, "_", row_number()))
     
     # Define colour gradient for lines
@@ -101,11 +101,10 @@ for (column in info.columns[3:length(info.columns)]) {
       theme(plot.title = element_text(hjust = 0.5))
     
     # Save plot
-    ggsave(file.path(dir, paste0(id, ".png")), 
+    ggsave(file.path(dir, paste0(id, ".pdf")), 
             p, 
             width = 10, 
-            height = 6,
-            bg = "white")
+            height = 6)
   }
 }
 
