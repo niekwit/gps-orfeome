@@ -1,6 +1,7 @@
 """ 
 Rename all instances of sgRNA/gene to barcode/orf in all relevant files
 """
+
 import pandas as pd
 
 ### MAGeCK gene summary
