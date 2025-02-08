@@ -53,6 +53,17 @@ info.columns <- data %>%
          starts_with("destabilised_in_")) %>%
   colnames()
 
+# Check if barcodes with dual peaks have been removed
+# (assumes that at least one barcode with dual peaks in the entire data set exists)
+dpeak.values <- unique(data[["dual_peaks"]])
+if (length(dpeak.values) == 1) {
+  print("Barcodes with dual peaks detection was skipped...")
+  dpeaks.shapes.removed <- FALSE
+} else {
+  print("Barcodes with dual peaks detection was performed...")
+  dpeaks.shapes.removed <- TRUE
+}
+
 # Plot each gene and its proportion of reads in bins
 for (column in info.columns[3:length(info.columns)]) {
   # Create sub directory for each column
@@ -63,7 +74,7 @@ for (column in info.columns[3:length(info.columns)]) {
   tmp <- data %>%
     filter(get(column) == TRUE)
 
-  # Get ORF IDs
+  # Create ID (gene + ORF) for plots
   tmp <- tmp %>%
     mutate(gene.id = paste0(gene, "_", orf_id))
 
@@ -73,8 +84,7 @@ for (column in info.columns[3:length(info.columns)]) {
                                           "scales")) %dopar% {
     print(paste0("Plotting ORF ID: ", id))
     df <- tmp[tmp$gene.id == id, ] %>%
-      select(gene.id, starts_with(ref.sample), starts_with(test.sample)) %>%
-      select(-ends_with("distance")) %>%
+      select(gene.id, starts_with(ref.sample), starts_with(test.sample), dual_peaks) %>%
       reshape2::melt() %>%
       separate(variable, into = c("barcode", "bin"), sep = "\\_") %>%
       group_by(bin, barcode) %>%
@@ -87,7 +97,8 @@ for (column in info.columns[3:length(info.columns)]) {
     red.colours <- scales::seq_gradient_pal("red4", "red", "Lab")(seq(0, 1, length.out = barcode.count))
     
     # Create plot
-    p <- ggplot(df, aes(x = bin,
+    if (dpeaks.shapes.removed == FALSE){
+      p <- ggplot(df, aes(x = bin,
                         y = value,
                         group = barcode,
                         colour = barcode)) +
@@ -99,6 +110,24 @@ for (column in info.columns[3:length(info.columns)]) {
       theme_cowplot(18) + 
       scale_colour_manual(values = c(red.colours, grey.colours)) +
       theme(plot.title = element_text(hjust = 0.5))
+    } else {
+      p <- ggplot(df, aes(x = bin,
+                          y = value,
+                          group = barcode,
+                          colour = barcode,
+                          shape = dual_peaks,
+                          alpha = dual_peaks)) +
+        geom_point(size = 4) +
+        geom_line(linewidth = 1) +
+        labs(title = id,
+             y = "Proportion of reads",
+             x = "Bin") +
+        theme_cowplot(18) + 
+        scale_colour_manual(values = c(red.colours, grey.colours)) +
+        scale_alpha_manual(values = c(1, 0.5)) +
+        scale_shape_manual(values = c(15, 16)) +
+        theme(plot.title = element_text(hjust = 0.5))
+    }
     
     # Save plot
     ggsave(file.path(dir, paste0(id, ".pdf")), 

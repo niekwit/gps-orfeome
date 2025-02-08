@@ -5,8 +5,6 @@
 """
 
 import logging
-import random
-from itertools import combinations
 import pandas as pd
 import numpy as np
 
@@ -25,21 +23,59 @@ MIN_SOB_THRESHOLD = snakemake.config["psi"]["sob_threshold"]
 comparison = snakemake.wildcards["comparison"]
 reference = comparison.split("_vs_")[1]
 test = comparison.split("_vs_")[0]
+exclude_dual_peaks = snakemake.config["psi"]["exclude_dual_peaks"]
 hit_th = float(snakemake.wildcards["ht"])
 sd_th = float(snakemake.wildcards["st"])
+pr_th = float(snakemake.wildcards["pt"])
 bc_threshold = snakemake.config["psi"]["bc_threshold"]
-bin_number = snakemake.config["bin_number"]
-cf = snakemake.config["psi"]["correction_factor"]
+max_bin = snakemake.config["bin_number"]
 penalty = float(snakemake.wildcards["p"])
 output_file_csv = snakemake.output["csv"]
 output_file_rank = snakemake.output["ranked"]
+
+
+def identify_dual_peaks(row, condition, cutoff):
+    # Get values and bin names
+    values = list(row.filter(regex=f"^{condition}_").values)
+    keys = list(row.filter(regex=f"^{condition}_").keys())
+    keys = [int(x.replace(f"{condition}_", "")) for x in keys]
+
+    # Convert to dictionary
+    dict_ = dict(zip(keys, values))
+
+    # Sort dictionary by key
+    dict_ = {k: v for k, v in sorted(dict_.items(), key=lambda item: item[0])}
+
+    # Get the highest and second highest values in dict_ and their keys
+    max_val = max(dict_.values())
+    max_key = [k for k, v in dict_.items() if v == max_val][0]
+    dict_.pop(max_key)
+    second_max_val = max(dict_.values())
+    second_max_key = [k for k, v in dict_.items() if v == second_max_val][0]
+
+    # Check if second_max_val is above the cutoff
+    if second_max_val > max_val * cutoff:
+        # Check if difference between max_key and second_max_key is at least 2
+        if abs(max_key - second_max_key) >= 2:
+            return True
+        else:
+            return False
+    return False
 
 
 def compute_psi(row, condition, num_bins):
     """
     Compute PSI values for a row and one condition.
     https://www.science.org/doi/10.1126/science.aaw4912#sec-11
+    
+    For each sample bin, divide the bin count by 
+    the sum of all bins for that sample.
+    Multiple by bin number and sum all values for each sample.
     """
+    # Check if the barcode has dual peaks
+    if row["dual_peaks"]:
+        return np.nan
+
     sob = row[f"SOB_{condition}"]
     psi_score = 0
     for i in range(1, num_bins + 1):
@@ -48,60 +84,7 @@ def compute_psi(row, condition, num_bins):
     return psi_score
 
 
-def compute_euclidean_distance(curves_):
-    """
-    Calculate the pairwise Euclidean distances between n line curves.
-    """
-
-    def euclidean_distance(curve1, curve2):
-        # https://en.wikipedia.org/wiki/Euclidean_distance
-        return np.sqrt(np.sum((np.array(curve1) - np.array(curve2)) ** 2))
-
-    # For lists with just two curves, add a third data set
-    # This is picked randomly from the two existing curves
-    # But this value is multiplied by a specified factor
-    # This is to punish orfs with just two barcodes
-    # And to avoid not being able to calculate the mean/SD with just one distance
-    length = len(curves_)
-    if length == 2:
-        seeds = range(0, 25)[0:bin_number]
-        new_curve = []
-        for i in seeds:
-            random.seed(i)
-            data_set = curves_[random.randint(0, 1)]
-            new_curve.append(data_set[i] * cf)
-        curves_.append(new_curve)
-
-    # Calculate the pairwise distances
-    distances = {}
-    for i, j in combinations(range(len(curves_)), 2):
-        distances[(i, j)] = euclidean_distance(curves_[i], curves_[j])
-
-    # Calculate the mean distance
-    mean = np.mean(list(distances.values()))
-
-    # Calculate the standard deviation of the distances
-    std = np.std(list(distances.values()))
-
-    return length * [[mean, std]]
-
-
-def stringent_hit(row, test, reference, th):
-    """
-    Determine if a hit is significant based on the mean and SD of two conditions.
-    """
-    mean1 = row[f"{test}_mean_distance"]
-    mean2 = row[f"{reference}_mean_distance"]
-    sd1 = row[f"{test}_sd_distance"]
-    sd2 = row[f"{reference}_sd_distance"]
-
-    if mean1 > th * sd1 and mean2 > th * sd2:
-        return True
-    else:
-        return False
-
-
-# Read count for all samples
+# Read counts for all samples
 df = pd.read_csv(counts, sep="\t")
 
 ### Filtering of data
@@ -155,7 +138,7 @@ df["num_barcodes"] = df.groupby("orf_id")["barcode_id"].transform("count")
 # Remove ORFs with only one barcode
 df = df[df["num_barcodes"] > 1].reset_index(drop=True)
 nrows = df.shape[0]
-nrows_single_barcode = nrows - df.shape[0]
+nrows_single_barcode = nrows - df.shape[0]  # CHECK THIS!!!
 logging.info(
     f"  ORFs removed that have only one barcode after filtering: {nrows_single_barcode}"
 )
@@ -163,22 +146,63 @@ logging.info(
 # Remove ORFs with less than a specified number of barcodes
 nrows = df.shape[0]
 df = df[df["num_barcodes"] >= bc_threshold].reset_index(drop=True)
-nrows_low_barcodes = nrows - df.shape[0]
+nrows_low_barcodes = nrows - df.shape[0]  # CHECK THIS!!!
 logging.info(
     f"  ORFs removed with less than {bc_threshold} barcodes after filtering: {nrows_low_barcodes}"
 )
 
 logging.info(f"  Number of barcodes present post-filtering: {nrows}")
 
+# Identify whether barcodes distribution has dual peaks
+# i.e. two peaks with at least one bin between them
+# Check this for each barcode and condition and mark as True if so
+# These barcodes are excluded when calculating PSI values
+if exclude_dual_peaks:
+    nrows = df.shape[0]
+    logging.info("  Marking dual peaked barcodes in:")
+    logging.info(f"    {test}")
+    df[f"dual_peaks_{test}"] = df.apply(
+        lambda row: identify_dual_peaks(row, test, pr_th), axis=1
+    ).reset_index(drop=True)
+
+    logging.info(f"    {reference}")
+    df[f"dual_peaks_{reference}"] = df.apply(
+        lambda row: identify_dual_peaks(row, reference, pr_th), axis=1
+    ).reset_index(drop=True)
+
+    df_no_dpeaks = df[~df[f"dual_peaks_{test}"] & ~df[f"dual_peaks_{reference}"]]
+    nrows_dpeaks = nrows - df_no_dpeaks.shape[0]
+    logging.info(f"  Barcodes marked as having dual peaks: {nrows_dpeaks}")
+
+    # Remove ORFs that when dual peak barcodes are removed
+    # have less than bc_threshold barcodes
+    df_no_dpeaks = df_no_dpeaks.copy()
+    df_no_dpeaks["num_barcodes"] = df_no_dpeaks.groupby("orf_id")["barcode_id"].transform(
+        "count"
+    )
+    orfs_to_remove = df_no_dpeaks[df_no_dpeaks["num_barcodes"] < bc_threshold]["orf_id"]
+    df = df[~df["orf_id"].isin(orfs_to_remove)].reset_index(drop=True)
+    nrows_dpeaks_removed = nrows - df.shape[0]
+    logging.info(
+        f"  ORFs removed with less than {bc_threshold} barcodes after removing  barcodes with dual peaks: {nrows_dpeaks_removed}"
+    )
+    
+    # Make one column for dual peak status
+    # and remove the individual columns
+    df["dual_peaks"] = df[f"dual_peaks_{test}"] | df[f"dual_peaks_{reference}"]
+    df = df.drop(columns=[
+        f"dual_peaks_{test}", 
+        f"dual_peaks_{reference}"
+        ])
+else:
+    df["dual_peaks"] = False
+
+
 ### Compute PSI values:
-# For each sample bin, divide the bin count by the sum of all bins for that sample
-# Multiple by bin number and sum all values for each sample
 logging.info(f"Computing PSI values for {test} vs {reference}")
 for sample in [reference, test]:
     sample_bins = df.filter(regex=f"^{sample}").columns
     sample_bins = [int(x.replace(f"{sample}_", "")) for x in sample_bins]
-    # It is assumed that the bins are numbered from 1 to max_bin!
-    max_bin = max(sample_bins)
     # Iterate over rows to compute PSI values
     df[f"PSI_{sample}"] = df.apply(
         lambda row: compute_psi(row, sample, max_bin), axis=1
@@ -207,27 +231,7 @@ df["delta_PSI_SD"] = df.groupby("orf_id")["deltaPSI"].transform("std")
 #        df[bin] = df.groupby("orf_id")[bin].transform("sum")
 
 ### Hit identification
-# Calculate the Euclidean distances between the barcodes
-# This will be used to identify high confidence hits later
-for sample in [reference, test]:
-    # Get columns with normalised bin counts
-    sample_columns = list(df.filter(regex=f"^{sample}").columns)
-    sample_columns.sort()
-
-    # Create a list of lists with the normalised bin counts for each ORF
-    curves = [
-        group[sample_columns].values.tolist()
-        for _, group in df.groupby("orf_id", sort=False)
-    ]
-
-    # Calculate the Euclidean distance between the curves
-    ed_results = list(map(compute_euclidean_distance, curves))
-    # Flatten the list of lists
-    ed_results = [item for sublist in ed_results for item in sublist]
-
-    # Add the mean and SD to the dataframe
-    df[f"{sample}_mean_distance"] = [x[0] for x in ed_results]
-    df[f"{sample}_sd_distance"] = [x[1] for x in ed_results]
+logging.info("Calling hits")
 
 # Identify ORFs that are stabilised in test condition
 df[f"stabilised_in_{test}"] = df["delta_PSI_mean"] > hit_th
@@ -241,10 +245,9 @@ sum_ = df[["orf_id", f"destabilised_in_{test}"]].drop_duplicates()
 sum_ = sum_[f"destabilised_in_{test}"].sum()
 logging.info(f"  Number of destabilised ORFs in {test}: {sum_}")
 
-# Identify high confidence hits based on Ecclidean distances between barcodes
-df["high_confidence"] = df.apply(
-    lambda row: stringent_hit(row, test, reference, sd_th), axis=1
-).reset_index(drop=True)
+# Identify high confidence hits
+df["high_confidence"] = df["delta_PSI_mean"] > sd_th * df["delta_PSI_SD"]
+
 hc_stabilised = len(df[(df[f"stabilised_in_{test}"]) & (df["high_confidence"])])
 logging.info(f"  Number of high confidence stabilised ORFs in {test}: {hc_stabilised}")
 hc_destabilised = len(df[(df[f"destabilised_in_{test}"]) & (df["high_confidence"])])
@@ -292,11 +295,10 @@ df_rank = (
     .reset_index(drop=True)
 )
 
-# Calculate absolute rank based on signal-to-noise ratio (combined deltaPSI and Euclidean distances)
+# Calculate absolute rank based on signal-to-noise ratio
 df_rank["SNR"] = (
-    abs(df_rank["delta_PSI_mean"]) / df_rank["delta_PSI_SD"]
-    + df_rank[f"{test}_mean_distance"] / df_rank[f"{test}_sd_distance"]
-    + df_rank[f"{reference}_mean_distance"] / df_rank[f"{reference}_sd_distance"]
+    abs(df_rank["delta_PSI_mean"])
+    / df_rank["delta_PSI_SD"]
 )
 
 # Move SNR column after num_barcodes
@@ -306,6 +308,7 @@ df_rank = df_rank[cols]
 
 # Correct SNR for the number of barcodes
 # SNR - (penalty * SNR) * (expected_barcodes - num_barcodes)
+# penalty is a value between 0-1
 # Use median number of barcodes as expected number
 df_rank["SNR"] = df_rank["SNR"] - (penalty * df_rank["SNR"]) * (
     df_rank["num_barcodes"].median() - df_rank["num_barcodes"]

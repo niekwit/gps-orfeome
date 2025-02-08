@@ -147,24 +147,24 @@ else:
         input:
             counts="results/count/counts-aggregated.tsv",
         output:
-            csv="results/psi/hit-th{ht}_sd-t{st}_penalty{p}/{comparison}.csv",
-            ranked="results/psi/hit-th{ht}_sd-t{st}_penalty{p}/{comparison}_ranked.csv",
+            csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_penalty{p}/{comparison}.csv",
+            ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_penalty{p}/{comparison}_ranked.csv",
         threads: 1
         resources:
             runtime=10
         conda:
             "../envs/stats.yaml"
         log:
-            "logs/calculate_psi/{comparison}/hit-th{ht}_sd-t{st}_penalty{p}.log"
+            "logs/calculate_psi/{comparison}/hit-th{ht}_sd-th{st}_prop_th{pt}_penalty{p}.log"
         script:
             "../scripts/calculate_psi.py"
 
 
     rule plot_barcode_profiles:
         input:
-            csv="results/psi/hit-th{ht}_sd-t{st}_penalty{p}/{comparison}.csv",
+            csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_penalty{p}/{comparison}.csv",
         output:
-            flag=temp("results/psi_plots/hit-th{ht}_sd-th{st}_penalty{p}/{comparison}/plotting_done.txt"),
+            flag=temp("results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_penalty{p}/{comparison}/plotting_done.txt"),
         params:
             outdir=lambda wc,output: os.path.dirname(output["flag"]),
         threads: 18,
@@ -173,7 +173,7 @@ else:
         conda:
             "../envs/stats.yaml",
         log:
-            "logs/plot_psi/hit-th{ht}_sd-t{st}_penalty{p}_{comparison}.log",
+            "logs/plot_psi/hit-th{ht}_sd-th{st}_prop_th{pt}_penalty{p}_{comparison}.log",
         script:
             "../scripts/plot_barcode_profiles.R"
 

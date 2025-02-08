@@ -55,18 +55,18 @@ psi:
   # deltaPSI thresholds for hits
   hit_threshold: [0.75, 1.0, 1.25]
 
+  # Exclude barcode with dual peaks
+  exclude_dual_peaks: True
+  # Proportion threshold for second peak of first peak
+  proportion_threshold: [0.35, 0.4, 0.5]  
+  
   # Barcode threshold for hits
   # Only keep ORFs with at least bc_threshold barcodes
   bc_thresholdreshold: 2
-
-  # Correction factor for creating a random third barcode
-  # for orfs with only two barcodes
-  # (otherwise an SD cannot be calculated)
-  correction_factor: 1.2
-  
+ 
   # SD threshold for most stringent hits
-  # mean Euclidian distance test & control > sd_th * SD
-  sd_threshold: [4, 5, 6]
+  # mean deltaPSI > sd_threshold * SD
+  sd_threshold: [2, 2.5]
 
   # Ranking penalty value to correct for barcode count differences
   # This is a fraction of the signal-to-noise ratio

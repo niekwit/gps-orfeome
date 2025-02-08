@@ -58,10 +58,11 @@ def targets():
         TARGETS.extend(
             [
                 expand(
-                    "results/psi_plots/hit-th{ht}_sd-th{st}_penalty{p}/{comparison}/plotting_done.txt",
+                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_penalty{p}/{comparison}/plotting_done.txt",
                     comparison=COMPARISONS,
                     ht=config["psi"]["hit_threshold"],
                     st=config["psi"]["sd_threshold"],
+                    pt=config["psi"]["proportion_threshold"],
                     p=config["psi"]["penalty"],
                 ),
             ]
