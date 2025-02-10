@@ -67,8 +67,8 @@ def compute_psi(row, condition, num_bins):
     """
     Compute PSI values for a row and one condition.
     https://www.science.org/doi/10.1126/science.aaw4912#sec-11
-    
-    For each sample bin, divide the bin count by 
+
+    For each sample bin, divide the bin count by
     the sum of all bins for that sample.
     Multiple by bin number and sum all values for each sample.
     """
@@ -153,7 +153,7 @@ logging.info(
 
 logging.info(f"  Number of barcodes present post-filtering: {nrows}")
 
-# Identify whether barcodes distribution has dual peaks
+# Identify whether barcode distributions have dual peaks
 # i.e. two peaks with at least one bin between them
 # Check this for each barcode and condition and mark as True if so
 # These barcodes are excluded when calculating PSI values
@@ -177,23 +177,20 @@ if exclude_dual_peaks:
     # Remove ORFs that when dual peak barcodes are removed
     # have less than bc_threshold barcodes
     df_no_dpeaks = df_no_dpeaks.copy()
-    df_no_dpeaks["num_barcodes"] = df_no_dpeaks.groupby("orf_id")["barcode_id"].transform(
-        "count"
-    )
+    df_no_dpeaks["num_barcodes"] = df_no_dpeaks.groupby("orf_id")[
+        "barcode_id"
+    ].transform("count")
     orfs_to_remove = df_no_dpeaks[df_no_dpeaks["num_barcodes"] < bc_threshold]["orf_id"]
     df = df[~df["orf_id"].isin(orfs_to_remove)].reset_index(drop=True)
     nrows_dpeaks_removed = nrows - df.shape[0]
     logging.info(
         f"  ORFs removed with less than {bc_threshold} barcodes after removing  barcodes with dual peaks: {nrows_dpeaks_removed}"
     )
-    
+
     # Make one column for dual peak status
     # and remove the individual columns
     df["dual_peaks"] = df[f"dual_peaks_{test}"] | df[f"dual_peaks_{reference}"]
-    df = df.drop(columns=[
-        f"dual_peaks_{test}", 
-        f"dual_peaks_{reference}"
-        ])
+    df = df.drop(columns=[f"dual_peaks_{test}", f"dual_peaks_{reference}"])
 else:
     df["dual_peaks"] = False
 
@@ -296,10 +293,7 @@ df_rank = (
 )
 
 # Calculate absolute rank based on signal-to-noise ratio
-df_rank["SNR"] = (
-    abs(df_rank["delta_PSI_mean"])
-    / df_rank["delta_PSI_SD"]
-)
+df_rank["SNR"] = abs(df_rank["delta_PSI_mean"]) / df_rank["delta_PSI_SD"]
 
 # Move SNR column after num_barcodes
 cols = list(df_rank.columns)
