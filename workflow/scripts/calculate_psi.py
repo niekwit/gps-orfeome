@@ -243,7 +243,7 @@ sum_ = sum_[f"destabilised_in_{test}"].sum()
 logging.info(f"  Number of destabilised ORFs in {test}: {sum_}")
 
 # Identify high confidence hits
-df["high_confidence"] = df["delta_PSI_mean"] > sd_th * df["delta_PSI_SD"]
+df["high_confidence"] = abs(df["delta_PSI_mean"]) > sd_th * df["delta_PSI_SD"]
 
 hc_stabilised = len(df[(df[f"stabilised_in_{test}"]) & (df["high_confidence"])])
 logging.info(f"  Number of high confidence stabilised ORFs in {test}: {hc_stabilised}")
@@ -277,10 +277,6 @@ df_rank = (
             "gene",
             "delta_PSI_mean",
             "delta_PSI_SD",
-            f"{test}_mean_distance",
-            f"{test}_sd_distance",
-            f"{reference}_mean_distance",
-            f"{reference}_sd_distance",
             "num_barcodes",
             f"stabilised_in_{test}",
             f"stabilised_in_{test}_hc",
