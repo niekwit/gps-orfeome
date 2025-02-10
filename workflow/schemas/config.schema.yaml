@@ -6,94 +6,90 @@ type: object
 
 properties:
   bin_number:
-    description: Number of bins set during sorting of cells (should be the same for each sample)
+    description: Number of bins used for FACS
     type: integer
     minimum: 1
-    default: 1
 
   cutadapt:
-    description: Adapter trimming settings
+    description: Cutadapt settings
     type: object
     properties:
-      
       five_prime_adapter:
-        description: Sequence of an adapter ligated to the 5' end. The adapter and any preceding bases are trimmed.
+        description: Sequence of an adapter ligated to the 5' end
         type: string
         pattern: "^[ACGTNacgtn]+$"
-      
+        default: ""
       three_prime_adapter:
-        description: Sequence of an adapter ligated to the 3' end. The adapter and subsequent bases are trimmed.
+        description: Sequence of an adapter ligated to the 3' end
         type: string
         pattern: "^[ACGTNacgtn]+$"
-
+        default: ""
+      barcode_length:
+        description: Length of barcode sequence
+        type: integer
+        minimum: 0
       extra:
         description: Extra cutadapt arguments
         type: string
-  
+        default: ""
     required:
       - five_prime_adapter
       - three_prime_adapter
-      - extra
-  
+
   csv:
-    description: CSV file settings
+    description: CSV settings
     type: object
     properties:
-      
       gene_column:
         description: Column number with gene names
         type: integer
         minimum: 0
-      
       orf_column:
         description: Column number with unique ORF names
         type: integer
         minimum: 0
-      
       barcode_id_column:
-        description: Column number with barcode IDs
+        description: Column with unique barcode IDs
         type: integer
         minimum: 0
-      
       sequence_column:
         description: Column number with barcode sequences
         type: integer
         minimum: 0
+    required:
+      - gene_column
+      - orf_column
+      - barcode_id_column
+      - sequence_column
 
   mismatch:
     description: Mismatches allowed during alignment
     type: integer
     minimum: 0
-    maximum: 2
     default: 0
-      
+
   mageck:
     description: MAGeCK settings
     type: object
     properties:
-      
       run:
         description: Run MAGeCK analysis
         type: boolean
-      
+        default: true
       extra_mageck_arguments:
         description: Extra MAGeCK arguments
         type: string
-      
+        default: ""
       mageck_control_barcodes:
         description: All or file with control barcodes
         type: string
-        enum:
-          - all
-          - file
-      
+        default: "all"
       fdr:
         description: FDR threshold for downstream mageck analysis
         type: number
         minimum: 0
         maximum: 1
         default: 0.25
-  
     required:
       - run
       - extra_mageck_arguments
@@ -101,18 +97,17 @@ properties:
       - fdr
   
   drugz:
-    description: drugZ settings
+    description: DrugZ settings
     type: object
     properties:
-      
       run:
-        description: Run drugZ analysis
+        description: Run DrugZ analysis
         type: boolean
-      
+        default: true
       extra:
-        description: Extra drugZ arguments
+        description: Extra DrugZ arguments
         type: string
-  
+        default: ""
     required:
       - run
       - extra
@@ -121,47 +116,51 @@ properties:
     description: Protein stability analysis settings
     type: object
     properties:
-      
       sob_threshold:
         description: Minimum value of sum of barcode counts across all bins to keep
         type: integer
-        minimum: 1
-      
+        minimum: 0
+        default: 100
       hit_threshold:
         description: deltaPSI thresholds for hits
         type: array
         items:
           type: number
           minimum: 0
-      
+        default: [0.75, 1.0, 1.25]
+      exclude_dual_peaks:
+        description: Exclude barcode with dual peaks
+        type: boolean
+      proportion_threshold:
+        description: Proportion threshold for second peak of first peak
+        type: array
+        items:
+          type: number
+          minimum: 0
       bc_threshold:
         description: Barcode threshold for hits
         type: integer
-        minimum: 1
-      
-      correction_factor:
-        description: Correction factor for creating a random third barcode for orfs with only two barcodes
-        type: number
-        minimum: 1
-      
+        minimum: 0
+        default: 2
       sd_threshold:
         description: SD threshold for most stringent hits
         type: array
         items:
           type: number
           minimum: 0
-
-      penalty:
-        description: Penalty for missing barcodes
-        type: array
-        items:
-          type: number
-          minimum: 0
-      
     required:
       - sob_threshold
       - hit_threshold
+      - exclude_dual_peaks
+      - proportion_threshold
       - bc_threshold
-      - correction_factor
       - sd_threshold
-      - penalty
+
+required: 
+  - bin_number
+  - cutadapt
+  - csv
+  - mismatch
+  - mageck
+  - drugz
+  - psi
