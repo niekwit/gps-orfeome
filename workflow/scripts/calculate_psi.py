@@ -5,9 +5,7 @@
 """
 
 import logging
-import math
-from joblib import Parallel, delayed
-from tqdm import tqdm
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import warnings
@@ -36,7 +34,7 @@ MAX_BIN = snakemake.config["bin_number"]
 penalty = float(snakemake.wildcards["p"])
 output_file_csv = snakemake.output["csv"]
 output_file_rank = snakemake.output["ranked"]
-THREADS = snakemake.threads
+#THREADS = snakemake.threads
 
 
 def identify_dual_peaks(row, condition, cutoff):
@@ -153,7 +151,10 @@ def create_p_value(data, n_permutations):
         warnings.simplefilter("ignore", category=RuntimeWarning)
         p_value = np.nanmean(np.abs(np.concatenate(permuted_delta_psi)) >= np.abs(delta_psi_calculated))
 
-    return p_value
+    # Create dictionary with orf_id and p_value as key, value
+    d = {data["orf_id"].values[0]: p_value}
+    
+    return d
 
 def process_group(group):
     return create_p_value(group, n_permutations)
@@ -164,6 +165,10 @@ def adjust_p_value():
     Adjust p-values for number of barcodes
     """
     pass
+
+
+
+    
 
 
 # Read counts for all samples
@@ -229,7 +234,7 @@ nrows_no_test_counts = nrows - df.shape[0]
 logging.info(f"  Barcodes with no counts for {test} in any bin: {nrows_no_test_counts}")
 
 # Add total number of barcodes for each ORF
-df["num_barcodes"] = df.groupby("orf_id")["barcode_id"].transform("count")
+df["num_barcodes"] = df.groupby("orf_id")["barcode_id"].transform("count").astype(int)
 
 # Remove ORFs with only one barcode
 df = df[df["num_barcodes"] > 1].reset_index(drop=True)
@@ -290,6 +295,8 @@ if exclude_dual_peaks:
 else:
     df["dual_peaks"] = False
 
+# Get number of "good barcodes" for each ORF, i.e. barcodes without dual peaks
+df["good_barcodes"] = df.groupby("orf_id")["dual_peaks"].transform(lambda x: x.value_counts().get(False, 0))
 
 ### Compute PSI values:
 logging.info(f"Computing PSI values for {test} vs {reference}")
@@ -314,23 +321,61 @@ df["delta_PSI_mean"] = df.groupby("orf_id")["deltaPSI"].transform("mean")
 # Calculate SD of PSI values for each condition of each ORF
 df["delta_PSI_SD"] = df.groupby("orf_id")["deltaPSI"].transform("std")
 
-# Perform paired permutation test for each ORF to obtain p-value
-# By orf_id
-median_barcode_count = df["num_barcodes"].median()
+# Plot distribution of delta_PSI_mean
+data = df["delta_PSI_mean"].dropna().unique()
+data = data[~np.isinf(data)]
 
 
-# Set number of permutations based on bin number
-n_permutations = math.factorial(MAX_BIN)
+logging.info("Plotting distribution of delta_PSI_mean")
+plt.hist(data, bins=150, color="#419179")
+plt.axvline(data.mean(), color="red", linestyle="dashed", linewidth=1)
+plt.xlabel("delta_PSI_mean")
+plt.ylabel("Frequency")
+plt.title("Distribution of delta_PSI_mean")
+plt.savefig(snakemake.output["hist"])
 
-p_values = Parallel(n_jobs=THREADS)(
-    delayed(process_group)(group) for _, group in tqdm(df.groupby("orf_id"), desc="Processing orf_ids", total=len(df["orf_id"].unique()))
-)
-# Create df with orf_id and p_values
-df_results = pd.DataFrame({"orf_id": df["orf_id"].unique(), "p_value": p_values})
+# Check if delta_PSI_mean are normally distributed
+#logging.info("Checking if delta_PSI_mean is normally distributed")
+#test = kstest(data, "norm")
 
-# Merge back into the original DataFrame if needed
-df = df.merge(df_results, on="orf_id")
+logging.info("Calculating z-scores")
+df["z_score"] = (df["delta_PSI_mean"] - df["delta_PSI_mean"].mean()) / df["delta_PSI_mean"].std()
 
+logging.info("Correcting z-scores for number of barcodes")
+# Correct for number of barcodes
+df["z_score_corr"] = df["z_score"] / np.sqrt(1 + (2 / df["good_barcodes"]))
+
+logging.info("Correcting z-scores for intra ORF variability")
+# Correct for delta_PSI_SD
+df["z_score_corr"] = df["z_score_corr"] / df["delta_PSI_SD"]
+
+
+logging.info("Scaling z-scores")
+# Scale values between -100 and 100:
+# Scale Negative and Positive Values Separately
+col = "z_score_corr"
+scaled_col = f"{col}_scaled"
+
+df[scaled_col] = np.nan  # Initialize column with NaN
+
+# Separate positive and negative values
+pos_mask = df[col] > 0
+neg_mask = df[col] < 0
+
+# Scale positive values (between 0 and 100)
+if df[pos_mask].shape[0] > 0:  # Check if positive values exist
+    pos_max = df.loc[pos_mask, col].max()
+    if pos_max != 0:  # Avoid division by zero
+        df.loc[pos_mask, scaled_col] = (df.loc[pos_mask, col] / pos_max) * 100
+
+# Scale negative values (between -100 and 0)
+if df[neg_mask].shape[0] > 0:  # Check if negative values exist
+    neg_min = df.loc[neg_mask, col].min()
+    if neg_min != 0:  # Avoid division by zero
+        df.loc[neg_mask, scaled_col] = (df.loc[neg_mask, col] / abs(neg_min)) * 100
+
+df = df.drop(columns=[col])
+df = df.rename(columns={scaled_col: col})
 
 # IS THIS NEEDED?
 # Sum of read counts for each ORF and each bin
@@ -345,19 +390,21 @@ df = df.merge(df_results, on="orf_id")
 logging.info("Calling hits")
 
 # Identify ORFs that are stabilised in test condition
-df[f"stabilised_in_{test}"] = df["delta_PSI_mean"] > hit_th
+df[f"stabilised_in_{test}"] = df["delta_PSI_mean"] >= hit_th
 sum_ = df[["orf_id", f"stabilised_in_{test}"]].drop_duplicates()
 sum_ = sum_[f"stabilised_in_{test}"].sum()
 logging.info(f"  Number of stabilised ORFs in {test}: {sum_}")
 
 # Identify ORFs that are destabilised in test condition
-df[f"destabilised_in_{test}"] = df["delta_PSI_mean"] < -hit_th
+df[f"destabilised_in_{test}"] = df["delta_PSI_mean"] <= -hit_th
 sum_ = df[["orf_id", f"destabilised_in_{test}"]].drop_duplicates()
 sum_ = sum_[f"destabilised_in_{test}"].sum()
 logging.info(f"  Number of destabilised ORFs in {test}: {sum_}")
 
-# Identify high confidence hits
-df["high_confidence"] = abs(df["delta_PSI_mean"]) > sd_th * df["delta_PSI_SD"]
+# Identify high confidence hits:
+# ORFs with delta_PSI_mean >= sd_th * delta_PSI_SD &
+# ORFs with delta_PSI_mean >= hit_th
+df["high_confidence"] = (abs(df["delta_PSI_mean"]) >= sd_th * df["delta_PSI_SD"]) & (abs(df["delta_PSI_mean"]) >= hit_th)
 
 hc_stabilised = len(df[(df[f"stabilised_in_{test}"]) & (df["high_confidence"])])
 logging.info(f"  Number of high confidence stabilised ORFs in {test}: {hc_stabilised}")
@@ -396,42 +443,25 @@ df_rank = (
             f"stabilised_in_{test}_hc",
             f"destabilised_in_{test}",
             f"destabilised_in_{test}_hc",
+            "z_score",
+            "z_score_corr",
         ]
     ]
     .drop_duplicates()
     .reset_index(drop=True)
 )
 
-# Calculate absolute rank based on signal-to-noise ratio
-df_rank["SNR"] = abs(df_rank["delta_PSI_mean"]) / df_rank["delta_PSI_SD"]
-
-# Move SNR column after num_barcodes
-cols = list(df_rank.columns)
-cols.insert(9, cols.pop(cols.index("SNR")))
-df_rank = df_rank[cols]
-
-# Correct SNR for the number of barcodes
-# SNR - (penalty * SNR) * (expected_barcodes - num_barcodes)
-# penalty is a value between 0-1
-# Use median number of barcodes as expected number
-df_rank["SNR"] = df_rank["SNR"] - (penalty * df_rank["SNR"]) * (
-    df_rank["num_barcodes"].median() - df_rank["num_barcodes"]
-)
-
-df_rank = df_rank.sort_values(by="SNR", ascending=False).reset_index(drop=True)
-df_rank["absolute_rank"] = df_rank.index + 1
-
 # Create separate rankings for stabilised and destabilised hits
 df_rank_stab = (
     df_rank[df_rank[f"stabilised_in_{test}"]]
-    .sort_values(by="SNR", ascending=False)
+    .sort_values(by="z_score_corr", ascending=False)
     .reset_index(drop=True)
 )
 df_rank_stab["stabilised_rank"] = df_rank_stab.index + 1
 
 df_rank_destab = (
     df_rank[df_rank[f"destabilised_in_{test}"]]
-    .sort_values(by="SNR", ascending=False)
+    .sort_values(by="z_score_corr", ascending=True)
     .reset_index(drop=True)
 )
 df_rank_destab["destabilised_rank"] = df_rank_destab.index + 1
@@ -443,6 +473,8 @@ df_rank = pd.merge(
 df_rank = pd.merge(
     df_rank, df_rank_destab[["orf_id", "destabilised_rank"]], on="orf_id", how="left"
 )
+# Convert to integer values
+df_rank["stabilised_rank"] = df_rank["stabilised_rank"].fillna("NA").astype(str)
 
 # Replace all missing values with NA
 df_rank = df_rank.fillna("NA")

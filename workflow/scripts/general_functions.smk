@@ -58,12 +58,11 @@ def targets():
         TARGETS.extend(
             [
                 expand(
-                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_penalty{p}/{comparison}/plotting_done.txt",
+                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}/plotting_done.txt", zip,
                     comparison=COMPARISONS,
-                    ht=config["psi"]["hit_threshold"],
-                    st=config["psi"]["sd_threshold"],
-                    pt=config["psi"]["proportion_threshold"],
-                    p=config["psi"]["penalty"],
+                    ht=HIT_TH,
+                    st=SD_TH,
+                    pt=PROP_TH,
                 ),
             ]
         )
@@ -124,16 +123,34 @@ def sample_names():
     return sample_names
 
 
-def comparisons():
+def wildcard_values():
     """
     Load comparisons for MAGeCK/PSI
     """
     COMPARISONS = pd.read_csv("config/stats.csv")
-    return (
-        COMPARISONS[["test_condition", "control_condition"]]
-        .agg("_vs_".join, axis=1)
-        .tolist()
-    )
+    COMPARISONS = COMPARISONS[["test_condition", "control_condition"]].agg("_vs_".join, axis=1).tolist()
+    
+    hit_th = config["psi"]["hit_threshold"]
+    sd_th = config["psi"]["sd_threshold"]
+    prop_th = config["psi"]["proportion_threshold"]
+    threshold_list = [hit_th, sd_th, prop_th]
+
+    # All threshold lists should be the same length
+    assert len(hit_th) == len(sd_th) == len(prop_th), "Threshold lists are not the same length"
+
+    # As not all permutations are used (zip argument is used with Snakemake expand),
+    # the COMPARIOSNS list is zipped with the threshold lists and should be the same length
+    # as the threshold lists. 
+    # Repeat all th values for each comparison
+    extended_comparisons = []
+    for i in COMPARISONS:
+        extended_comparisons.extend([i] * len(hit_th))
+    
+    extended_thresholds = []
+    for i in threshold_list:
+        extended_thresholds.append(i * len(COMPARISONS))
+
+    return extended_comparisons, extended_thresholds[0], extended_thresholds[1], extended_thresholds[2]
 
 
 def mageck_control():
