@@ -31,10 +31,8 @@ sd_th = float(snakemake.wildcards["st"])
 pr_th = float(snakemake.wildcards["pt"])
 bc_threshold = snakemake.config["psi"]["bc_threshold"]
 MAX_BIN = snakemake.config["bin_number"]
-penalty = float(snakemake.wildcards["p"])
 output_file_csv = snakemake.output["csv"]
 output_file_rank = snakemake.output["ranked"]
-#THREADS = snakemake.threads
 
 
 def identify_dual_peaks(row, condition, cutoff):
@@ -85,90 +83,6 @@ def compute_psi(row, condition):
         bin_prop = row[f"{condition}_{i}"] / sob
         psi_score += bin_prop * i
     return psi_score
-
-
-def get_data(data, condition):
-        # Remove lines with dual peaks
-        data = data[~data["dual_peaks"]]
-        
-        # Get counts for each bin for the condition
-        return data.filter(regex=f"^{condition}_").values
-
-
-def psi_permutated_data(array, condition, column_names, sob):
-        _length = len(array)
-        # Create empty array to store PSI values
-        psi_values = np.zeros(_length)
-        
-        # Numpy array containing replicate, permuted counts
-        # Iterate over each element in array
-        for i in range(_length):
-            # Get counts for each bin
-            counts = array[i]
-        
-            # Create series with counts and SOB and calculate PSI
-            permuted_counts = np.random.permutation(counts)
-            perm_df = pd.Series(permuted_counts, index=column_names)
-            perm_df[f"SOB_{condition}"] = sob
-            perm_df["dual_peaks"] = False
-        
-            # Compute the PSI for the permuted data
-            psi_values[i] = compute_psi(perm_df, condition)
-        
-        return psi_values
-
-
-def create_p_value(data, n_permutations):
-    # Get computed deltaPSI
-    delta_psi_calculated = data["delta_PSI_mean"].values[0]
-    
-    # Obtain counts for reference and test conditions
-    x = get_data(data, reference)
-    x_sob = data[f"SOB_{reference}"].values[0]
-    y = get_data(data, test)
-    y_sob = data[f"SOB_{test}"].values[0]
-    
-    # Labels for count columns
-    x_labels = [f"{reference}_{i}" for i in range(1, MAX_BIN + 1)]
-    y_labels = [f"{test}_{i}" for i in range(1, MAX_BIN + 1)]
-    
-    # Permute the data and compute PSI for each permutation
-    permuted_psi_x = n_permutations * [0] #np.zeros(n_permutations)
-    permuted_psi_x = np.array(permuted_psi_x, dtype=object)
-    permuted_psi_y = n_permutations * [0]  #np.zeros(n_permutations)
-    permuted_psi_y = np.array(permuted_psi_y, dtype=object)
-    
-    for i in range(n_permutations):
-        # Get PSI values for permuted data
-        permuted_psi_x[i] = psi_permutated_data(x, reference, x_labels, x_sob)
-        permuted_psi_y[i] = psi_permutated_data(y, test, y_labels, y_sob)
-    
-    # Element-wise substraction to get deltaPSI values
-    permuted_delta_psi = permuted_psi_y - permuted_psi_x        
-
-    # Calculate the p-value by comparing the observed metric to the permuted distribution
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=RuntimeWarning)
-        p_value = np.nanmean(np.abs(np.concatenate(permuted_delta_psi)) >= np.abs(delta_psi_calculated))
-
-    # Create dictionary with orf_id and p_value as key, value
-    d = {data["orf_id"].values[0]: p_value}
-    
-    return d
-
-def process_group(group):
-    return create_p_value(group, n_permutations)
-
-
-def adjust_p_value():
-    """
-    Adjust p-values for number of barcodes
-    """
-    pass
-
-
-
-    
 
 
 # Read counts for all samples
@@ -234,7 +148,7 @@ nrows_no_test_counts = nrows - df.shape[0]
 logging.info(f"  Barcodes with no counts for {test} in any bin: {nrows_no_test_counts}")
 
 # Add total number of barcodes for each ORF
-df["num_barcodes"] = df.groupby("orf_id")["barcode_id"].transform("count").astype(int)
+df["num_barcodes"] = df.groupby("orf_id")["barcode_id"].transform("count")
 
 # Remove ORFs with only one barcode
 df = df[df["num_barcodes"] > 1].reset_index(drop=True)
@@ -439,6 +353,7 @@ df_rank = (
             "delta_PSI_mean",
             "delta_PSI_SD",
             "num_barcodes",
+            "good_barcodes",
             f"stabilised_in_{test}",
             f"stabilised_in_{test}_hc",
             f"destabilised_in_{test}",
