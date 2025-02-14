@@ -149,7 +149,7 @@ else:
         output:
             csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}.csv",
             ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_ranked.csv",
-            hist="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_dpsi_histogram.png",
+            hist="results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_dpsi_histogram.png",
         threads: 1
         resources:
             runtime=10
