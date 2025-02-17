@@ -83,8 +83,11 @@ for (column in info.columns[3:length(info.columns)]) {
                                           "cowplot", 
                                           "scales")) %dopar% {
     print(paste0("Plotting ORF ID: ", id))
-    df <- tmp[tmp$gene.id == id, ] %>%
-      select(gene.id, starts_with(ref.sample), starts_with(test.sample), dual_peaks) %>%
+    df <- tmp[tmp$gene.id == id, ]
+    deltaPSI.mean <- round(unique(df$delta_PSI_mean), 2)
+    deltaPSI.sd <- round(unique(df$delta_PSI_SD), 2)
+    df <- df %>%
+      dplyr::select(gene.id, starts_with(ref.sample), starts_with(test.sample), dual_peaks) %>%
       reshape2::melt() %>%
       separate(variable, into = c("barcode", "bin"), sep = "\\_") %>%
       group_by(bin, barcode) %>%
@@ -110,6 +113,7 @@ for (column in info.columns[3:length(info.columns)]) {
       theme_cowplot(18) + 
       scale_colour_manual(values = c(red.colours, grey.colours)) +
       theme(plot.title = element_text(hjust = 0.5))
+      
     } else {
       p <- ggplot(df, aes(x = bin,
                           y = value,
@@ -117,31 +121,38 @@ for (column in info.columns[3:length(info.columns)]) {
                           colour = barcode,
                           shape = dual_peaks,
                           alpha = dual_peaks)) +
-        geom_point(size = 4) +
+        geom_point(size = 6) +
         geom_line(linewidth = 1) +
         labs(title = id,
              y = "Proportion of reads",
              x = "Bin") +
         theme_cowplot(18) + 
         scale_colour_manual(values = c(red.colours, grey.colours)) +
-        scale_alpha_manual(values = c(1, 0.5)) +
-        scale_shape_manual(values = c(15, 16)) +
+        scale_alpha_manual(values = c(1, 0.1)) +
+        scale_shape_manual(values = c(16, 15)) +
         theme(plot.title = element_text(hjust = 0.5))
     }
     
+    # Add label for delta PSI +- SD inside top left plot
+    p <- p +
+      geom_text(aes(x = 1.5,
+                    y = max(df$value, na.rm = TRUE) * 0.95,
+                    label = paste0("dPSI: ", deltaPSI.mean, " ± ", deltaPSI.sd)),
+                colour = "black",
+                size = 6,
+                hjust = 0.5,
+                vjust = 0.5)
+    
     # Save plot
-    ggsave(file.path(dir, paste0(id, ".pdf")), 
-            p, 
-            width = 10, 
-            height = 6)
+    ggsave(file.path(dir, paste0(id, ".pdf")),
+           p,
+           width = 10,
+           height = 6)
   }
 }
 
 # Stop the parallel backend
 stopCluster(cl)
-
-# Create an empty file to signal that the script has completed
-file.create(snakemake@output[["flag"]])
 
 print("Plotting complete")
 print(Sys.time())
