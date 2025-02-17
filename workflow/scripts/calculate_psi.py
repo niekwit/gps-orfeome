@@ -8,7 +8,6 @@ import logging
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import warnings
 
 # Set up logging
 log = snakemake.log[0]
@@ -228,10 +227,6 @@ for sample in [reference, test]:
         lambda row: compute_psi(row, sample), axis=1
     ).reset_index(drop=True)
 
-# Save to file
-logging.info(f"Writing barcode-level results to {output_file_csv}")
-df.to_csv(output_file_csv, index=False)
-
 # Calculate mean PSI values for each ORF
 df[f"PSI_{reference}_mean"] = df.groupby("orf_id")[f"PSI_{reference}"].transform("mean")
 df[f"PSI_{test}_mean"] = df.groupby("orf_id")[f"PSI_{test}"].transform("mean")
@@ -275,7 +270,6 @@ logging.info("Correcting z-scores for intra ORF variability")
 # Correct for delta_PSI_SD
 df["z_score_corr"] = df["z_score_corr"] / df["delta_PSI_SD"]
 
-
 logging.info("Scaling z-scores")
 # Scale values between -100 and 100:
 # Scale Negative and Positive Values Separately
@@ -302,6 +296,10 @@ if df[neg_mask].shape[0] > 0:  # Check if negative values exist
 
 df = df.drop(columns=[col])
 df = df.rename(columns={scaled_col: col})
+
+# Save to file
+logging.info(f"Writing barcode-level results to {output_file_csv}")
+df.to_csv(output_file_csv, index=False, na_rep="NA")
 
 # IS THIS NEEDED?
 # Sum of read counts for each ORF and each bin
@@ -407,6 +405,6 @@ df_rank = df_rank.fillna("NA")
 
 # Write to file
 logging.info(f"Writing ranked results to {output_file_rank}")
-df_rank.to_csv(output_file_rank, index=False)
+df_rank.to_csv(output_file_rank, index=False, na_rep="NA")
 
 logging.info("Done")
