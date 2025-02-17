@@ -50,7 +50,7 @@ def identify_twin_peaks(row, condition, cutoff):
     # Get the highest and second highest values in dict_ and their keys
     max_val = max(dict_.values())
     max_key = [k for k, v in dict_.items() if v == max_val][0]
-    dict_.pop(max_key) # remove the max value
+    dict_.pop(max_key)  # remove the max value
     second_max_val = max(dict_.values())
     second_max_key = [k for k, v in dict_.items() if v == second_max_val][0]
 
@@ -97,10 +97,14 @@ def sort_key(x):
         return (parts[0], int(parts[1]))
     return (x, 0)
 
+
 df = df.reindex(sorted(df.columns, key=sort_key), axis=1)
 
 # Move barcode_id, orf_id, gene to the front
-df = df[["barcode_id", "orf_id", "gene"] + [col for col in df.columns if col not in ["barcode_id", "orf_id", "gene"]]]
+df = df[
+    ["barcode_id", "orf_id", "gene"]
+    + [col for col in df.columns if col not in ["barcode_id", "orf_id", "gene"]]
+]
 
 ### Filtering of data
 logging.info(f"Filtering data for {test} vs {reference}")
@@ -210,7 +214,9 @@ else:
     df["twin_peaks"] = False
 
 # Get number of "good barcodes" for each ORF, i.e. barcodes without twin peaks
-df["good_barcodes"] = df.groupby("orf_id")["twin_peaks"].transform(lambda x: x.value_counts().get(False, 0))
+df["good_barcodes"] = df.groupby("orf_id")["twin_peaks"].transform(
+    lambda x: x.value_counts().get(False, 0)
+)
 
 ### Compute PSI values:
 logging.info(f"Computing PSI values for {test} vs {reference}")
@@ -253,11 +259,13 @@ plt.title("Distribution of delta_PSI_mean")
 plt.savefig(snakemake.output["hist"])
 
 # Check if delta_PSI_mean are normally distributed
-#logging.info("Checking if delta_PSI_mean is normally distributed")
-#test = kstest(data, "norm")
+# logging.info("Checking if delta_PSI_mean is normally distributed")
+# test = kstest(data, "norm")
 
 logging.info("Calculating z-scores")
-df["z_score"] = (df["delta_PSI_mean"] - df["delta_PSI_mean"].mean()) / df["delta_PSI_mean"].std()
+df["z_score"] = (df["delta_PSI_mean"] - df["delta_PSI_mean"].mean()) / df[
+    "delta_PSI_mean"
+].std()
 
 logging.info("Correcting z-scores for number of barcodes")
 # Correct for number of barcodes
@@ -322,7 +330,9 @@ logging.info(f"  Number of destabilised ORFs in {test}: {sum_}")
 # Identify high confidence hits:
 # ORFs with delta_PSI_mean >= sd_th * delta_PSI_SD &
 # ORFs with delta_PSI_mean >= hit_th
-df["high_confidence"] = (abs(df["delta_PSI_mean"]) >= sd_th * df["delta_PSI_SD"]) & (abs(df["delta_PSI_mean"]) >= hit_th)
+df["high_confidence"] = (abs(df["delta_PSI_mean"]) >= sd_th * df["delta_PSI_SD"]) & (
+    abs(df["delta_PSI_mean"]) >= hit_th
+)
 
 hc_stabilised = len(df[(df[f"stabilised_in_{test}"]) & (df["high_confidence"])])
 logging.info(f"  Number of high confidence stabilised ORFs in {test}: {hc_stabilised}")
