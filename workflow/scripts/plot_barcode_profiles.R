@@ -53,14 +53,14 @@ info.columns <- data %>%
          starts_with("destabilised_in_")) %>%
   colnames()
 
-# Check if barcodes with dual peaks have been removed
-# (assumes that at least one barcode with dual peaks in the entire data set exists)
-dpeak.values <- unique(data[["dual_peaks"]])
+# Check if barcodes with twin peaks have been removed
+# (assumes that at least one barcode with twin peaks in the entire data set exists)
+dpeak.values <- unique(data[["twin_peaks"]])
 if (length(dpeak.values) == 1) {
-  print("Barcodes with dual peaks detection was skipped...")
+  print("Barcodes with twin peaks detection was skipped...")
   dpeaks.shapes.removed <- FALSE
 } else {
-  print("Barcodes with dual peaks detection was performed...")
+  print("Barcodes with twin peaks detection was performed...")
   dpeaks.shapes.removed <- TRUE
 }
 
@@ -87,7 +87,7 @@ for (column in info.columns[3:length(info.columns)]) {
     deltaPSI.mean <- round(unique(df$delta_PSI_mean), 2)
     deltaPSI.sd <- round(unique(df$delta_PSI_SD), 2)
     df <- df %>%
-      dplyr::select(gene.id, starts_with(ref.sample), starts_with(test.sample), dual_peaks) %>%
+      dplyr::select(gene.id, starts_with(ref.sample), starts_with(test.sample), twin_peaks) %>%
       reshape2::melt() %>%
       separate(variable, into = c("barcode", "bin"), sep = "\\_") %>%
       group_by(bin, barcode) %>%
@@ -119,8 +119,8 @@ for (column in info.columns[3:length(info.columns)]) {
                           y = value,
                           group = barcode,
                           colour = barcode,
-                          shape = dual_peaks,
-                          alpha = dual_peaks)) +
+                          shape = twin_peaks,
+                          alpha = twin_peaks)) +
         geom_point(size = 6) +
         geom_line(linewidth = 1) +
         labs(title = id,

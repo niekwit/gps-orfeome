@@ -25,7 +25,7 @@ MIN_SOB_THRESHOLD = snakemake.config["psi"]["sob_threshold"]
 comparison = snakemake.wildcards["comparison"]
 reference = comparison.split("_vs_")[1]
 test = comparison.split("_vs_")[0]
-exclude_dual_peaks = snakemake.config["psi"]["exclude_dual_peaks"]
+exclude_twin_peaks = snakemake.config["psi"]["exclude_twin_peaks"]
 hit_th = float(snakemake.wildcards["ht"])
 sd_th = float(snakemake.wildcards["st"])
 pr_th = float(snakemake.wildcards["pt"])
@@ -35,7 +35,7 @@ output_file_csv = snakemake.output["csv"]
 output_file_rank = snakemake.output["ranked"]
 
 
-def identify_dual_peaks(row, condition, cutoff):
+def identify_twin_peaks(row, condition, cutoff):
     # Get values and bin names
     values = list(row.filter(regex=f"^{condition}_").values)
     keys = list(row.filter(regex=f"^{condition}_").keys())
@@ -73,8 +73,8 @@ def compute_psi(row, condition):
     the sum of all bins for that sample.
     Multiple by bin number and sum all values for each sample.
     """
-    # Check if the barcode has dual peaks
-    if row["dual_peaks"]:
+    # Check if the barcode has twin peaks
+    if row["twin_peaks"]:
         return np.nan
 
     sob = row[f"SOB_{condition}"]
@@ -168,28 +168,28 @@ logging.info(
 
 logging.info(f"  Number of barcodes present post-filtering: {nrows}")
 
-# Identify whether barcode distributions have dual peaks
+# Identify whether barcode distributions have twin peaks
 # i.e. two peaks with at least one bin between them
 # Check this for each barcode and condition and mark as True if so
 # These barcodes are excluded when calculating PSI values
-if exclude_dual_peaks:
+if exclude_twin_peaks:
     nrows = df.shape[0]
-    logging.info("  Marking dual peaked barcodes in:")
+    logging.info("  Marking twin peaked barcodes in:")
     logging.info(f"    {test}")
-    df[f"dual_peaks_{test}"] = df.apply(
-        lambda row: identify_dual_peaks(row, test, pr_th), axis=1
+    df[f"twin_peaks_{test}"] = df.apply(
+        lambda row: identify_twin_peaks(row, test, pr_th), axis=1
     ).reset_index(drop=True)
 
     logging.info(f"    {reference}")
-    df[f"dual_peaks_{reference}"] = df.apply(
-        lambda row: identify_dual_peaks(row, reference, pr_th), axis=1
+    df[f"twin_peaks_{reference}"] = df.apply(
+        lambda row: identify_twin_peaks(row, reference, pr_th), axis=1
     ).reset_index(drop=True)
 
-    df_no_dpeaks = df[~df[f"dual_peaks_{test}"] & ~df[f"dual_peaks_{reference}"]]
+    df_no_dpeaks = df[~df[f"twin_peaks_{test}"] & ~df[f"twin_peaks_{reference}"]]
     nrows_dpeaks = nrows - df_no_dpeaks.shape[0]
-    logging.info(f"  Barcodes marked as having dual peaks: {nrows_dpeaks}")
+    logging.info(f"  Barcodes marked as having twin peaks: {nrows_dpeaks}")
 
-    # Remove ORFs that when dual peak barcodes are removed
+    # Remove ORFs that when twin peak barcodes are removed
     # have less than bc_threshold barcodes
     df_no_dpeaks = df_no_dpeaks.copy()
     df_no_dpeaks["num_barcodes"] = df_no_dpeaks.groupby("orf_id")[
@@ -199,18 +199,18 @@ if exclude_dual_peaks:
     df = df[~df["orf_id"].isin(orfs_to_remove)].reset_index(drop=True)
     nrows_dpeaks_removed = nrows - df.shape[0]
     logging.info(
-        f"  ORFs removed with less than {bc_threshold} barcodes after removing  barcodes with dual peaks: {nrows_dpeaks_removed}"
+        f"  ORFs removed with less than {bc_threshold} barcodes after removing  barcodes with twin peaks: {nrows_dpeaks_removed}"
     )
 
-    # Make one column for dual peak status
-    # and remove the individual columns
-    df["dual_peaks"] = df[f"dual_peaks_{test}"] | df[f"dual_peaks_{reference}"]
-    df = df.drop(columns=[f"dual_peaks_{test}", f"dual_peaks_{reference}"])
+    # Make one column for twin peak status
+    # and remove the indivitwin columns
+    df["twin_peaks"] = df[f"twin_peaks_{test}"] | df[f"twin_peaks_{reference}"]
+    df = df.drop(columns=[f"twin_peaks_{test}", f"twin_peaks_{reference}"])
 else:
-    df["dual_peaks"] = False
+    df["twin_peaks"] = False
 
-# Get number of "good barcodes" for each ORF, i.e. barcodes without dual peaks
-df["good_barcodes"] = df.groupby("orf_id")["dual_peaks"].transform(lambda x: x.value_counts().get(False, 0))
+# Get number of "good barcodes" for each ORF, i.e. barcodes without twin peaks
+df["good_barcodes"] = df.groupby("orf_id")["twin_peaks"].transform(lambda x: x.value_counts().get(False, 0))
 
 ### Compute PSI values:
 logging.info(f"Computing PSI values for {test} vs {reference}")

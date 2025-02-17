@@ -138,7 +138,7 @@ properties:
           minimum: 0
         default: [0.75, 1.0, 1.25]
       exclude_twin_peaks:
-        description: Exclude barcode with dual peaks
+        description: Exclude barcode with twin peaks
         type: boolean
       proportion_threshold:
         description: Proportion threshold for second peak of first peak
