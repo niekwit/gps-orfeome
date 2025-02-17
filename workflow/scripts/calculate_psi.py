@@ -222,6 +222,10 @@ for sample in [reference, test]:
         lambda row: compute_psi(row, sample), axis=1
     ).reset_index(drop=True)
 
+# Save to file
+logging.info(f"Writing barcode-level results to {output_file_csv}")
+df.to_csv(output_file_csv, index=False)
+
 # Calculate mean PSI values for each ORF
 df[f"PSI_{reference}_mean"] = df.groupby("orf_id")[f"PSI_{reference}"].transform("mean")
 df[f"PSI_{test}_mean"] = df.groupby("orf_id")[f"PSI_{test}"].transform("mean")
@@ -332,9 +336,6 @@ df[f"stabilised_in_{test}_hc"] = df[f"stabilised_in_{test}"] & df["high_confiden
 df[f"destabilised_in_{test}_hc"] = df[f"destabilised_in_{test}"] & df["high_confidence"]
 df = df.drop(columns=["high_confidence"])
 
-# Save to file
-logging.info(f"Writing pre-ranked results to {output_file_csv}")
-df.to_csv(output_file_csv, index=False)
 
 ### Ranking of hits
 logging.info("Ranking hits")
