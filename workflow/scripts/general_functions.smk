@@ -127,8 +127,12 @@ def wildcard_values():
     """
     Load comparisons for MAGeCK/PSI
     """
-    COMPARISONS = pd.read_csv("config/stats.csv")
-    COMPARISONS = COMPARISONS[["test_condition", "control_condition"]].agg("_vs_".join, axis=1).tolist()
+    test_samples = config["conditions"]["test"]
+    control_samples = config["conditions"]["control"]
+
+    COMPARISONS = []
+    for t,c in zip(test_samples, control_samples):
+        COMPARISONS.append(f"{t}_vs_{c}")
     
     hit_th = config["psi"]["hit_threshold"]
     sd_th = config["psi"]["sd_threshold"]

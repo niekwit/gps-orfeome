@@ -5,6 +5,15 @@ description: Snakemake configuration file
 type: object
 
 properties:
+  conditions:
+    properties:
+      control:
+        description: Control condition
+        type: array
+      treatment:
+        description: Treatment condition
+        type: array
+  
   bin_number:
     description: Number of bins used for FACS
     type: integer
@@ -128,7 +137,7 @@ properties:
           type: number
           minimum: 0
         default: [0.75, 1.0, 1.25]
-      exclude_dual_peaks:
+      exclude_twin_peaks:
         description: Exclude barcode with dual peaks
         type: boolean
       proportion_threshold:
@@ -151,7 +160,7 @@ properties:
     required:
       - sob_threshold
       - hit_threshold
-      - exclude_dual_peaks
+      - exclude_twin_peaks
       - proportion_threshold
       - bc_threshold
       - sd_threshold

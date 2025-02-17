@@ -1,5 +1,13 @@
 orfeome_name: uORFbarcodes
 
+# Conditions in experiment
+# Sample files should be in reads/ directory
+# and have this format condition_1.fastq.gz
+# _1 represents the bin number of that condition
+conditions:
+  test: []
+  control: []
+
 # Number of bins set during sorting of cells 
 # (should be the same for each sample)
 # With bin_number higher than 1, it is assumed that the user wants to perform
@@ -55,20 +63,16 @@ psi:
   # deltaPSI thresholds for hits
   hit_threshold: [0.75, 1.0, 1.25]
 
-  # Exclude barcode with dual peaks
-  exclude_dual_peaks: True
+  # Exclude barcode with twin peaks
+  exclude_twin_peaks: True
   # Proportion threshold for second peak of first peak
   proportion_threshold: [0.35, 0.4, 0.5]  
   
   # Barcode threshold for hits
-  # Only keep ORFs with at least bc_threshold barcodes
+  # Keep ORFs with at least bc_threshold barcodes
   bc_thresholdreshold: 2
  
   # SD threshold for most stringent hits
   # mean deltaPSI > sd_threshold * SD
-  sd_threshold: [2, 2.5]
-
-  # Ranking penalty value to correct for barcode count differences
-  # This is a fraction of the signal-to-noise ratio
-  # SNR - (penalty * SNR) * (barcode_number_median - number_of_barcodes)
-  penalty: [0.1, 0.2, 0.3]
+  sd_threshold: [2, 2.25, 2.5]
+  
