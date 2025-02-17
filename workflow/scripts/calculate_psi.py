@@ -268,7 +268,18 @@ df["z_score_corr"] = df["z_score"] / np.sqrt(1 + (2 / df["good_barcodes"]))
 
 logging.info("Correcting z-scores for intra ORF variability")
 # Correct for delta_PSI_SD
+#df["correction_factor"] = abs(df["delta_PSI_mean"]) / df["delta_PSI_SD"] 
+#df["z_score_corr"] = df["z_score_corr"] * df["correction_factor"]
+#df = df.drop(columns=["correction_factor"])
 df["z_score_corr"] = df["z_score_corr"] / df["delta_PSI_SD"]
+
+logging.info("Correcting z-scores for deltaPSI")
+# Multiply z-scores by absolute delta_PSI value
+# First, scale delta_PSI_mean:
+# delta_PSI that equal cutoff are scaled to 1
+df["delta_PSI_mean_scaled"] = abs(df["delta_PSI_mean"]) / hit_th
+df["z_score_corr"] = df["z_score_corr"] * df["delta_PSI_mean_scaled"]
+df = df.drop(columns=["delta_PSI_mean_scaled"])
 
 logging.info("Scaling z-scores")
 # Scale values between -100 and 100:
