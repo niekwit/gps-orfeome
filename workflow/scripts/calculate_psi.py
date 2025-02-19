@@ -6,6 +6,7 @@
 
 import logging
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
 import numpy as np
 
@@ -30,6 +31,7 @@ sd_th = float(snakemake.wildcards["st"])
 pr_th = float(snakemake.wildcards["pt"])
 bc_threshold = snakemake.config["psi"]["bc_threshold"]
 MAX_BIN = snakemake.config["bin_number"]
+penalty_factor = snakemake.config["psi"]["penalty_factor"]
 output_file_csv = snakemake.output["csv"]
 output_file_rank = snakemake.output["ranked"]
 
@@ -217,6 +219,9 @@ df["good_barcodes"] = df.groupby("orf_id")["twin_peaks"].transform(
     lambda x: x.value_counts().get(False, 0)
 )
 
+# Remove ORFs with less than bc_threshold of good barcodes
+df = df[df["good_barcodes"] >= bc_threshold].reset_index(drop=True)
+
 ### Compute PSI values:
 logging.info(f"Computing PSI values for {test} vs {reference}")
 for sample in [reference, test]:
@@ -244,7 +249,6 @@ df["delta_PSI_SD"] = df.groupby("orf_id")["deltaPSI"].transform("std")
 data = df["delta_PSI_mean"].dropna().unique()
 data = data[~np.isinf(data)]
 
-
 logging.info("Plotting distribution of delta_PSI_mean")
 plt.hist(data, bins=150, color="#419179")
 plt.axvline(data.mean(), color="red", linestyle="dashed", linewidth=1)
@@ -253,30 +257,31 @@ plt.ylabel("Frequency")
 plt.title("Distribution of delta_PSI_mean")
 plt.savefig(snakemake.output["hist"])
 
-# Check if delta_PSI_mean are normally distributed
-# logging.info("Checking if delta_PSI_mean is normally distributed")
-# test = kstest(data, "norm")
-
 logging.info("Calculating z-scores")
 df["z_score"] = (df["delta_PSI_mean"] - df["delta_PSI_mean"].mean()) / df[
     "delta_PSI_mean"
 ].std()
 
 logging.info("Correcting z-scores for number of barcodes")
-# Correct for number of barcodes
-df["z_score_corr"] = df["z_score"] / np.sqrt(1 + (2 / df["good_barcodes"]))
+# Correct for number of barcodes, but only if good barcode number is less than median
+median = df["good_barcodes"].median()
+logging.info(f"  Median number of good barcodes: {median}")
+df["z_score_corr"] = df["z_score"] / np.where(
+    df["good_barcodes"] < median,
+    (np.sqrt(np.maximum(1 + ((median - df["good_barcodes"]) / penalty_factor), 0))),
+    1,  # No correction applied if good_barcodes >= median
+)
 
 logging.info("Correcting z-scores for intra ORF variability")
 # Correct for delta_PSI_SD
-#df["correction_factor"] = abs(df["delta_PSI_mean"]) / df["delta_PSI_SD"] 
-#df["z_score_corr"] = df["z_score_corr"] * df["correction_factor"]
-#df = df.drop(columns=["correction_factor"])
 df["z_score_corr"] = df["z_score_corr"] / df["delta_PSI_SD"]
 
 logging.info("Correcting z-scores for deltaPSI")
 # Multiply z-scores by absolute delta_PSI value
 # First, scale delta_PSI_mean:
-# delta_PSI that equal cutoff are scaled to 1
+# delta_PSI that equal cutoff are scaled to 1 or above
+# This will penalise ORFS with very low delta_PSI values
+# ONLY DO THIS WITH DPSI < THRESHOLD?
 df["delta_PSI_mean_scaled"] = abs(df["delta_PSI_mean"]) / hit_th
 df["z_score_corr"] = df["z_score_corr"] * df["delta_PSI_mean_scaled"]
 df = df.drop(columns=["delta_PSI_mean_scaled"])
@@ -311,15 +316,6 @@ df = df.rename(columns={scaled_col: col})
 # Save to file
 logging.info(f"Writing barcode-level results to {output_file_csv}")
 df.to_csv(output_file_csv, index=False, na_rep="NA")
-
-# IS THIS NEEDED?
-# Sum of read counts for each ORF and each bin
-# for sample in [reference, test]:
-#    # Get columns with bin counts
-#    sample_bins = df.filter(regex=f"^{sample}_").columns
-#    # Get sum of read counts for each ORF and each bin
-#    for bin in sample_bins:
-#        df[bin] = df.groupby("orf_id")[bin].transform("sum")
 
 ### Hit identification
 logging.info("Calling hits")
