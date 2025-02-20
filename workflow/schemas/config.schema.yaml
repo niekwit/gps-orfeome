@@ -136,7 +136,6 @@ properties:
         items:
           type: number
           minimum: 0
-        default: [0.75, 1.0, 1.25]
       exclude_twin_peaks:
         description: Exclude barcode with twin peaks
         type: boolean
@@ -146,6 +145,12 @@ properties:
         items:
           type: number
           minimum: 0
+      penalty_factor:
+        description: Penalty factor for having less than median number of good barcodes
+        type: array
+        items:
+          type: number
+          minimum: 1
       bc_threshold:
         description: Barcode threshold for hits
         type: integer
@@ -162,6 +167,7 @@ properties:
       - hit_threshold
       - exclude_twin_peaks
       - proportion_threshold
+      - penalty_factor
       - bc_threshold
       - sd_threshold
 
