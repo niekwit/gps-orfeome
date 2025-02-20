@@ -147,8 +147,8 @@ else:
         input:
             counts="results/count/counts-aggregated.tsv",
         output:
-            csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}.csv",
-            ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_ranked.csv",
+            csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_barcode.summary.csv",
+            ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_gene.summary.csv",
             hist="results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_dpsi_histogram.png",
         threads: 1
         resources:
@@ -163,9 +163,10 @@ else:
 
     rule plot_barcode_profiles:
         input:
-            csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}.csv",
+            csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_barcode.summary.csv",
+            ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_gene.summary.csv",
         output:
-            flag=temp("results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}/plotting_done.txt"),
+            flag=temp(touch("results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}/plotting_done.txt")),
         params:
             outdir=lambda wc,output: os.path.dirname(output["flag"]),
         threads: 18,
@@ -177,4 +178,21 @@ else:
             "logs/plot_psi/hit-th{ht}_sd-th{st}_prop_th{pt}_{comparison}.log",
         script:
             "../scripts/plot_barcode_profiles.R"
+
+
+    rule plot_dotplot:
+        input:
+            csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_barcode.summary.csv",
+            ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_gene.summary.csv",
+        output:
+            pdf="results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_dotplot.pdf",
+        threads: 1,
+        resources:
+            runtime=5,
+        conda:
+            "../envs/stats.yaml",
+        log:
+            "logs/plot_psi/dotplot_hit-th{ht}_sd-th{st}_prop_th{pt}_{comparison}.log",
+        script:
+            "../scripts/plot_dotplot.R"
 
