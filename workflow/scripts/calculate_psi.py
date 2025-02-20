@@ -38,9 +38,6 @@ def identify_twin_peaks(row, condition, cutoff):
     # Convert to dictionary
     dict_ = dict(zip(keys, values))
 
-    # Sort dictionary by key
-    dict_ = {k: v for k, v in sorted(dict_.items(), key=lambda item: item[0])}
-
     # Get the highest and second highest values in dict_ and their keys
     max_val = max(dict_.values())
     max_key = [k for k, v in dict_.items() if v == max_val][0]
@@ -295,13 +292,17 @@ neg_mask = df[col] < 0
 if df[pos_mask].shape[0] > 0:
     pos_max = df.loc[pos_mask, col].max()
     pos_min = df.loc[pos_mask, col].min()
-    df.loc[pos_mask, scaled_col] = 2 + ((df.loc[pos_mask, col] - pos_min) / (pos_max - pos_min)) * (128 - 2)
+    df.loc[pos_mask, scaled_col] = 2 + (
+        (df.loc[pos_mask, col] - pos_min) / (pos_max - pos_min)
+    ) * (128 - 2)
 
 # Scale negative values (from -128 to -2)
 if df[neg_mask].shape[0] > 0:
     neg_max = df.loc[neg_mask, col].max()
     neg_min = df.loc[neg_mask, col].min()
-    df.loc[neg_mask, scaled_col] = -100 + ((df.loc[neg_mask, col] - neg_min) / (neg_max - neg_min)) * (-2 + 128)
+    df.loc[neg_mask, scaled_col] = -100 + (
+        (df.loc[neg_mask, col] - neg_min) / (neg_max - neg_min)
+    ) * (-2 + 128)
 
 # Ensure zero remains zero if present
 df.loc[df[col] == 0, scaled_col] = 0
