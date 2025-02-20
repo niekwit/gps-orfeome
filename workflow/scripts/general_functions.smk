@@ -64,6 +64,12 @@ def targets():
                     st=SD_TH,
                     pt=PROP_TH,
                 ),
+                expand("results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_dotplot.pdf", zip,
+                    comparison=COMPARISONS,
+                    ht=HIT_TH,
+                    st=SD_TH,
+                    pt=PROP_TH,
+                ),
             ]
         )
     return TARGETS
