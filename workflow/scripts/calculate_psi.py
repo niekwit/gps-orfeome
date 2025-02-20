@@ -1,12 +1,5 @@
-"""
-1. Normalise reads to largest data set.
-2. Compute sum of bins for each sample.
-3. Compute PSI values.
-"""
-
 import logging
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
 import numpy as np
 
@@ -287,7 +280,7 @@ df["z_score_corr"] = df["z_score_corr"] * df["delta_PSI_mean_scaled"]
 df = df.drop(columns=["delta_PSI_mean_scaled"])
 
 logging.info("Scaling z-scores")
-# Scale values between -100 and 100:
+# Scale values between -128 and 128:
 # Scale Negative and Positive Values Separately
 col = "z_score_corr"
 scaled_col = f"{col}_scaled"
@@ -298,20 +291,29 @@ df[scaled_col] = np.nan  # Initialize column with NaN
 pos_mask = df[col] > 0
 neg_mask = df[col] < 0
 
-# Scale positive values (between 0 and 100)
-if df[pos_mask].shape[0] > 0:  # Check if positive values exist
+# Scale positive values (from 2 to 128)
+if df[pos_mask].shape[0] > 0:
     pos_max = df.loc[pos_mask, col].max()
-    if pos_max != 0:  # Avoid division by zero
-        df.loc[pos_mask, scaled_col] = (df.loc[pos_mask, col] / pos_max) * 100
+    pos_min = df.loc[pos_mask, col].min()
+    df.loc[pos_mask, scaled_col] = 2 + ((df.loc[pos_mask, col] - pos_min) / (pos_max - pos_min)) * (128 - 2)
 
-# Scale negative values (between -100 and 0)
-if df[neg_mask].shape[0] > 0:  # Check if negative values exist
+# Scale negative values (from -128 to -2)
+if df[neg_mask].shape[0] > 0:
+    neg_max = df.loc[neg_mask, col].max()
     neg_min = df.loc[neg_mask, col].min()
-    if neg_min != 0:  # Avoid division by zero
-        df.loc[neg_mask, scaled_col] = (df.loc[neg_mask, col] / abs(neg_min)) * 100
+    df.loc[neg_mask, scaled_col] = -100 + ((df.loc[neg_mask, col] - neg_min) / (neg_max - neg_min)) * (-2 + 128)
 
-df = df.drop(columns=[col])
-df = df.rename(columns={scaled_col: col})
+# Ensure zero remains zero if present
+df.loc[df[col] == 0, scaled_col] = 0
+
+# Replace original z_score_corr with scaled values
+df[col] = df[scaled_col]
+df = df.drop(columns=[scaled_col])
+
+# Log2 transform z-scores, while preserving sign
+# Highest/lowest value is -2/2 so log2 is safe when taking absolute value
+# This transformation is done to make it easier to plot
+df["z_score_corr"] = np.log2(abs(df["z_score_corr"])) * np.sign(df["z_score_corr"])
 
 # Save to file
 logging.info(f"Writing barcode-level results to {output_file_csv}")
