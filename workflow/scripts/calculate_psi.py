@@ -22,9 +22,9 @@ exclude_twin_peaks = snakemake.config["psi"]["exclude_twin_peaks"]
 hit_th = float(snakemake.wildcards["ht"])
 sd_th = float(snakemake.wildcards["st"])
 pr_th = float(snakemake.wildcards["pt"])
+penalty_factor = float(snakemake.wildcards["pnth"])
 bc_threshold = snakemake.config["psi"]["bc_threshold"]
 MAX_BIN = snakemake.config["bin_number"]
-penalty_factor = snakemake.config["psi"]["penalty_factor"]
 output_file_csv = snakemake.output["csv"]
 output_file_rank = snakemake.output["ranked"]
 
