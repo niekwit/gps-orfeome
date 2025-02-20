@@ -26,7 +26,7 @@ validate(config, "schemas/config.schema.yaml")
 csv,fasta = csv()
 orfeome_name = config["orfeome_name"]
 SAMPLES = sample_names()
-COMPARISONS, HIT_TH, SD_TH, PROP_TH = wildcard_values()
+COMPARISONS, HIT_TH, SD_TH, PROP_TH, PEN_TH = wildcard_values()
 
 # Import rules
 include: "rules/qc.smk"
