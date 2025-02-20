@@ -58,17 +58,22 @@ def targets():
         TARGETS.extend(
             [
                 expand(
-                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}/plotting_done.txt", zip,
+                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/plotting_done.txt",
+                    zip,
                     comparison=COMPARISONS,
                     ht=HIT_TH,
                     st=SD_TH,
                     pt=PROP_TH,
+                    pnth=PEN_TH,
                 ),
-                expand("results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}/{comparison}_dotplot.pdf", zip,
+                expand(
+                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dotplot.pdf",
+                    zip,
                     comparison=COMPARISONS,
                     ht=HIT_TH,
                     st=SD_TH,
                     pt=PROP_TH,
+                    pnth=PEN_TH,
                 ),
             ]
         )
@@ -137,30 +142,39 @@ def wildcard_values():
     control_samples = config["conditions"]["control"]
 
     COMPARISONS = []
-    for t,c in zip(test_samples, control_samples):
+    for t, c in zip(test_samples, control_samples):
         COMPARISONS.append(f"{t}_vs_{c}")
-    
+
     hit_th = config["psi"]["hit_threshold"]
     sd_th = config["psi"]["sd_threshold"]
     prop_th = config["psi"]["proportion_threshold"]
-    threshold_list = [hit_th, sd_th, prop_th]
+    pen_th = config["psi"]["penalty_factor"]
+    threshold_list = [hit_th, sd_th, prop_th, pen_th]
 
     # All threshold lists should be the same length
-    assert len(hit_th) == len(sd_th) == len(prop_th), "Threshold lists are not the same length"
+    assert (
+        len(hit_th) == len(sd_th) == len(prop_th) == len(pen_th)
+    ), "Threshold lists are not the same length"
 
     # As not all permutations are used (zip argument is used with Snakemake expand),
     # the COMPARIOSNS list is zipped with the threshold lists and should be the same length
-    # as the threshold lists. 
+    # as the threshold lists.
     # Repeat all th values for each comparison
     extended_comparisons = []
     for i in COMPARISONS:
         extended_comparisons.extend([i] * len(hit_th))
-    
+
     extended_thresholds = []
     for i in threshold_list:
         extended_thresholds.append(i * len(COMPARISONS))
 
-    return extended_comparisons, extended_thresholds[0], extended_thresholds[1], extended_thresholds[2]
+    return (
+        extended_comparisons,
+        extended_thresholds[0],
+        extended_thresholds[1],
+        extended_thresholds[2],
+        extended_thresholds[3],
+    )
 
 
 def mageck_control():
