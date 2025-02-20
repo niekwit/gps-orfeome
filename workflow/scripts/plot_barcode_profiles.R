@@ -13,6 +13,7 @@ library(foreach)
 
 # Load Snakemake variables
 data.file <- snakemake@input[["csv"]]
+rank.file <- snakemake@input[["ranked"]]
 comparison <- snakemake@wildcards[["comparison"]]
 test.sample <- str_split(comparison, "_vs_")[[1]][1]
 ref.sample <- str_split(comparison, "_vs_")[[1]][2]
@@ -46,12 +47,13 @@ data <- read_csv(data.file, show_col_types = FALSE) %>%
   select(-ref_sum, -test_sum)
 
 # Get columns that contain hit information
-info.columns <- data %>%
-  as.data.frame() %>%
-  select(c("orf_id", "gene"),
+data.ranked <- read_csv(rank.file) %>%
+  select(c("orf_id"),
          starts_with("stabilised_in_"), 
-         starts_with("destabilised_in_")) %>%
-  colnames()
+         starts_with("destabilised_in_")) 
+columns <- colnames(data.ranked)[2:4]
+data <- data %>%
+  left_join(data.ranked, by = "orf_id")
 
 # Check if barcodes with twin peaks have been removed
 # (assumes that at least one barcode with twin peaks in the entire data set exists)
@@ -65,7 +67,7 @@ if (length(dpeak.values) == 1) {
 }
 
 # Plot each gene and its proportion of reads in bins
-for (column in info.columns[3:length(info.columns)]) {
+for (column in columns) {
   # Create sub directory for each column
   dir <- file.path(outdir, column)
   dir.create(dir, showWarnings = FALSE, recursive = TRUE)
