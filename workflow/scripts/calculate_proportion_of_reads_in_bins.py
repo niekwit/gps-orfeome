@@ -42,6 +42,10 @@ for col in ref_cols:
     df_copy[col] = df_copy[col] / ref_sums
     # Handle possible division by zero
     df_copy[col] = df_copy[col].fillna(0)
+    
+# Add column with comparison name (move to first position)
+# This saves time when plotting
+df_copy.insert(0, "Comparison", comparison)
 
 # Save results
 output = snakemake.output["csv"]
