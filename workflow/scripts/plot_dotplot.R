@@ -38,7 +38,7 @@ destabilised <- data %>%
          z_score_corr < 0)
 
 labels.destabilised <- destabilised %>%
-  filter(destabilised_rank <= 10) %>%
+  filter(destabilised_rank <= 7) %>%
   select(gene, z_score_corr, delta_PSI_mean, delta_PSI_SD) %>%
   distinct()
 
@@ -51,14 +51,14 @@ plotting <-function(data, labels, text, no.legend) {
                              y = -log10(delta_PSI_SD))) +
   geom_point(aes(color = abs(delta_PSI_mean) > dpsi.cutoff,
                  size = abs(delta_PSI_mean))) +
-  theme_cowplot(18) +
+  theme_cowplot(15) +
   scale_color_manual(values = c("TRUE" = "red", "FALSE" = "black"),
                      name = paste("abs(dPSI) >", dpsi.cutoff)) +
   geom_label_repel(data = labels, 
                    aes(label = gene,),
                    box.padding = 0.5, 
                    point.padding = 0.5,
-                   size = 5) +
+                   size = 2.5) +
   labs(title = text,
        x = "z-score",
        y = "-log10(dPSI SD)") +
@@ -79,12 +79,15 @@ plotting <-function(data, labels, text, no.legend) {
 p1 <- plotting(destabilised, labels.destabilised, "Destabilised proteins", TRUE)
 p2 <- plotting(stabilised, labels.stabilised, "Stabilised proteins", FALSE)
 # Extract legend and turn into plot
+# Otherwise dotplot with legend will be too narrow
 legend <- get_legend(p2)
 p2 <- p2 + theme(legend.position = "none")
-p3 <- plot_grid(p1, p2, legend, nrow = 1, rel_widths = c(1, 1, 0.25))
+p3 <- plot_grid(p1, p2, legend, 
+                nrow = 1, 
+                rel_widths = c(1, 1, 0.35))
 
 # Save plot
-ggsave(pdf, p3, width = 20, height = 8)
+ggsave(pdf, p3, width = 10, height = 4)
 
 # Close log file
 sink(log, type = "output")
