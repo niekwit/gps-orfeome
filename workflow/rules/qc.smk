@@ -84,3 +84,19 @@ rule plot_missed_barcodes:
         "../envs/stats.yaml"
     script:
         "../scripts/plot_missed_barcodes.R"
+
+
+rule plot_pca:
+    input:
+        counts="results/count/counts-aggregated.tsv"
+    output:
+        pdf=report("results/qc/pca_plot.pdf", caption="../report/pca.rst", category="PCA")
+    threads: 1
+    resources:
+        runtime=10,
+    log:
+        "logs/pca.log"
+    conda:
+        "../envs/stats.yaml"
+    script:
+        "../scripts/plot_pca.R"
