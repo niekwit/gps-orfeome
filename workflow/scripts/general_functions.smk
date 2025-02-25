@@ -77,6 +77,19 @@ def targets():
                 ),
             ]
         )
+        if multiple_conditions(COMPARISONS):
+            TARGETS.extend(
+                [
+                    expand("results/psi_plots_multi_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/plotting_done.txt", 
+                    zip,
+                    ht=HIT_TH,
+                    st=SD_TH,
+                    pt=PROP_TH,
+                    pnth=PEN_TH),
+                    "results/qc/pca_plot.pdf",
+                ]
+            )
+
     return TARGETS
 
 
@@ -140,6 +153,9 @@ def wildcard_values():
     """
     test_samples = config["conditions"]["test"]
     control_samples = config["conditions"]["control"]
+    assert (
+        len(test_samples) == len(control_samples)
+        ), "Number of test and control samples should be equal"
 
     COMPARISONS = []
     for t, c in zip(test_samples, control_samples):
@@ -157,7 +173,7 @@ def wildcard_values():
     ), "Threshold lists are not the same length"
 
     # As not all permutations are used (zip argument is used with Snakemake expand),
-    # the COMPARIOSNS list is zipped with the threshold lists and should be the same length
+    # the COMPARISONS list is zipped with the threshold lists and should be the same length
     # as the threshold lists.
     # Repeat all th values for each comparison
     extended_comparisons = []
@@ -193,3 +209,15 @@ def mageck_control():
         control = f"--control-gene {file}"
 
     return control
+
+
+def multiple_conditions(comparisons):
+    """
+    Check if multiple comparisons are ent
+    """
+    # Count unique comparisons
+    unique_comparisons = set(comparisons)
+    if len(unique_comparisons) > 1:
+        return True
+    else:
+        return False
