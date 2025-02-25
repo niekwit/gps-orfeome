@@ -300,7 +300,7 @@ if df[pos_mask].shape[0] > 0:
 if df[neg_mask].shape[0] > 0:
     neg_max = df.loc[neg_mask, col].max()
     neg_min = df.loc[neg_mask, col].min()
-    df.loc[neg_mask, scaled_col] = -100 + (
+    df.loc[neg_mask, scaled_col] = -128 + (
         (df.loc[neg_mask, col] - neg_min) / (neg_max - neg_min)
     ) * (-2 + 128)
 
