@@ -11,9 +11,12 @@ library(cowplot)
 library(doParallel)
 library(foreach)
 
+#options(error = utils::dump.frames(dumpto="last.dump.rda"))
+
 # Load Snakemake variables
-data.file <- snakemake@input[["csv"]]
+bin.number <- snakemake@params[["bin_number"]]
 rank.file <- snakemake@input[["ranked"]]
+prop.file <- snakemake@input[["proportions"]]
 comparison <- snakemake@wildcards[["comparison"]]
 test.sample <- str_split(comparison, "_vs_")[[1]][1]
 ref.sample <- str_split(comparison, "_vs_")[[1]][2]
@@ -29,31 +32,20 @@ registerDoParallel(cl)
 print(paste0("Creating output directory: ", outdir))
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
-# Load data and calculate proportion of reads in each bin
-print("Calculating proportion of reads in each bin")
-data <- read_csv(data.file, show_col_types = FALSE) %>%
-  group_by(barcode_id) %>%
-  mutate(
-    # Pre-compute row sums for ref.sample and test.sample columns
-    ref_sum = rowSums(across(starts_with(paste0(ref.sample, "_")), ~ ., .names = "ref_{col}"), na.rm = TRUE),
-    test_sum = rowSums(across(starts_with(paste0(test.sample, "_")), ~ ., .names = "test_{col}"), na.rm = TRUE)
-  ) %>%
-  # Normalize ref.sample and test.sample columns
-  mutate(
-    across(starts_with(paste0(ref.sample, "_")), ~ . / ref_sum, .names = "{col}"),
-    across(starts_with(paste0(test.sample, "_")), ~ . / test_sum, .names = "{col}")
-  ) %>%
-  # Drop intermediate columns if needed
-  select(-ref_sum, -test_sum)
+# Load proportion data 
+data <- read_csv(prop.file) %>%
+  select(barcode_id, orf_id, gene, starts_with(test.sample), 
+         starts_with(ref.sample), twin_peaks, delta_PSI_mean, delta_PSI_SD)
 
 # Get columns that contain hit information
 data.ranked <- read_csv(rank.file) %>%
   select(c("orf_id"),
          starts_with("stabilised_in_"), 
          starts_with("destabilised_in_")) 
-columns <- colnames(data.ranked)[2:4]
+columns <- colnames(data.ranked)[2:5]
 data <- data %>%
-  left_join(data.ranked, by = "orf_id")
+  left_join(data.ranked, by = "orf_id") %>%
+  filter(complete.cases(.))
 
 # Check if barcodes with twin peaks have been removed
 # (assumes that at least one barcode with twin peaks in the entire data set exists)
@@ -84,7 +76,6 @@ for (column in columns) {
                                           "reshape2", 
                                           "cowplot", 
                                           "scales")) %dopar% {
-    print(paste0("Plotting ORF ID: ", id))
     df <- tmp[tmp$gene.id == id, ]
     deltaPSI.mean <- round(unique(df$delta_PSI_mean), 2)
     deltaPSI.sd <- round(unique(df$delta_PSI_SD), 2)
