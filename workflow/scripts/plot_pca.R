@@ -64,8 +64,8 @@ colours <- c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00",
 p <- ggplot(df, aes(x = PC1, 
                     y = PC2, 
                     color = Sample)) +
-  geom_point(size = 8) +
-  theme_cowplot(18) +
+  geom_point(size = 7) +
+  theme_cowplot(16) +
   labs(title = "PCA of barcode profiles",
        x = paste0("PC1 (", round(pca_result$sdev[1] / sum(pca_result$sdev) * 100, 2), "%)"),
        y = paste0("PC2 (", round(pca_result$sdev[2] / sum(pca_result$sdev) * 100, 2), "%)")) +
