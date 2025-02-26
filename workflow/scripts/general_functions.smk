@@ -80,12 +80,14 @@ def targets():
         if multiple_conditions(COMPARISONS):
             TARGETS.extend(
                 [
-                    expand("results/psi_plots_multi_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/plotting_done.txt", 
-                    zip,
-                    ht=HIT_TH,
-                    st=SD_TH,
-                    pt=PROP_TH,
-                    pnth=PEN_TH),
+                    expand(
+                        "results/psi_plots_multi_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/plotting_done.txt",
+                        zip,
+                        ht=HIT_TH,
+                        st=SD_TH,
+                        pt=PROP_TH,
+                        pnth=PEN_TH,
+                    ),
                     "results/qc/pca_plot.pdf",
                 ]
             )
@@ -125,14 +127,16 @@ def sample_names():
     """
     Get sample names from fastq files and check for invalid characters
     """
-    fastq = glob.glob("reads/*.fastq.gz")
+    bin_number = config["bin_number"]
 
-    # Check if fastq files are present
-    assert len(fastq) != 0, "No fastq files (.fastq.gz) found in reads directory"
-
-    sample_names = [os.path.basename(x).replace(".fastq.gz", "") for x in fastq]
+    test_samples = config["conditions"]["test"]
+    control_samples = config["conditions"]["control"]
+    assert len(test_samples) == len(
+        control_samples
+    ), "Number of test and control samples should be equal"
 
     # Check for invalid characters in sample names (non-alphanumeric characters or _)
+    sample_names = list(set(test_samples + control_samples))
     invalid_sample_names = []
     for name in sample_names:
         if not re.search("^[a-zA-Z0-9_]*$", name):
@@ -144,7 +148,33 @@ def sample_names():
         print(f"Invalid character(s) found in sample name(s):\n{invalid_sample_names}")
         sys.exit(1)
 
-    return sample_names
+    # Check if fastq files are named properly and exist
+    if bin_number == 1:
+        fastq = [f"reads/{x}.fastq.gz" for x in sample_names]
+        fastq_not_found = [x for x in fastq if not os.path.exists(x)]
+        if len(fastq_not_found) > 0:
+            fastq_not_found = "\n".join(fastq_not_found)
+            print(f"ERROR: Fastq file(s) not found:\n{fastq_not_found}")
+            sys.exit(1)
+        else:
+            return sample_names
+    else:
+        fastq = [
+            f"reads/{x}_{y}.fastq.gz"
+            for x in sample_names
+            for y in range(1, bin_number + 1)
+        ]
+        fastq_not_found = [x for x in fastq if not os.path.exists(x)]
+        if len(fastq_not_found) > 0:
+            fastq_not_found = "\n".join(fastq_not_found)
+            print(f"ERROR: Fastq file(s) not found:\n{fastq_not_found}")
+            sys.exit(1)
+
+        else:
+            sample_names = [
+                f"{x}_{y}" for x in sample_names for y in range(1, bin_number + 1)
+            ]
+            return sample_names
 
 
 def wildcard_values():
@@ -153,9 +183,9 @@ def wildcard_values():
     """
     test_samples = config["conditions"]["test"]
     control_samples = config["conditions"]["control"]
-    assert (
-        len(test_samples) == len(control_samples)
-        ), "Number of test and control samples should be equal"
+    assert len(test_samples) == len(
+        control_samples
+    ), "Number of test and control samples should be equal"
 
     COMPARISONS = []
     for t, c in zip(test_samples, control_samples):
