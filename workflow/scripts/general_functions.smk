@@ -150,17 +150,17 @@ def sample_names():
 
     # Check if fastq files are named properly and exist
     if bin_number == 1:
-        fastq = [f"reads/{x}.fastq.gz" for x in sample_names]
+        fastq = [f"reads/{x}.fastq{EXT}" for x in sample_names]
         fastq_not_found = [x for x in fastq if not os.path.exists(x)]
         if len(fastq_not_found) > 0:
             fastq_not_found = "\n".join(fastq_not_found)
-            print(f"ERROR: Fastq file(s) not found:\n{fastq_not_found}")
+            (f"ERROR: Fastq file(s) not found:\n{fastq_not_found}")
             sys.exit(1)
         else:
             return sample_names
     else:
         fastq = [
-            f"reads/{x}_{y}.fastq.gz"
+            f"reads/{x}_{y}.fastq{EXT}"
             for x in sample_names
             for y in range(1, bin_number + 1)
         ]
@@ -251,3 +251,20 @@ def multiple_conditions(comparisons):
         return True
     else:
         return False
+
+
+def get_extension():
+    """
+    Get extension for fastq files
+    Can be .gz or bz2
+    """
+    files = glob.glob("reads/*fastq*")
+
+    # Check if fastq files are present
+    assert len(files) > 0, "No fastq files found in reads directory"
+
+    # Check if all fastq files have the same extension
+    extensions = set([os.path.splitext(x)[1] for x in files])
+    assert len(extensions) == 1, "All fastq files should have the same extension"
+
+    return extensions.pop()
