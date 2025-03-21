@@ -37,7 +37,7 @@ rule bowtie2_index:
 
 rule cutadapt:
     input:
-        "reads/{sample}.fastq.gz",
+        f"reads/{{sample}}.fastq{EXT}",
     output:
         fastq=temp("results/trimmed/{sample}.fastq.gz"),
         qc="results/trimmed/{sample}.qc.txt",
