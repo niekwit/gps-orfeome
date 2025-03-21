@@ -22,6 +22,7 @@ validate(config, "schemas/config.schema.yaml")
 # Load stuff
 csv,fasta = csv()
 orfeome_name = config["orfeome_name"]
+EXT = get_extension()
 SAMPLES = sample_names()
 COMPARISONS, HIT_TH, SD_TH, PROP_TH, PEN_TH = wildcard_values()
 
