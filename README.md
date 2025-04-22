@@ -96,12 +96,20 @@ The analysis settings are in `config.yaml`:
 ```yaml
 orfeome_name: uORFbarcodes
 
+# Conditions in experiment
+# Sample files should be in reads/ directory
+# and have this format condition_1.fastq.gz
+# _1 represents the bin number of that condition
+conditions:
+  test: []
+  control: []
+
 # Number of bins set during sorting of cells 
 # (should be the same for each sample)
 # With bin_number higher than 1, it is assumed that the user wants to perform
 # a protein stability analysis using PSI (Protein Stability Index) as a metric.
 # With bin_number = 1, the user wants to perform a pairwise comparison 
-# of ORF counts between two conditions using MAGeCK.
+# of ORF counts between two conditions using MAGeCK/DrugZ.
 bin_number: 1
 
 cutadapt:
@@ -123,25 +131,25 @@ cutadapt:
 csv: 
   # CSV file with the gene/ORF/barcode information
   # 0-indexed column numbers (First column is 0)
-  gene_column: 5 # Column number with gene names
-  orf_column: 3 # Column number with unique ORF names
+  gene_column: 4 # Column number with gene names
+  orf_column: 2 # Column number with unique ORF names
   barcode_id_column: 0 # Column with unique barcode IDs
   sequence_column: 1 # Column number with barcode sequences
 
 # Mismatches allowed during alignment
 mismatch: 0 
 
-# MAGeCK/drugZ can be used when bin_number is set to 1
+# MAGeCK/DrugZ can be used when bin_number is set to 1
 mageck:
   run: True # Run MAGeCK analysis
   extra_mageck_arguments: "--sort-criteria pos" 
   mageck_control_barcodes: all # All or file with control barcodes
   fdr: 0.25 # FDR threshold for downstream mageck analysis
 
-# drugZ can be used when bin_number is set to 1
+# DrugZ can be used when bin_number is set to 1
 drugz:
-  run: True # Run drugZ analysis
-  extra: "" # Extra drugZ arguments
+  run: True # Run DrugZ analysis
+  extra: "" # Extra DrugZ arguments
 
 # Settings for the protein stability analysis when bin number is higher than 1
 psi:
@@ -149,36 +157,24 @@ psi:
   sob_threshold: 100
 
   # deltaPSI thresholds for hits
-  hit_threshold: 0.75
+  hit_threshold: [0.75, 1.0, 1.25]
+
+  # Exclude barcode with twin peaks
+  exclude_twin_peaks: True
+  # Proportion threshold for second peak of first peak
+  proportion_threshold: [0.35, 0.4, 0.5]  
+  
+  # Penalty factor for having less than median number of good barcodes
+  penalty_factor: [4, 4, 4]
 
   # Barcode threshold for hits
-  # Only keep ORFs with at least bc_th barcodes
-  bc_th: 2
-
-  # Correction factor for creating a random third barcode
-  # for orfs with only two barcodes
-  # (otherwise an SD cannot be calculated)
-  correction_factor: 1.2
-  
+  # Keep ORFs with at least bc_threshold barcodes
+  bc_thresholdreshold: 2
+ 
   # SD threshold for most stringent hits
-  # mean Euclidian distance test & control > sd_th * SD
-  sd_th: 4
-
-  # Ranking penalty value to correct for barcode count differences
-  # This is a fraction of the signal-to-noise ratio
-  # SNR - (penalty * SNR) * (barcode_number_median - number_of_barcodes)
-  penalty: 0.1
+  # mean deltaPSI > sd_threshold * SD
+  sd_threshold: [2, 2.25, 2.5]
 ```
-
-The pairwise compatisons for the calculation of deltaPSI values should be defined in `stats.csv`:
-
-| test_condition | control_condition |
-|----------------|-------------------|
-| LbNOX	         |      BirA         |
-| TPNOX	         |      BirA         |
-
-
-The sample names in `stats.csv` should match the file names in the reads/ directory and have the extension `fastq.gz`. A sample for a specific bin should be marked with `_[0-9]`. 
 
 
 ## ORF library data
@@ -235,4 +231,89 @@ $ snakemake --profile $HOME/.config/snakemake/standard/
 ## Citation
 
 If you use this workflow in a paper, don't forget to give credits to the authors by citing the URL of this (original) repository and its DOI (see above).
+
+#
+# Background
+## z-score valculation
+
+With `bin_number` greater than 1, the workflow will perform a protein stability analysis using Protein Stability Index (PSI) as a metric. This is calculated as follows:
+
+$$PSI=\sum_{i=1}^nR_i \times i$$
+
+where:
+- $R_i$ is proportion of the Illumina reads present for an ORF in that given subpopulation $i$.
+- $n$ is the number of bins.
+- $i$ is the bin number.
+
+Between two conditions (test and control), the $\Delta PSI$ is calculated as:
+$$\Delta PSI = PSI_{test} - PSI_{control}$$
+
+Next, the $\Delta PSI$ is normalized to the mean and standard deviation of the $\Delta PSI$ values for all ORFs, resulting in a z-score:
+$$z = \frac{\Delta PSI - \mu}{\sigma}$$
+
+where:
+- $z$ is z-score.
+- $\mu$ is mean $\Delta PSI$ for all ORFs.
+- $\sigma$ is standard deviation of $\Delta PSI$ for all ORFs.
+
+The z-score of ORFs with a low number of `good barcodes` (see note below) is corrected, as follows:
+
+```math
+z_{corr} =
+\begin{cases}
+  \frac{z}{\sqrt{ \left( 1 + \frac{m - n}{p} \right) }} & \text{if } n < m \\
+  z & \text{if } n \ge m
+\end{cases}
+```
+where:
+- $z_{corr}$ is the corrected $z$.
+- $z$ is z-score.
+- $n$ is the number of `good barcodes`.
+- $m$ is median of `good barcodes` of all ORFs.
+- $p$ is user-defined penalty factor.
+
+> [!NOTE]  
+> Good barcodes are defined as those which do not have a twin peak in the distribution of their counts across bins.
+
+SHOW EXAMPLE OF TWIN PEAKS!!!
+
+A final z-score correction is applied to correct for intra-ORF variability:
+
+$$z_{corr}' = \frac{z_{corr}}{SD_{\Delta PSI}} \times \frac{|\Delta PSI|}{h} $$
+
+where:
+- $z_{corr}'$ is the final corrected z-score.
+- $SD_{\Delta PSI}$ is standard deviation of $\Delta PSI$ values of individual ORFs.
+- $h$ is user-defined, absolute, $\Delta PSI$ threshold for calling a hit.
+- $|\Delta PSI|$ is absolute value of $\Delta PSI$ for the individual ORF.
+
+## z-score scaling
+
+We next scaled the z-cores to a range of 2 to 128 followed by log2 transformation, while also maintaining the direction of the z-score to aid plotting. As the z-score's direction is important, we scaled the positive and negative z-scores separately.
+
+### Positive z-score scaling
+The scaled positive values, $z_{scaled\_pos}$, are calculated and log2 transformed as follows:
+
+$$z_{scaled\_pos} = log2(L_{pos} + \frac{z_{corr}' - min(D_{pos})}{max(D_{pos}) - min(D_{pos})} \times (U_{pos} - L_{pos}))$$
+
+Where:
+
+- $z_{scaled\_pos}$ is the scaled positive z-score.
+- $z_{corr}'$ is the corrected z-score.
+- $D_{pos}$ represents all the positive values among all $z_{corr}'$ values.
+- $L_{pos}$ is the desired lower bound for the scaled positive values (2).
+- $U_{pos}$ is the desired upper bound for the scaled positive values (128).
+
+### Negative z-score scaling
+The scaled negative values, $z_{scaled\_neg}$, are calculated and log2 transformed as follows:
+
+$$z_{scaled\_neg} = -log2(L_{neg} + \frac{(z_{corr}' - \min(D_{neg}))}{(\max(D_{neg}) - \min(D_{neg}))} \times (U_{neg} - L_{neg}))$$
+
+Where:
+
+- $z_{scaled\_neg}$ is the scaled positive z-score.
+- $z_{corr}'$ is the corrected z-score.
+- $D_{neg}$ represents all the positive values among all $z_{corr}'$ values.
+- $L_{neg}$ is the desired lower bound for the scaled negative values (-128).
+- $U_{neg}$ is the desired upper bound for the scaled negative values (-2).
 
