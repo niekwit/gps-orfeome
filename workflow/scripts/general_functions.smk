@@ -131,6 +131,10 @@ def sample_names():
 
     test_samples = config["conditions"]["test"]
     control_samples = config["conditions"]["control"]
+    if len(test_samples) == 0 or len(control_samples) == 0:
+        raise ValueError(
+            "No test or control samples found in config file. Please check your config file."
+        )
     assert len(test_samples) == len(
         control_samples
     ), "Number of test and control samples should be equal"
