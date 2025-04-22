@@ -47,7 +47,7 @@ if config["bin_number"] == 1:
             log:
                 "logs/mageck_plots/lfc_{comparison}.log"
             script:
-                "../scripts/lfc_plots.R"
+                "../scripts/plot_lfc.R"
 
 
         rule barcode_rank_plot:
