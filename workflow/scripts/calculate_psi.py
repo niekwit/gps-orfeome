@@ -258,7 +258,7 @@ median = df["good_barcodes"].median()
 logging.info(f"  Median number of good barcodes: {median}")
 df["z_score_corr"] = df["z_score"] / np.where(
     df["good_barcodes"] < median,
-    (np.sqrt(np.maximum(1 + ((median - df["good_barcodes"]) / penalty_factor), 0))),
+    (np.sqrt(1 + ((median - df["good_barcodes"]) / penalty_factor))),
     1,  # No correction applied if good_barcodes >= median
 )
 
