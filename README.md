@@ -246,6 +246,7 @@ where:
 - $i$ is the bin number.
 
 Between two conditions (test and control), the $\Delta PSI$ is calculated as:
+
 $$\Delta PSI = PSI_{test} - PSI_{control}$$
 
 Next, the $\Delta PSI$ is normalized to the mean and standard deviation of the $\Delta PSI$ values for all ORFs, resulting in a z-score:
@@ -289,16 +290,16 @@ where:
 
 ## z-score scaling
 
-We next scaled the z-cores to a range of 2 to 128 followed by log2 transformation, while also maintaining the direction of the z-score to aid plotting. As the z-score's direction is important, we scaled the positive and negative z-scores separately.
+We next scaled the z-cores to a range of 2 to 128 followed by log2 transformation, while also maintaining the direction of the z-score to aid plotting. As the z-score's direction is important, we are scaling the positive and negative z-scores separately.
 
 ### Positive z-score scaling
 The scaled positive values, $z_{scaled\_pos}$, are calculated and log2 transformed as follows:
 
-$$z_{scaled\_pos} = log2(L_{pos} + \frac{z_{corr}' - min(D_{pos})}{max(D_{pos}) - min(D_{pos})} \times (U_{pos} - L_{pos}))$$
+$$z_{scaled_pos} = log2(L_{pos} + \frac{z_{corr}' - min(D_{pos})}{max(D_{pos}) - min(D_{pos})} \times (U_{pos} - L_{pos}))$$
 
 Where:
 
-- $z_{scaled\_pos}$ is the scaled positive z-score.
+- $z_{scaled_pos}$ is the scaled positive z-score.
 - $z_{corr}'$ is the corrected z-score.
 - $D_{pos}$ represents all the positive values among all $z_{corr}'$ values.
 - $L_{pos}$ is the desired lower bound for the scaled positive values (2).
@@ -307,13 +308,13 @@ Where:
 ### Negative z-score scaling
 The scaled negative values, $z_{scaled\_neg}$, are calculated and log2 transformed as follows:
 
-$$z_{scaled\_neg} = -log2(L_{neg} + \frac{(z_{corr}' - \min(D_{neg}))}{(\max(D_{neg}) - \min(D_{neg}))} \times (U_{neg} - L_{neg}))$$
+$$z_{scaled_neg} = -log2(L_{neg} + \frac{(z_{corr}' - \min(D_{neg}))}{(\max(D_{neg}) - \min(D_{neg}))} \times (U_{neg} - L_{neg}))$$
 
 Where:
 
-- $z_{scaled\_neg}$ is the scaled positive z-score.
+- $z_{scaled_neg}$ is the scaled negative z-score.
 - $z_{corr}'$ is the corrected z-score.
-- $D_{neg}$ represents all the positive values among all $z_{corr}'$ values.
+- $D_{neg}$ represents all the negative values among all $z_{corr}'$ values.
 - $L_{neg}$ is the desired lower bound for the scaled negative values (-128).
 - $U_{neg}$ is the desired upper bound for the scaled negative values (-2).
 
