@@ -24,11 +24,11 @@ data = pandas.read_csv(csv)
 
 # Calculate proportions
 logging.info("Calculating proportions")
-    
+
 df_copy = data.copy()  # Create a copy to avoid modifying the original DataFrame
 
 # Calculate proportions for Test columns
-test_cols = [f'{test}_{i}' for i in range(1, bins)]
+test_cols = [f"{test}_{i}" for i in range(1, bins)]
 test_sums = df_copy[test_cols].sum(axis=1)  # Sum across rows for Test columns
 for col in test_cols:
     df_copy[col] = df_copy[col] / test_sums
@@ -36,13 +36,13 @@ for col in test_cols:
     df_copy[col] = df_copy[col].fillna(0)
 
 # Calculate proportions for Reference columns
-ref_cols = [f'{ref}_{i}' for i in range(1, bins)]
+ref_cols = [f"{ref}_{i}" for i in range(1, bins)]
 ref_sums = df_copy[ref_cols].sum(axis=1)
 for col in ref_cols:
     df_copy[col] = df_copy[col] / ref_sums
     # Handle possible division by zero
     df_copy[col] = df_copy[col].fillna(0)
-    
+
 # Add column with comparison name (move to first position)
 # This saves time when plotting
 df_copy.insert(0, "Comparison", comparison)
@@ -51,4 +51,3 @@ df_copy.insert(0, "Comparison", comparison)
 output = snakemake.output["csv"]
 logging.info(f"Saving results to {output}")
 df_copy.to_csv(output, index=False)
-
