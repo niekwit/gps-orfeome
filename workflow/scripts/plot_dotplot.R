@@ -25,8 +25,7 @@ data <- data %>%
 # Split data in stabilised and destabilised genes/ORFs
 # And log2 transform z_score_corr (preserve sign)
 stabilised <- data %>%
-  filter(delta_PSI_mean > 0,
-         z_score_corr > 0)
+  filter(delta_PSI_mean > 0, z_score_corr > 0)
 
 labels.stabilised <- stabilised %>%
   filter(stabilised_rank <= 7) %>%
@@ -34,8 +33,7 @@ labels.stabilised <- stabilised %>%
   distinct()
 
 destabilised <- data %>%
-  filter(delta_PSI_mean < 0,
-         z_score_corr < 0)
+  filter(delta_PSI_mean < 0, z_score_corr < 0)
 
 labels.destabilised <- destabilised %>%
   filter(destabilised_rank <= 7) %>%
@@ -43,37 +41,39 @@ labels.destabilised <- destabilised %>%
   distinct()
 
 # Determine shared size limits for dot sizes
-size_limits <- range(0 : ceiling(max(abs(data$delta_PSI_mean))))
+size_limits <- range(0:ceiling(max(abs(data$delta_PSI_mean))))
 range <- range(c(size_limits[1], size_limits[length(size_limits)]))
 
-plotting <-function(data, labels, text, no.legend) {
-  p <- ggplot(data, aes(x = z_score_corr, 
-                             y = -log10(delta_PSI_SD))) +
-  geom_point(aes(color = abs(delta_PSI_mean) > dpsi.cutoff,
-                 size = abs(delta_PSI_mean))) +
-  theme_cowplot(15) +
-  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "black"),
-                     name = paste("abs(dPSI) >", dpsi.cutoff)) +
-  geom_label_repel(data = labels, 
-                   aes(label = gene,),
-                   box.padding = 0.5, 
-                   point.padding = 0.5,
-                   size = 2.5) +
-  labs(title = text,
-       x = "z-score",
-       y = "-log10(dPSI SD)") +
-  scale_size_continuous(limits = size_limits, 
-                        range = range) +
-  guides(
+plotting <- function(data, labels, text, no.legend) {
+  p <- ggplot(data, aes(x = z_score_corr, y = -log10(delta_PSI_SD))) +
+    geom_point(aes(
+      color = abs(delta_PSI_mean) > dpsi.cutoff,
+      size = abs(delta_PSI_mean)
+    )) +
+    theme_cowplot(15) +
+    scale_color_manual(
+      values = c("TRUE" = "red", "FALSE" = "black"),
+      name = paste("abs(dPSI) >", dpsi.cutoff)
+    ) +
+    geom_label_repel(
+      data = labels,
+      aes(label = gene, ),
+      box.padding = 0.5,
+      point.padding = 0.5,
+      size = 2.5
+    ) +
+    labs(title = text, x = "z-score", y = "-log10(dPSI SD)") +
+    scale_size_continuous(limits = size_limits, range = range) +
+    guides(
       color = guide_legend(title = paste("|dPSI| >", dpsi.cutoff)),
       size = guide_legend(title = "|dPSI|")
     )
-  
+
   if (no.legend) {
     p <- p + theme(legend.position = "none")
   }
   return(p)
-} 
+}
 
 # Create plots
 p1 <- plotting(destabilised, labels.destabilised, "Destabilised proteins", TRUE)
@@ -82,9 +82,7 @@ p2 <- plotting(stabilised, labels.stabilised, "Stabilised proteins", FALSE)
 # Otherwise dotplot with legend will be too narrow
 legend <- get_legend(p2)
 p2 <- p2 + theme(legend.position = "none")
-p3 <- plot_grid(p1, p2, legend, 
-                nrow = 1, 
-                rel_widths = c(1, 1, 0.35))
+p3 <- plot_grid(p1, p2, legend, nrow = 1, rel_widths = c(1, 1, 0.35))
 
 # Save plot
 ggsave(pdf, p3, width = 10, height = 4)

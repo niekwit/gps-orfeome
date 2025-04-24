@@ -33,9 +33,11 @@ for (column in names(data)[sapply(data, is.numeric)]) {
 
 # Reshape data to get a sample and bin column
 data_long <- data %>%
-  pivot_longer(cols = -c(barcode_id, orf_id, gene),
-               names_to = "variable",
-               values_to = "count") %>%
+  pivot_longer(
+    cols = -c(barcode_id, orf_id, gene),
+    names_to = "variable",
+    values_to = "count"
+  ) %>%
   separate(variable, into = c("sample", "bin"), sep = "_")
 
 # Prepare data for PCA:
@@ -59,20 +61,35 @@ df <- pca_result$rotation %>%
   rownames_to_column(var = "Sample")
 
 # Create plot
-colours <- c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", 
-             "#FFFF33", "#A65628", "#F781BF", "#999999")
-p <- ggplot(df, aes(x = PC1, 
-                    y = PC2, 
-                    color = Sample)) +
+colours <- c(
+  "#E41A1C",
+  "#377EB8",
+  "#4DAF4A",
+  "#984EA3",
+  "#FF7F00",
+  "#FFFF33",
+  "#A65628",
+  "#F781BF",
+  "#999999"
+)
+p <- ggplot(df, aes(x = PC1, y = PC2, color = Sample)) +
   geom_point(size = 7) +
   theme_cowplot(16) +
-  labs(title = "PCA of barcode profiles",
-       x = paste0("PC1 (", round(pca_result$sdev[1] / sum(pca_result$sdev) * 100, 2), "%)"),
-       y = paste0("PC2 (", round(pca_result$sdev[2] / sum(pca_result$sdev) * 100, 2), "%)")) +
+  labs(
+    title = "PCA of barcode profiles",
+    x = paste0(
+      "PC1 (",
+      round(pca_result$sdev[1] / sum(pca_result$sdev) * 100, 2),
+      "%)"
+    ),
+    y = paste0(
+      "PC2 (",
+      round(pca_result$sdev[2] / sum(pca_result$sdev) * 100, 2),
+      "%)"
+    )
+  ) +
   scale_color_manual(values = colours[1:length(df$Sample)]) +
-  geom_label_repel(data = df, 
-                  aes(label = Sample), 
-                  size = 5,) +
+  geom_label_repel(data = df, aes(label = Sample), size = 5, ) +
   theme(legend.position = "none")
 
 # Save plot
