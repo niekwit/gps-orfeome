@@ -325,15 +325,13 @@ logging.info("Calling hits")
 
 # Identify ORFs that are stabilised in test condition
 df[f"stabilised_in_{test}"] = df["delta_PSI_mean"] >= hit_th
-sum_ = df[["orf_id", f"stabilised_in_{test}"]].drop_duplicates()
-sum_ = sum_[f"stabilised_in_{test}"].sum()
-logging.info(f"  Number of stabilised ORFs in {test}: {sum_}")
+stab = len(df[(df[f"stabilised_in_{test}"])]["orf_id"].unique())
+logging.info(f"  Number of stabilised ORFs in {test}: {stab}")
 
 # Identify ORFs that are destabilised in test condition
 df[f"destabilised_in_{test}"] = df["delta_PSI_mean"] <= -hit_th
-sum_ = df[["orf_id", f"destabilised_in_{test}"]].drop_duplicates()
-sum_ = sum_[f"destabilised_in_{test}"].sum()
-logging.info(f"  Number of destabilised ORFs in {test}: {sum_}")
+destab = len(df[(df[f"destabilised_in_{test}"])]["orf_id"].unique())
+logging.info(f"  Number of destabilised ORFs in {test}: {destab}")
 
 # Identify high confidence hits:
 # ORFs with delta_PSI_mean >= sd_th * delta_PSI_SD &
@@ -342,9 +340,13 @@ df["high_confidence"] = (abs(df["delta_PSI_mean"]) >= sd_th * df["delta_PSI_SD"]
     abs(df["delta_PSI_mean"]) >= hit_th
 )
 
-hc_stabilised = len(df[(df[f"stabilised_in_{test}"]) & (df["high_confidence"])])
+hc_stabilised = len(
+    df[(df[f"stabilised_in_{test}"]) & (df["high_confidence"])]["orf_id"].unique()
+)
 logging.info(f"  Number of high confidence stabilised ORFs in {test}: {hc_stabilised}")
-hc_destabilised = len(df[(df[f"destabilised_in_{test}"]) & (df["high_confidence"])])
+hc_destabilised = len(
+    df[(df[f"destabilised_in_{test}"]) & (df["high_confidence"])]["orf_id"].unique()
+)
 logging.info(
     f"  Number of high confidence destabilised ORFs in {test}: {hc_destabilised}"
 )
