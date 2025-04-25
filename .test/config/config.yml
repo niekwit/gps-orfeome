@@ -1,0 +1,81 @@
+orfeome_name: orfs
+
+# Conditions in experiment
+# Sample files should be in reads/ directory
+# and have this format condition_1.fastq.gz
+# _1 represents the bin number of that condition
+conditions:
+  test: [Test]
+  control: [Control]
+
+# Number of bins set during sorting of cells 
+# (should be the same for each sample)
+# With bin_number higher than 1, it is assumed that the user wants to perform
+# a protein stability analysis using PSI (Protein Stability Index) as a metric.
+# With bin_number = 1, the user wants to perform a pairwise comparison 
+# of ORF counts between two conditions using MAGeCK/DrugZ.
+bin_number: 6
+
+cutadapt:
+  # Sequence of an adapter ligated to the 5' end. 
+  # The adapter and any preceding bases are trimmed.
+  five_prime_adapter: CCAGTAGGTCCACTATGAGT
+  
+  # Sequence of an adapter ligated to the 3' end.
+  # The adapter and subsequent bases are trimmed.
+  three_prime_adapter: AGCTGTGTAAGCGGAACTAG
+
+  # Length of barcode sequence
+  # This option will override 3'adapter sequence trimming if > 0
+  barcode_length: 20
+  
+  # Extra cutadapt arguments
+  extra: "--discard-untrimmed" 
+
+csv: 
+  # CSV file with the gene/ORF/barcode information
+  # 0-indexed column numbers (First column is 0)
+  gene_column: 3 # Column number with gene names
+  orf_column: 2 # Column number with unique ORF names
+  barcode_id_column: 0 # Column with unique barcode IDs
+  sequence_column: 1 # Column number with barcode sequences
+
+# Mismatches allowed during alignment
+mismatch: 0 
+
+# MAGeCK/DrugZ can be used when bin_number is set to 1
+mageck:
+  run: True # Run MAGeCK analysis
+  extra_mageck_arguments: "--sort-criteria pos" 
+  mageck_control_barcodes: all # All or file with control barcodes
+  fdr: 0.25 # FDR threshold for downstream mageck analysis
+
+# DrugZ can be used when bin_number is set to 1
+drugz:
+  run: True # Run DrugZ analysis
+  extra: "" # Extra DrugZ arguments
+
+# Settings for the protein stability analysis when bin number is higher than 1
+psi:
+  # Minimum value of sum of barcode counts across all bins to keep
+  sob_threshold: 10
+
+  # deltaPSI thresholds for hits
+  hit_threshold: [1.25]
+
+  # Exclude barcode with twin peaks
+  exclude_twin_peaks: True
+  # Proportion threshold for second peak of first peak
+  proportion_threshold: [0.4]  
+  
+  # Penalty factor for having less than median number of good barcodes
+  penalty_factor: [4]
+
+  # Barcode threshold for hits
+  # Keep ORFs with at least bc_threshold barcodes
+  bc_thresholdreshold: 2
+ 
+  # SD threshold for most stringent hits
+  # mean deltaPSI > sd_threshold * SD
+  sd_threshold: [2.25]
+  
