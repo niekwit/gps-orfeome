@@ -44,26 +44,20 @@ Prepare an analysis directory as follows:
 │   ├── config.yml
 │   └── stats.csv
 ├── reads
-│   ├── BirA_1.fastq.gz
-│   ├── BirA_2.fastq.gz
-│   ├── BirA_3.fastq.gz
-│   ├── BirA_4.fastq.gz
-│   ├── BirA_5.fastq.gz
-│   ├── BirA_6.fastq.gz
-│   ├── LbNOX_1.fastq.gz
-│   ├── LbNOX_2.fastq.gz
-│   ├── LbNOX_3.fastq.gz
-│   ├── LbNOX_4.fastq.gz
-│   ├── LbNOX_5.fastq.gz
-│   ├── LbNOX_6.fastq.gz
-│   ├── TPNOX_1.fastq.gz
-│   ├── TPNOX_2.fastq.gz
-│   ├── TPNOX_3.fastq.gz
-│   ├── TPNOX_4.fastq.gz
-│   ├── TPNOX_5.fastq.gz
-│   └── TPNOX_6.fastq.gz
+│   ├── Control_1.fastq.gz
+│   ├── Control_2.fastq.gz
+│   ├── Control_3.fastq.gz
+│   ├── Control_4.fastq.gz
+│   ├── Control_5.fastq.gz
+│   ├── Control_6.fastq.gz
+│   ├── Test_1.fastq.gz
+│   ├── Test_2.fastq.gz
+│   ├── Test_3.fastq.gz
+│   ├── Test_4.fastq.gz
+│   ├── Test_5.fastq.gz
+│   └── Test_6.fastq.gz
 ├── resources
-│   └── uORF_ORF81_plusHIF1a.csv
+│   └── uORF_ORF81.csv
 └── workflow
     ├── envs
     │   └── stats.yaml
@@ -101,8 +95,8 @@ orfeome_name: uORFbarcodes
 # and have this format condition_1.fastq.gz
 # _1 represents the bin number of that condition
 conditions:
-  test: []
-  control: []
+  test: [Test]
+  control: [Control]
 
 # Number of bins set during sorting of cells 
 # (should be the same for each sample)
@@ -162,7 +156,7 @@ psi:
   # Exclude barcode with twin peaks
   exclude_twin_peaks: True
   # Proportion threshold for second peak of first peak
-  proportion_threshold: [0.35, 0.4, 0.5]  
+  proportion_threshold: [0.5, 0.4, 0.35]  
   
   # Penalty factor for having less than median number of good barcodes
   penalty_factor: [4, 4, 4]
@@ -173,7 +167,7 @@ psi:
  
   # SD threshold for most stringent hits
   # mean deltaPSI > sd_threshold * SD
-  sd_threshold: [2, 2.25, 2.5]
+  sd_threshold: [2, 2, 2.5]
 ```
 
 
@@ -199,7 +193,7 @@ In `config/config.yaml` set the columns for this info as follows:
 csv: 
   # CSV file with the gene/ORF/barcode information
   # 0-indexed column numbers (First column is 0)
-  gene_column: 4 # Column number with gene names
+  gene_column: 3 # Column number with gene names
   orf_column: 2 # Column number with unique ORF names
   barcode_id_column: 0 # Column with unique barcode IDs
   sequence_column: 1 # Column number with barcode sequences
@@ -241,7 +235,7 @@ With `bin_number` greater than 1, the workflow will perform a protein stability 
 $$PSI=\sum_{i=1}^nR_i \times i$$
 
 where:
-- $R_i$ is proportion of the Illumina reads present for an ORF in that given subpopulation $i$.
+- $R_i$ is the proportion of the Illumina reads present for an ORF in that given subpopulation $i$.
 - $n$ is the number of bins.
 - $i$ is the bin number.
 
@@ -254,9 +248,9 @@ Next, the $\Delta PSI$ is normalized to the mean and standard deviation of the $
 $$z = \frac{\Delta PSI - \mu}{\sigma}$$
 
 where:
-- $z$ is z-score.
-- $\mu$ is mean $\Delta PSI$ for all ORFs.
-- $\sigma$ is standard deviation of $\Delta PSI$ for all ORFs.
+- $z$ is the z-score.
+- $\mu$ is the mean $\Delta PSI$ for all ORFs.
+- $\sigma$ is the standard deviation of $\Delta PSI$ for all ORFs.
 
 The z-score of ORFs with a low number of `good barcodes` (see note below) is corrected, as follows:
 
@@ -267,12 +261,12 @@ z_{corr} =
   z & \text{if } n \ge m
 \end{cases}
 ```
-where:
+Where:
 - $z_{corr}$ is the corrected $z$.
-- $z$ is z-score.
+- $z$ is the z-score.
 - $n$ is the number of `good barcodes`.
-- $m$ is median of `good barcodes` of all ORFs.
-- $p$ is user-defined penalty factor.
+- $m$ is the median of `good barcodes` of all ORFs.
+- $p$ is a user-defined penalty factor.
 
 > [!NOTE]  
 > Good barcodes are defined as those which do not have a twin peak in the distribution of their counts across bins.
@@ -283,11 +277,11 @@ A final z-score correction is applied to correct for intra-ORF variability:
 
 $$z_{corr}' = \frac{z_{corr}}{SD_{\Delta PSI}} \times \frac{|\Delta PSI|}{h} $$
 
-where:
+Where:
 - $z_{corr}'$ is the final corrected z-score.
-- $SD_{\Delta PSI}$ is standard deviation of $\Delta PSI$ values of individual ORFs.
-- $h$ is user-defined, absolute, $\Delta PSI$ threshold for calling a hit.
-- $|\Delta PSI|$ is absolute value of $\Delta PSI$ for the individual ORF.
+- $SD_{\Delta PSI}$ is the standard deviation of $\Delta PSI$ values of individual ORFs.
+- $h$ is a user-defined, absolute, $\Delta PSI$ threshold for calling a hit.
+- $|\Delta PSI|$ is the absolute value of $\Delta PSI$ for the individual ORF.
 
 ## z-score scaling
 
