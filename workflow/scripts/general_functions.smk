@@ -102,12 +102,7 @@ def csv():
     csv = glob.glob("resources/*.csv")
 
     # Check if csv file is present
-    if len(csv) == 0:
-        print(csv)
-        raise ValueError(
-            "No CSV file found in resources directory. Please check your config file."
-        )
-
+    assert len(csv) == 1, "Only one CSV file should be present in resources directory"
     return csv[0], csv[0].replace(".csv", ".fasta")
 
 
