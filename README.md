@@ -1,7 +1,7 @@
 # Snakemake workflow: `gps-orfeome`
 
 [![Snakemake](https://img.shields.io/badge/snakemake-≥8.25.5-brightgreen.svg)](https://snakemake.github.io)
-[![GitHub actions status](https://github.com/niekwit/gps-orfeome/workflows/Tests/badge.svg?branch=main)](https://github.com/niekwit/gps-orfeome/actions?query=branch%3Amain+workflow%3ATests)
+[![Tests](https://github.com/niekwit/gps-orfeome/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/niekwit/gps-orfeome/actions/workflows/main.yml)
 
 
 A Snakemake workflow for `gps-orfeome screen analysis`
