@@ -76,19 +76,8 @@ rule count_barcodes:
         "logs/count/{sample}.log"
     conda:
         "../envs/stats.yaml"
-    shell:
-        "bowtie2 --no-hd "
-        "-p {threads} "
-        "-t -N {params.mm} "
-        "-x {params.idx} "
-        "-U {input.fq} "
-        "2> {log} | "
-        "sed '/XS:/d' | "
-        "cut -f 3 | "
-        "sort | "
-        "uniq -c | "
-        "sed '1d;s/^ *//' "
-        "> {output}"
+    script:
+        "../scripts/count_barcodes.sh"
 
 
 rule create_count_table:
