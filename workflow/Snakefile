@@ -1,7 +1,8 @@
 include: "scripts/general_functions.smk"
 
+
 # Workflow version
-VERSION = "v0.5.0" 
+VERSION = "v0.5.0"
 
 # Set minimum snakemake version
 min_version("8.25.5")
@@ -12,38 +13,48 @@ wrapper_version = "v5.2.1"
 logger.info(f"Workflow version: {VERSION}")
 logger.info(f"Wrapper version: {wrapper_version}")
 
+
 # Define Docker container
 containerized: f"docker://niekwit/gps-orfeome:{VERSION}"
 
+
 # Load config file
 configfile: "config/config.yml"
+
+
 validate(config, "schemas/config.schema.yaml")
 
 # Load stuff
-csv,fasta = csv()
+csv, fasta = csv()
 orfeome_name = config["orfeome_name"]
 EXT = get_extension()
 SAMPLES = sample_names()
 COMPARISONS, HIT_TH, SD_TH, PROP_TH, PEN_TH = wildcard_values()
+
 
 # Import rules
 include: "rules/qc.smk"
 include: "rules/count.smk"
 include: "rules/stats.smk"
 
+
 # Set target rule
 rule all:
     input:
-        targets()
+        targets(),
+
 
 # Save snakemake terminal output to log file
 time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 snake_log = f"logs/snakemake/{time}_snakemake.log"
 os.makedirs("logs/snakemake", exist_ok=True)
 
-onsuccess: 
+
+onsuccess:
     shell("cp -v {log} {snake_log}")
     logger.info("Analysis finished successfully!")
+
+
 onerror:
     shell("cp -v {log} {snake_log}")
     logger.info(f"Analysis failed...\nCheck {snake_log} for details")

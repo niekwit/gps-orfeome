@@ -1,7 +1,8 @@
 if config["bin_number"] == 1:
     if config["mageck"]["run"]:
+
         rule mageck:
-            input: 
+            input:
                 counts="results/count/counts-aggregated.tsv",
             output:
                 rnw="results/mageck/temp/{comparison}/{comparison}_summary.Rnw",
@@ -16,11 +17,11 @@ if config["bin_number"] == 1:
                 extra=config["mageck"]["extra_mageck_arguments"],
             threads: 2
             resources:
-                runtime=20
+                runtime=20,
             conda:
                 "../envs/stats.yaml"
             log:
-                "logs/mageck/{comparison}.log"
+                "logs/mageck/{comparison}.log",
             shell:
                 "mageck test "
                 "--normcounts-to-file "
@@ -32,39 +33,63 @@ if config["bin_number"] == 1:
                 "{params.extra} "
                 "2> {log}"
 
-
         rule lfc_plots:
             input:
                 "results/mageck/temp/{comparison}/{comparison}.gene_summary.txt",
             output:
-                pos=report("results/mageck_plots/{comparison}/{comparison}.lfc_pos.pdf", caption="../report/lfc_pos.rst", category="MAGeCK plots", subcategory="{comparison}", labels={"Comparison":"{comparison}","Figure": "lfc plot enriched genes"}),
-                neg=report("results/mageck_plots/{comparison}/{comparison}.lfc_neg.pdf", caption="../report/lfc_neg.rst", category="MAGeCK plots", subcategory="{comparison}", labels={"Comparison":"{comparison}","Figure": "lfc plot depleted genes"}),
+                pos=report(
+                    "results/mageck_plots/{comparison}/{comparison}.lfc_pos.pdf",
+                    caption="../report/lfc_pos.rst",
+                    category="MAGeCK plots",
+                    subcategory="{comparison}",
+                    labels={
+                        "Comparison": "{comparison}",
+                        "Figure": "lfc plot enriched genes",
+                    },
+                ),
+                neg=report(
+                    "results/mageck_plots/{comparison}/{comparison}.lfc_neg.pdf",
+                    caption="../report/lfc_neg.rst",
+                    category="MAGeCK plots",
+                    subcategory="{comparison}",
+                    labels={
+                        "Comparison": "{comparison}",
+                        "Figure": "lfc plot depleted genes",
+                    },
+                ),
             threads: 1
             resources:
-                runtime=5
+                runtime=5,
             conda:
                 "../envs/stats.yaml"
             log:
-                "logs/mageck_plots/lfc_{comparison}.log"
+                "logs/mageck_plots/lfc_{comparison}.log",
             script:
                 "../scripts/plot_lfc.R"
-
 
         rule barcode_rank_plot:
             input:
                 "results/mageck/temp/{comparison}/{comparison}.sgrna_summary.txt",
             output:
-                report("results/mageck_plots/{comparison}/barcode_rank.pdf", caption="../report/barcoderank.rst", category="MAGeCK plots", subcategory="{comparison}", labels={"Comparison":"{comparison}","Figure": "Barcode rank plot"})
+                report(
+                    "results/mageck_plots/{comparison}/barcode_rank.pdf",
+                    caption="../report/barcoderank.rst",
+                    category="MAGeCK plots",
+                    subcategory="{comparison}",
+                    labels={
+                        "Comparison": "{comparison}",
+                        "Figure": "Barcode rank plot",
+                    },
+                ),
             threads: 1
             resources:
-                runtime=5
+                runtime=5,
             conda:
                 "../envs/stats.yaml"
             log:
-                "logs/mageck_plots/barcode_rank_{comparison}.log"
+                "logs/mageck_plots/barcode_rank_{comparison}.log",
             script:
                 "../scripts/plot_barcoderank.R"
-
 
         # Change all references of sgRNA to barcode in all relevant files
         rule rename_to_barcode:
@@ -78,14 +103,13 @@ if config["bin_number"] == 1:
                 norm="results/mageck/{comparison}/{comparison}.normalized.txt",
             threads: 1
             resources:
-                runtime=5
+                runtime=5,
             log:
-                "logs/rename_to_barcode/{comparison}.log"
+                "logs/rename_to_barcode/{comparison}.log",
             conda:
                 "../envs/stats.yaml"
             script:
                 "../scripts/rename_to_barcode.py"
-        
 
         rule rename_to_barcode_count_file:
             input:
@@ -94,46 +118,54 @@ if config["bin_number"] == 1:
                 "results/count/barcode-counts-aggregated.tsv",
             threads: 1
             resources:
-                runtime=5
+                runtime=5,
             log:
-                "logs/rename_to_barcode/count_file.log"
+                "logs/rename_to_barcode/count_file.log",
             conda:
                 "../envs/stats.yaml"
             shell:
                 "sed 's/sgRNA/barcode/' {input} > {output} 2> {log}"
 
     if config["drugz"]["run"]:
+
         rule install_drugz:
             output:
                 directory("resources/drugz"),
             log:
-                "logs/drugz/install.log"
+                "logs/drugz/install.log",
             threads: 1
             resources:
-                runtime=5
+                runtime=5,
             conda:
                 "../envs/stats.yaml"
             shell:
                 "git clone https://github.com/hart-lab/drugz.git {output} 2> {log}"
 
-        
         rule drugz:
             input:
                 counts="results/count/counts-aggregated.tsv",
                 drugz="resources/drugz",
             output:
-                report("results/drugz/{comparison}.txt", caption="../report/drugz.rst", category="DrugZ", subcategory="{comparison}", labels={"Comparison":"{comparison}", "Figure":"DrugZ output"})
+                report(
+                    "results/drugz/{comparison}.txt",
+                    caption="../report/drugz.rst",
+                    category="DrugZ",
+                    subcategory="{comparison}",
+                    labels={"Comparison": "{comparison}", "Figure": "DrugZ output"},
+                ),
             params:
                 test=lambda wc, output: wc.comparison.split("_vs_")[0].replace("-", ","),
-                control=lambda wc, output: wc.comparison.split("_vs_")[1].replace("-", ","),
-                extra=config["drugz"]["extra"]
+                control=lambda wc, output: wc.comparison.split("_vs_")[1].replace(
+                    "-", ","
+                ),
+                extra=config["drugz"]["extra"],
             threads: 2
             resources:
-                runtime=15
+                runtime=15,
             conda:
                 "../envs/stats.yaml"
             log:
-                "logs/drugz/{comparison}.log"
+                "logs/drugz/{comparison}.log",
             shell:
                 "python {input.drugz}/drugz.py "
                 "-i {input.counts} "
@@ -143,6 +175,7 @@ if config["bin_number"] == 1:
                 "-o {output} 2> {log} "
 
 else:
+
     rule calculate_psi:
         input:
             counts="results/count/counts-aggregated.tsv",
@@ -152,14 +185,13 @@ else:
             hist="results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_histogram.png",
         threads: 1
         resources:
-            runtime=10
+            runtime=10,
         conda:
             "../envs/stats.yaml"
         log:
-            "logs/calculate_psi/{comparison}/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}.log"
+            "logs/calculate_psi/{comparison}/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}.log",
         script:
             "../scripts/calculate_psi.py"
-
 
     rule calculate_proportion_of_reads_in_bins:
         input:
@@ -167,57 +199,68 @@ else:
         output:
             csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.proportions.csv",
         params:
-            bin_number=config["bin_number"]
+            bin_number=config["bin_number"],
         threads: 1
         resources:
-            runtime=10
+            runtime=10,
         conda:
             "../envs/stats.yaml"
         log:
-            "logs/calculate_proportion_of_reads_in_bins/{comparison}/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}.log"
+            "logs/calculate_proportion_of_reads_in_bins/{comparison}/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}.log",
         script:
             "../scripts/calculate_proportion_of_reads_in_bins.py"
-
 
     rule plot_barcode_profiles:
         input:
             ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
-            proportions="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.proportions.csv"
+            proportions="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.proportions.csv",
         output:
-            flag=temp(touch("results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/plotting_done.txt")),
+            flag=temp(
+                touch(
+                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/plotting_done.txt"
+                )
+            ),
         params:
             outdir=lambda wc, output: os.path.dirname(output["flag"]),
             bin_number=config["bin_number"],
-        threads: 18,
+        threads: 18
         resources:
             runtime=60,
         conda:
-            "../envs/stats.yaml",
+            "../envs/stats.yaml"
         log:
             "logs/plot_psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
         script:
             "../scripts/plot_barcode_profiles.R"
 
-
     rule plot_barcode_multi_conditions_profiles:
         input:
-            ranked=expand("results/psi/hit-th{{ht}}_sd-th{{st}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_gene.summary.csv", comparison=COMPARISONS),
-            proportions=expand("results/psi/hit-th{{ht}}_sd-th{{st}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_barcode.proportions.csv", comparison=COMPARISONS),
+            ranked=expand(
+                "results/psi/hit-th{{ht}}_sd-th{{st}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_gene.summary.csv",
+                comparison=COMPARISONS,
+            ),
+            proportions=expand(
+                "results/psi/hit-th{{ht}}_sd-th{{st}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_barcode.proportions.csv",
+                comparison=COMPARISONS,
+            ),
         output:
-            flag=temp(touch("results/psi_plots_multi_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/plotting_done.txt")),
+            flag=temp(
+                touch(
+                    "results/psi_plots_multi_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/plotting_done.txt"
+                )
+            ),
         params:
             outdir=lambda wc, output: os.path.dirname(output["flag"]),
             bin_number=config["bin_number"],
-        threads: 6,
+        threads: 6
         resources:
             runtime=60,
         conda:
-            "../envs/stats.yaml",
+            "../envs/stats.yaml"
         log:
             "logs/plot_psi_multi_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}.log",
         script:
             "../scripts/plot_barcode_multi_conditions_profiles.R"
-
 
     rule plot_dotplot:
         input:
@@ -225,13 +268,12 @@ else:
             ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
         output:
             pdf="results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dotplot.pdf",
-        threads: 1,
+        threads: 1
         resources:
             runtime=5,
         conda:
-            "../envs/stats.yaml",
+            "../envs/stats.yaml"
         log:
             "logs/plot_psi/dotplot_hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
         script:
             "../scripts/plot_dotplot.R"
-

@@ -2,11 +2,11 @@ rule create_fasta:
     input:
         csv=csv,
     output:
-        fasta=fasta
+        fasta=fasta,
     conda:
         "../envs/stats.yaml"
     log:
-        "logs/create_fasta.log"
+        "logs/create_fasta.log",
     script:
         "../scripts/csv_to_fasta.py"
 
@@ -27,10 +27,10 @@ rule bowtie2_index:
     params:
         extra="",
     log:
-        "logs/bowtie2/index.log"
+        "logs/bowtie2/index.log",
     threads: 6
     resources:
-        runtime=20
+        runtime=20,
     wrapper:
         f"{wrapper_version}/bio/bowtie2/build"
 
@@ -47,33 +47,33 @@ rule cutadapt:
         "logs/cutadapt/{sample}.log",
     threads: 4  # Set desired number of threads here
     resources:
-        runtime=25
+        runtime=25,
     wrapper:
         f"{wrapper_version}/bio/cutadapt/se"
 
 
 rule count_barcodes:
-    input: 
+    input:
         fq="results/trimmed/{sample}.fastq.gz",
         idx=multiext(
-                "resources/bowtie2_index/barcodes",
-                ".1.bt2",
-                ".2.bt2",
-                ".3.bt2",
-                ".4.bt2",
-                ".rev.1.bt2",
-                ".rev.2.bt2",
-            ),
+            "resources/bowtie2_index/barcodes",
+            ".1.bt2",
+            ".2.bt2",
+            ".3.bt2",
+            ".4.bt2",
+            ".rev.1.bt2",
+            ".rev.2.bt2",
+        ),
     output:
-        "results/count/{sample}.barcode.counts.txt"
+        "results/count/{sample}.barcode.counts.txt",
     params:
         mm=config["mismatch"],
         idx=lambda wc, input: input["idx"][0].replace(".1.bt2", ""),
     threads: 8
     resources:
-        runtime=45
+        runtime=45,
     log:
-        "logs/count/{sample}.log"
+        "logs/count/{sample}.log",
     conda:
         "../envs/stats.yaml"
     script:
@@ -88,10 +88,10 @@ rule create_count_table:
         "results/count/counts-aggregated.tsv",
     threads: 1
     resources:
-        runtime=10
+        runtime=10,
     conda:
         "../envs/stats.yaml"
     log:
-        "logs/count/aggregate_counts.log"
+        "logs/count/aggregate_counts.log",
     script:
         "../scripts/create_count_table.py"
