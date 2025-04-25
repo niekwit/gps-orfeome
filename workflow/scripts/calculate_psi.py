@@ -133,6 +133,13 @@ df = pd.concat([df, pd.DataFrame(sample_sums)], axis=1)
 # Remove barcodes where there are low counts in the reference sample
 nrows = df.shape[0]
 df = df[df[f"SOB_{reference}"] > MIN_SOB_THRESHOLD].reset_index(drop=True)
+
+# Raise error if no barcodes remain
+if df.shape[0] == 0:
+    raise ValueError(
+        f"Error: No barcodes remaining after filtering for {reference} with sob_threshold {MIN_SOB_THRESHOLD}"
+    )
+
 low_counts = nrows - df.shape[0]
 logging.info(f"  Barcodes with low counts in {reference}: {low_counts}")
 
