@@ -5,16 +5,16 @@ orfeome_name: uORFbarcodes
 # and have this format condition_1.fastq.gz
 # _1 represents the bin number of that condition
 conditions:
-  test: []
-  control: []
+  test: [Test]
+  control: [Control]
 
 # Number of bins set during sorting of cells 
 # (should be the same for each sample)
 # With bin_number higher than 1, it is assumed that the user wants to perform
 # a protein stability analysis using PSI (Protein Stability Index) as a metric.
 # With bin_number = 1, the user wants to perform a pairwise comparison 
-# of ORF counts between two conditions using MAGeCK.
-bin_number: 1
+# of ORF counts between two conditions using MAGeCK/DrugZ.
+bin_number: 6
 
 cutadapt:
   # Sequence of an adapter ligated to the 5' end. 
@@ -35,7 +35,7 @@ cutadapt:
 csv: 
   # CSV file with the gene/ORF/barcode information
   # 0-indexed column numbers (First column is 0)
-  gene_column: 4 # Column number with gene names
+  gene_column: 3 # Column number with gene names
   orf_column: 2 # Column number with unique ORF names
   barcode_id_column: 0 # Column with unique barcode IDs
   sequence_column: 1 # Column number with barcode sequences
@@ -68,6 +68,9 @@ psi:
   # Proportion threshold for second peak of first peak
   proportion_threshold: [0.35, 0.4, 0.5]  
   
+  # Penalty factor for having less than median number of good barcodes
+  penalty_factor: [4, 4, 4]
+
   # Barcode threshold for hits
   # Keep ORFs with at least bc_threshold barcodes
   bc_thresholdreshold: 2
