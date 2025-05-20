@@ -229,7 +229,7 @@ If you use this workflow in a paper, don't forget to give credits to the authors
 
 
 # Background
-## z-score valculation
+## z-score calculation
 
 With `bin_number` greater than 1, the workflow will perform a protein stability analysis using Protein Stability Index (PSI) as a metric. This is calculated as follows:
 
@@ -270,9 +270,11 @@ Where:
 - $p$ is a user-defined penalty factor.
 
 > [!NOTE]  
-> Good barcodes are defined as those which do not have a twin peak in the distribution of their counts across bins.
+> Good barcodes are defined as those which do not have a twin peak in the distribution of their counts across bins. These twin peaks are defined as having two peaks that are at least two bins  apart $(\Delta Bin > 1)$ and the second peak has to be a minimum proportion of the highest peak. This proportion is defined by the user in the config.yaml file (`proportion_threshold`). See the example below for a visual representation of this. Not all twin peaks are marked in this example.
 
-SHOW EXAMPLE OF TWIN PEAKS!!!
+
+![Twin peaks example](images/twin_peak_example.png "Twin peaks example")
+
 
 A final z-score correction is applied to correct for intra-ORF variability:
 
