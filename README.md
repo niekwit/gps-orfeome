@@ -271,8 +271,6 @@ Where:
 
 > [!NOTE]  
 > Good barcodes are defined as those which do not have a twin peak in the distribution of their counts across bins. These twin peaks are defined as having two peaks that are at least two bins  apart $(\Delta Bin > 1)$ and the second peak has to be a minimum proportion of the highest peak. This proportion is defined by the user in the config.yaml file (`proportion_threshold`). See the example below for a visual representation of this. Not all twin peaks are marked in this example.
-
-
 ![Twin peaks example](images/twin_peak_example.png "Twin peaks example")
 
 
