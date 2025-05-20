@@ -1,12 +1,98 @@
 import datetime
-import os
-import glob
-import sys
-import re
+import os, glob, sys, re
+import socket, platform
 import pandas as pd
-from snakemake.utils import min_version, validate
 from snakemake.logging import logger
 from snakemake.shell import shell
+
+
+# Workflow version
+VERSION = "v0.5.0"
+wrapper_version = "v5.2.1"
+
+## This header can help with debugging, extend later with more info
+# https://github.com/moiexpositoalonsolab/grenepipe/blob/53912b0749f90c7c29ecde2855657318e1269020/workflow/rules/initialize.smk
+indent = 21
+
+# Get some info on the platform and OS
+pltfrm = platform.platform() + "\n" + (" " * indent) + platform.version()
+try:
+    # Not available in all versions, so we need to catch this
+    ld = platform.linux_distribution()
+    if len(ld):
+        pltfrm += "\n" + (" " * indent) + ld
+    del ld
+except:
+    pass
+try:
+    # Mac OS version comes back as a nested tuple?!
+    # Need to merge the tuples...
+    def merge_tuple(x, bases=(tuple, list)):
+        for e in x:
+            if type(e) in bases:
+                for e in merge_tuple(e, bases):
+                    yield e
+            else:
+                yield e
+
+    mv = " ".join(merge_tuple(platform.mac_ver()))
+    if not mv.isspace():
+        pltfrm += "\n" + (" " * indent) + mv
+    del mv, merge_tuple
+except:
+    pass
+
+# Get nicely wrapped command line
+cmdline = sys.argv[0]
+for i in range(1, len(sys.argv)):
+    if sys.argv[i].startswith("-"):
+        cmdline += "\n" + (" " * indent) + sys.argv[i]
+    else:
+        cmdline += " " + sys.argv[i]
+
+logger.info(
+    "============================================================================="
+)
+logger.info("")
+# https://texteditor.com/multiline-text-art/
+logger.info(r"                     ██████╗ ██████╗ ███████╗██╗    ██╗")
+logger.info(r"                    ██╔════╝ ██╔══██╗██╔════╝██║    ██║")
+logger.info(r"                    ██║  ███╗██████╔╝███████╗██║ █╗ ██║")
+logger.info(r"                    ██║   ██║██╔═══╝ ╚════██║██║███╗██║")
+logger.info(r"                    ╚██████╔╝██║     ███████║╚███╔███╔╝")
+logger.info(r"                     ╚═════╝ ╚═╝     ╚══════╝ ╚══╝╚══╝ ")
+logger.info("")
+logger.info(
+    "  Date:              " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+)
+logger.info("  Platform:          " + pltfrm)
+logger.info("  Python:            " + str(sys.version.split(" ")[0]))
+logger.info("  Snakemake:         " + snakemake.__version__)
+logger.info("  GPSW:              " + VERSION)
+logger.info("  Wrapper:           " + wrapper_version)
+logger.info("  Command:           " + cmdline)
+logger.info("")
+
+# Print contents of profile if parsed from command line
+# i.e. if --profile flag used
+if "--profile" in sys.argv:
+    profile = sys.argv[sys.argv.index("--profile") + 1]
+    file_ = os.path.join(profile, "config.yaml")
+    logger.info("  Using profile:     " + file_)
+    counter = 0
+    with open(file_, "r") as file:
+        for line in file:
+            if counter == 0:
+                logger.info("  Profile contents:  " + line.strip())
+                counter += 1
+            else:
+                logger.info(" " * indent + line.strip())
+                counter += 1
+
+logger.info(
+    "============================================================================="
+)
+logger.info("")
 
 
 def targets():

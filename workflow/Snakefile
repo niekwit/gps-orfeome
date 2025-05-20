@@ -1,21 +1,4 @@
-include: "scripts/general_functions.smk"
-
-
-# Workflow version
-VERSION = "v0.5.0"
-
-# Set minimum snakemake version
-min_version("8.25.5")
-
-# Wrapper version
-wrapper_version = "v5.2.1"
-
-logger.info(f"Workflow version: {VERSION}")
-logger.info(f"Wrapper version: {wrapper_version}")
-
-
-# Define Docker container
-containerized: f"docker://niekwit/gps-orfeome:{VERSION}"
+from snakemake.utils import min_version, validate
 
 
 # Load config file
@@ -23,6 +6,18 @@ configfile: "config/config.yml"
 
 
 validate(config, "schemas/config.schema.yaml")
+
+
+include: "scripts/general_functions.smk"
+
+
+# Set minimum snakemake version
+min_version("8.25.5")
+
+
+# Define Docker container
+containerized: f"docker://niekwit/gps-orfeome:{VERSION}"
+
 
 # Load stuff
 csv, fasta = csv()
