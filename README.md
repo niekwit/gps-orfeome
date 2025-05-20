@@ -3,7 +3,7 @@
 [![Snakemake](https://img.shields.io/badge/snakemake-≥8.25.5-brightgreen.svg)](https://snakemake.github.io)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Tests](https://github.com/niekwit/gps-orfeome/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/niekwit/gps-orfeome/actions/workflows/main.yml)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15473715.svg)](https://doi.org/10.5281/zenodo.15473716)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15473715.svg)](https://doi.org/10.5281/zenodo.15473715)
 
 
 
