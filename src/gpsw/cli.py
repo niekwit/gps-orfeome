@@ -34,7 +34,7 @@ def fetch_code(args):
         pattern = r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$"
         if not re.match(pattern, tag):
             print(
-                f"Error: Invalid tag format '{tag}'. Tags should be in format vX.X.X (e.g., v1.0.0)."
+                f"Error: Invalid tag format '{tag}'. Tags should be in format X.X.X (e.g., 1.0.0)."
             )
             sys.exit(1)
 
