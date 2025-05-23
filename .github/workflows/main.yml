@@ -6,12 +6,16 @@ on:
   pull_request:
     branches: [ main ]
 
-
 jobs:
   Formatting:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Add this step if Super-Linter needs to import your package
+      #- name: Install gpsw for formatting
+      #  run: |
+      #    python -m pip install --upgrade pip
+      #    pip install -e .
       - name: Formatting
         uses: github/super-linter@v5
         env:
@@ -24,75 +28,71 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11' # Or whatever you're using.
+    - name: Install gpsw for linting
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e . # Install the package so Snakemake can find it for linting
     - name: Lint workflow
       uses: snakemake/snakemake-github-action@v2
       with:
         directory: .test
         snakefile: workflow/Snakefile
+        snakemake-version: 8.25.5 # Forces the specific Snakemake version
         args: "--lint"
 
   Unit-Tests:
-      runs-on: ubuntu-latest
-      needs: [Linting, Formatting] 
-      steps:
-        - uses: actions/checkout@v4
-        - name: Set up Python
-          uses: actions/setup-python@v5
-          with:
-            python-version: '3.12' 
+    runs-on: ubuntu-latest
+    needs: [Linting, Formatting]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-        - name: Install dependencies and build package
-          run: |
-            python -m pip install --upgrade pip
-            # Install build-time dependencies (tomli/tomllib for setup.py)
-            pip install tomli # for python < 3.11, harmless on 3.11+
-            # This step executes setup.py, which modifies __init__.py
-            pip install -e .
-            # Install test-specific dependencies
-            pip install unittest-xml-reporting
+      - name: Install dependencies and build package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install unittest-xml-reporting
 
-        - name: Run unit tests
-          run: |
-            python -m unittest discover -s tests -p 'test_*.py' -v # Assuming 'tests' directory
+      - name: Run unit tests
+        run: |
+          python -m unittest discover -s . -p 'test_*.py' -v
 
-  # Renamed to make it clearer what this job does
   End-to-End-Workflow-Test:
     runs-on: ubuntu-latest
-    # This job needs Unit-Tests to pass, as your main code logic depends on it.
     needs:
       - Unit-Tests
     steps:
-    - uses: actions/checkout@v4 # Always checkout the code in each job
+      - uses: actions/checkout@v4
 
-    - name: Set up Python for Snakemake workflow
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11' # Match your workflow's Python env
+      - name: Set up Python for Snakemake workflow
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    - name: Install dependencies and Snakemake
-      run: |
-        python -m pip install --upgrade pip
-        # Install your package in editable mode. This triggers setup.py.
-        pip install -e .
-        # Install Snakemake explicitly in this CI environment if not handled by action itself
-        # The snakemake-github-action typically handles Snakemake installation,
-        # but if your workflow relies on a specific version that isn't handled
-        # by the action's 'snakemake-version' input, you might need it here.
-        # However, the 'snakemake-github-action' does this for you, so usually NOT needed here.
-        # pip install snakemake==8.25.5
+      - name: Install dependencies and Snakemake
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
 
-    - name: Test workflow (Snakemake)
-      uses: snakemake/snakemake-github-action@v2
-      with:
-        directory: .test
-        snakefile: workflow/Snakefile
-        snakemake-version: 8.25.5 # Forces the specific Snakemake version
-        args: "--use-conda --show-failed-logs --cores 3 --conda-cleanup-pkgs cache"
+      - name: Test workflow (Snakemake)
+        uses: snakemake/snakemake-github-action@v2
+        with:
+          directory: .test
+          snakefile: workflow/Snakefile
+          snakemake-version: 8.25.5
+          args: "--use-conda --show-failed-logs --cores 3 --conda-cleanup-pkgs cache"
 
-    - name: Generate Test Report
-      uses: snakemake/snakemake-github-action@v2
-      with:
-        directory: .test
-        snakefile: workflow/Snakefile
-        snakemake-version: 8.25.5 # Forces the specific Snakemake version
-        args: "--report report.zip"
+      - name: Generate Test Report
+        uses: snakemake/snakemake-github-action@v2
+        with:
+          directory: .test
+          snakefile: workflow/Snakefile
+          snakemake-version: 8.25.5
+          args: "--report report.zip"
