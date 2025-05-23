@@ -15,8 +15,26 @@ def read_pyproject_toml():
 # Function to write versions to __init__.py
 def write_version_info(package_name, version, container_image_version):
     init_file = Path(__file__).parent / "src" / package_name / "__init__.py"
-    with open(init_file, "a") as f:  # Use "a" (append) or "w" (write) carefully
-        f.write(f"\n__container_image_version__ = '{container_image_version}'\n")
+
+    # Read existing content
+    content = ""
+    if init_file.exists():
+        with open(init_file, "r") as f:
+            content = f.read()
+
+    # Check if __container_image_version__ already exists
+    if "__container_image_version__" not in content:
+        with open(init_file, "a") as f:
+            f.write(f"\n__container_image_version__ = '{container_image_version}'\n")
+    else:
+        # Update existing line
+        import re
+
+        pattern = r'__container_image_version__\s*=\s*[\'"][^\'"]*[\'"]'
+        replacement = f"__container_image_version__ = '{container_image_version}'"
+        content = re.sub(pattern, replacement, content)
+        with open(init_file, "w") as f:
+            f.write(content)
     print(
         f"Injected __container_image_version__={container_image_version} into {init_file}"
     )
