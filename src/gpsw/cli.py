@@ -31,10 +31,10 @@ def fetch_code(args):
     # Download the tar.gz file in temp dir and untar to specified directory
     with tempfile.TemporaryDirectory(dir=args.directory) as tmpdirname:
         # Validate tag format to prevent URL manipulation
-        pattern = r"^[vV](0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$"
+        pattern = r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$"
         if not re.match(pattern, tag):
             print(
-                f"Error: Invalid tag format '{tag}'. Tags should be in format vX.X.X (e.g., v1.0.0)."
+                f"Error: Invalid tag format '{tag}'. Tags should be in format X.X.X (e.g., 1.0.0)."
             )
             sys.exit(1)
 
