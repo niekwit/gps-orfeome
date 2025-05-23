@@ -29,6 +29,14 @@ def fetch_code(args):
 
     # Download the tar.gz file in temp dir and untar to specified directory
     with tempfile.TemporaryDirectory(dir=args.directory) as tmpdirname:
+        # Validate tag format to prevent URL manipulation
+        pattern = r"^[vV](0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$"
+        if not re.match(pattern, tag):
+            print(
+                f"Error: Invalid tag format '{tag}'. Tags should only contain alphanumeric characters, dots, hyphens, and underscores."
+            )
+            sys.exit(1)
+
         url = "https://github.com/niekwit/gps-orfeome"
         target_url = f"{url}/archive/refs/tags/{tag}.tar.gz"
         download_file = os.path.join(tmpdirname, "target_repo.tar.gz")
