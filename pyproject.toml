@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gpsw"
-version = "0.6.0"
+version = "0.6.1"
 authors = [
     { name="Niek Wit", email="nw416@cam.ac.uk" },
 ]
@@ -32,4 +32,9 @@ gpsw = "gpsw.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"} 
-packages = ["gpsw"] 
+packages = ["gpsw"]
+
+[tool.gpsw]
+# Some GPSW versions have no change in the software environment.
+# So an older container image can be used to save time and space.
+container_image_version = "0.6.0"

@@ -4,6 +4,7 @@ import socket, platform
 from importlib.metadata import version, PackageNotFoundError
 
 import pandas as pd
+from gpsw import __container_image_version__
 
 from snakemake.logging import logger
 from snakemake.shell import shell
@@ -20,6 +21,7 @@ def get_package_version():
 
 # Workflow version
 VERSION = get_package_version()
+DOCKER_VERSION = __container_image_version__
 wrapper_version = "v5.2.1"
 
 ## This header can help with debugging, extend later with more info
@@ -82,6 +84,9 @@ logger.info("  Python:            " + str(sys.version.split(" ")[0]))
 logger.info("  Snakemake:         " + snakemake.__version__)
 logger.info("  GPSW:              " + VERSION)
 logger.info("  Wrapper:           " + wrapper_version)
+# if apptainer argument is used, print the version of the docker image
+
+logger.info("  Docker image:      " + DOCKER_VERSION)
 logger.info("  Command:           " + cmdline)
 logger.info("")
 
