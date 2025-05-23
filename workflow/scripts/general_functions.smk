@@ -16,7 +16,7 @@ def get_package_version():
     except PackageNotFoundError:
         # Package is not installed (e.g., running locally without installation)
         # For development purposes
-        return "v0.0.0-dev"
+        return "0.0.0-dev"
 
 
 # Workflow version
