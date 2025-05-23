@@ -1,13 +1,25 @@
 import datetime
 import os, glob, sys, re
 import socket, platform
+from importlib.metadata import version, PackageNotFoundError
+
 import pandas as pd
+
 from snakemake.logging import logger
 from snakemake.shell import shell
 
 
+def get_package_version():
+    try:
+        return version("gpsw")
+    except PackageNotFoundError:
+        # Package is not installed (e.g., running locally without installation)
+        # For development purposes
+        return "v0.0.0-dev"
+
+
 # Workflow version
-VERSION = "v0.5.0"
+VERSION = get_package_version()
 wrapper_version = "v5.2.1"
 
 ## This header can help with debugging, extend later with more info

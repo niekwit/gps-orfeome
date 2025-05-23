@@ -73,7 +73,7 @@ psi:
 
   # Barcode threshold for hits
   # Keep ORFs with at least bc_threshold barcodes
-  bc_thresholdreshold: 2
+  bc_threshold: 2
  
   # SD threshold for most stringent hits
   # mean deltaPSI > sd_threshold * SD
