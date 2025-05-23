@@ -26,12 +26,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12' # Keep consistent with your project's requirement
+          python-version: '3.12'
       - name: Install gpsw for linting
         run: |
           python -m pip install --upgrade pip
-          # Ensure tomli/tomllib are available for setup.py
-          pip install tomli # For Python < 3.11, harmless on 3.11+
+
           pip install -e . # Install the package and its dependencies
       - name: Lint workflow
         uses: snakemake/snakemake-github-action@v2
@@ -40,7 +39,7 @@ jobs:
           snakefile: workflow/Snakefile
           snakemake-version: 8.25.5
           args: "--lint"
-        env: 
+        env:
           PYTHONPATH: ${{ github.workspace }}/src # Adds 'src' folder to Python path
 
   Unit-Tests:
@@ -89,6 +88,8 @@ jobs:
           snakefile: workflow/Snakefile
           snakemake-version: 8.25.5
           args: "--use-conda --show-failed-logs --cores 3 --conda-cleanup-pkgs cache"
+        env: # <--- IMPORTANT: Add PYTHONPATH here for the Snakemake execution
+          PYTHONPATH: ${{ github.workspace }}/src
 
       - name: Generate Test Report
         uses: snakemake/snakemake-github-action@v2
@@ -97,3 +98,5 @@ jobs:
           snakefile: workflow/Snakefile
           snakemake-version: 8.25.5
           args: "--report report.zip"
+        env: # <--- IMPORTANT: Add PYTHONPATH here for the Snakemake report generation as well
+          PYTHONPATH: ${{ github.workspace }}/src
