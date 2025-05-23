@@ -94,7 +94,15 @@ def create_rule_graph():
 
 
 def profile_arg(args):
-    """_summary_"""
+    """
+    Determine the Snakemake profile argument based on configuration.
+
+    Args:
+        args: Command line arguments containing profile information
+
+    Returns:
+        list: Profile arguments for Snakemake or empty list if no profile
+    """
 
     if args.profile == "None":
         # No profile to be used with Snakemake
