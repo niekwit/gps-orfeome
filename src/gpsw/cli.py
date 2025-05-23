@@ -45,9 +45,8 @@ def fetch_code(args):
 
         # Unpack the whole tar.gz file
         print("Unpacking the downloaded tar.gz file")
-        tar = tarfile.open(download_file)
-        tar.extractall(path=tmpdirname)
-        tar.close()
+        with tarfile.open(download_file) as tar:
+            tar.extractall(path=tmpdirname)
 
         # Specify the directories to copy
         if args.test_data:
