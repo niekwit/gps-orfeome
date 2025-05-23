@@ -16,7 +16,7 @@ min_version("8.25.5")
 
 
 # Define Docker container
-containerized: f"docker://niekwit/gps-orfeome:{VERSION}"
+containerized: f"docker://niekwit/gps-orfeome:{DOCKER_VERSION}"
 
 
 # Load stuff
