@@ -1,14 +1,9 @@
 import unittest
+import os
 from unittest.mock import patch, MagicMock, mock_open
 import subprocess
 from pathlib import Path
 
-
-# Import the functions from your utils module
-# Assuming your utils.py is in src/gpsw/utils.py
-# and your test file is at the project root or in a 'tests' directory
-# You might need to adjust this import based on your actual project structure
-# If running tests from the root, ensure the package is installed -e or use python -m unittest
 from src.gpsw import utils
 
 
@@ -144,11 +139,11 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(mock_subprocess_run.call_count, 2)
 
         # The first call (failed quiet dry-run)
-        mock_subprocess_run.call_args_list[0].assert_called_with(
-            ["snakemake", "-n", "--quiet", "all"], check=True
-        )
-        # The second call (verbose dry-run for error message)
-        mock_subprocess_run.call_args_list[1].assert_called_with(["snakemake", "-np"])
+        expected_calls = [
+            unittest.mock.call(["snakemake", "-n", "--quiet", "all"], check=True),
+            unittest.mock.call(["snakemake", "-np"]),
+        ]
+        mock_subprocess_run.assert_has_calls(expected_calls)
 
         mock_print.assert_any_call("Performing dry-run of the workflow")
         # No 'Dry-run completed successfully!' should be printed for a failure case
@@ -159,20 +154,79 @@ class TestUtils(unittest.TestCase):
     @patch("os.makedirs")
     @patch("subprocess.run")
     @patch("pydot.graph_from_dot_file")
+    @patch("builtins.open", new_callable=mock_open)
+    @patch("pathlib.Path")
     def test_create_rule_graph_success(
-        self, mock_graph_from_dot_file, mock_subprocess_run, mock_makedirs
+        self,
+        mock_Path,
+        mock_file_open,
+        mock_graph_from_dot_file,
+        mock_subprocess_run,
+        mock_makedirs,
     ):
         # Arrange
+        mock_Path.return_value = MagicMock(
+            __truediv__=lambda self, other: Path(os.path.join(str(self), other)),
+            mkdir=MagicMock(),
+            __str__=lambda self: str(self),
+            exists=MagicMock(return_value=True),
+        )
+        mock_Path.home.return_value = Path("/mock/home/user")
+
+        # Mock the raw stdout from snakemake.
+        # Include leading/trailing newlines and indentation as snakemake might output them.
+        # This is what utils.create_rule_graph's subprocess.run would actually return.
+        raw_snakemake_stdout = """
+digraph G {
+    0[label = "all"];
+    1[label = "rule cutadapt"];
+    2[label = "rule fastqc"];
+    1 -> 0; // This line should be filtered
+    2 -> 1;
+    0[label = "all" // This line should be filtered too
+}
+"""
+        mock_subprocess_run.return_value = MagicMock(stdout=raw_snakemake_stdout)
+
         mock_graph = MagicMock()
-        mock_graph_from_dot_file.return_value = [mock_graph]  # pydot returns a list
+        mock_graph_from_dot_file.return_value = [mock_graph]
 
         # Act
         utils.create_rule_graph()
 
         # Assert
         mock_makedirs.assert_called_once_with("images", exist_ok=True)
-        expected_command_part = r"snakemake --quiet all --forceall --rulegraph | grep -v '\-> 0\|0\[label = \"all\"' > images/rulegraph.dot"
-        mock_subprocess_run.assert_called_once_with(expected_command_part, shell=True)
+
+        mock_subprocess_run.assert_called_once_with(
+            ["snakemake", "--quiet", "all", "--forceall", "--rulegraph"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
+        # Construct the expected filtered content AFTER the Python filtering process.
+        # This simulates the logic:
+        # filtered_lines = [
+        #     line for line in raw_snakemake_stdout.split('\n')
+        #     if not ('-> 0' in line or '0[label = "all"' in line)
+        # ]
+        # f.write('\n'.join(filtered_lines))
+
+        # We must generate the expected output exactly as utils.create_rule_graph would.
+        # So, take the raw_snakemake_stdout, apply the filter:
+        expected_lines_after_filter = []
+        for line in raw_snakemake_stdout.split("\n"):
+            if not ("-> 0" in line or '0[label = "all"' in line):
+                expected_lines_after_filter.append(line)
+
+        # And then join them back with newline characters.
+        # The join will not add a trailing newline if the last line in the input has one.
+        # If the last filtered line in the input has a newline, it will be preserved.
+        expected_content_to_write = "\n".join(expected_lines_after_filter)
+
+        mock_file_open.assert_called_once_with("images/rulegraph.dot", "w")
+        mock_file_open().write.assert_called_once_with(expected_content_to_write)
+
         mock_graph_from_dot_file.assert_called_once_with("images/rulegraph.dot")
         mock_graph.write_pdf.assert_called_once_with("images/rulegraph.pdf")
 
@@ -355,6 +409,9 @@ class TestUtils(unittest.TestCase):
         MockOsMakedirs.assert_not_called()
         mock_file_open.assert_not_called()
 
+
+if __name__ == "__main__":
+    unittest.main()
 
 if __name__ == "__main__":
     unittest.main()
