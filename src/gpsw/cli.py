@@ -1,5 +1,6 @@
 import argparse
 import os, sys, re
+import shlex
 import tarfile
 import tempfile
 import shutil
@@ -95,11 +96,8 @@ def run_workflow(args):
     command = ["snakemake"]
     command.extend(utils.profile_arg(args))
     if args.snakemake_args is not None:
-        # Remove leading and trailing quotes
-        snakemake_args = args.snakemake_args.strip('"').strip("'")
-        command.extend(snakemake_args.split())
-
-    if not args.quiet:
+        # Use shlex for robust argument parsing
+        command.extend(shlex.split(args.snakemake_args))
         command.append("-p")
     else:
         command.extend(["--quiet", "all"])
