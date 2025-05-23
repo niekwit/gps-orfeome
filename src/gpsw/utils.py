@@ -71,8 +71,21 @@ def create_rule_graph():
 
     # Create the rule graph
     dot_file = "images/rulegraph.dot"
-    command = rf"snakemake --quiet all --forceall --rulegraph | grep -v '\-> 0\|0\[label = \"all\"' > {dot_file}"
-    subprocess.run(command, shell=True)
+    result = subprocess.run(
+        ["snakemake", "--quiet", "all", "--forceall", "--rulegraph"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    # Remove "rule all" connections:
+    # Filter out lines containing "-> 0" or "0[label = "all"]"
+    filtered_lines = [
+        line
+        for line in result.stdout.split("\n")
+        if not ("-> 0" in line or '0[label = "all"' in line)
+    ]
+    with open(dot_file, "w") as f:
+        f.write("\n".join(filtered_lines))
 
     # Use pydot to create a pdf
     graphs = pydot.graph_from_dot_file(dot_file)
