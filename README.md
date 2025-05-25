@@ -1,4 +1,4 @@
-# Snakemake workflow: `gps-orfeome`
+# GPSW
 
 [![Snakemake](https://img.shields.io/badge/snakemake-≥8.25.5-brightgreen.svg)](https://snakemake.github.io)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -6,25 +6,105 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15473715.svg)](https://doi.org/10.5281/zenodo.15473715)
 
 
-
-
-A Snakemake workflow for `gps-orfeome screen analysis`
+`GPSW` is a tool for analysing and processing Global Protein Stability Profiling data.
 
 ## Installation of required software 
 
+It is recommended to run `GPSW` on a Linux-based system (e.g. Ubuntu). 
+
 Make sure you have [Conda](https://docs.conda.io/projects/conda/en/latest/index.html) installed.
 
-First, install [Snakemake](https://snakemake.readthedocs.io/en/stable/):
+## Installation of stable version via Conda
+
+NOT YET SETUP! COMING SOON.
 
 ```shell
-$ conda create -n snakemake bioconda::snakemake=8.25.5
+$ conda create -n gpsw bioconda::gpsw
 ```
 
-It is highly recommended to install [Apptainer](https://apptainer.org):
+This will install the stable version of `GPSW` and all of its dependencies. This is the recommended way to install `GPSW`.
+
+## Installation of development version
+
+First, create a Conda env with the dependencies:
 
 ```shell
-$ conda install conda-forge::apptainer=1.3.6
+$ conda create -n gpsw snakemake=8.25.5 apptainer=1.4.0
 ```
+
+> [!NOTE]  
+> If you want you use Apptainer, it is essential to install Snakemake v8.25.5, as later versions might not work with the pre-build image.
+
+To install `GPSW`:
+
+```shell
+$ cd /path/to/clone/gpsw
+$ git clone https://github.com/niekwit/gps-orfeome.git
+$ cd gps-orfeome
+$ pip install -e .
+```
+
+At a later point, `GPSW` can be updated:
+
+```shell
+$ git pull
+```
+
+## `GPSW` command line arguments
+
+```shell
+$ gpsw --version
+gpsw 0.6.3
+
+$ gpsw --help
+usage: gpsw [-h] [--version] {fetch,run} ...
+
+GPSW: A tool for analysing and processing Global Protein Stability Profiling
+data.
+
+positional arguments:
+  {fetch,run}  Sub-command help
+
+options:
+  -h, --help   show this help message and exit
+  --version    show programs version number and exit
+
+$ gpsw fetch --help
+usage: gpsw fetch [-h] [-t TAG] [--test-data] [-d DIRECTORY]
+
+Fetch GPSW code from a specific release from https://github.com/niekwit/gps-
+orfeome.
+
+options:
+  -h, --help            show this help message and exit
+  -t TAG, --tag TAG     Release tag of the code to download
+  --test-data           Include test data in the download (and relating config
+                        and resources directories)
+  -d DIRECTORY, --directory DIRECTORY
+                        Directory to download the code to target diectory
+                        (default: current directory)
+
+$ gpsw run --help
+usage: gpsw run [-h] [-p PROFILE] [--snakemake-args SNAKEMAKE_ARGS] [-d] [-q]
+
+Run the GPSW pipeline and create report.
+
+options:
+  -h, --help            show this help message and exit
+  -p PROFILE, --profile PROFILE
+                        Path to Snakemake profile YAML file (only has to be
+                        provided at first run) (OPTIONAL, use value None for
+                        no profile)
+  --snakemake-args SNAKEMAKE_ARGS
+                        Extra Snakemake arguments (should be '"double-
+                        quoted"')
+  -d, --dry-run         Dry-run workflow only
+  -q, --quiet           Run GPSW quietly
+  
+```
+
+
+## Configuration of Snakemake
 
 To setup a profile for custom `Snakemake` command line arguments, create a new profile (`config.yaml`) in `$HOME/.config/snakemake/standard/`:
 
@@ -45,8 +125,7 @@ Prepare an analysis directory as follows:
 ```shell
 .
 ├── config
-│   ├── config.yml
-│   └── stats.csv
+│   └── config.yml
 ├── reads
 │   ├── Control_1.fastq.gz
 │   ├── Control_2.fastq.gz
@@ -167,7 +246,7 @@ psi:
 
   # Barcode threshold for hits
   # Keep ORFs with at least bc_threshold barcodes
-  bc_thresholdreshold: 2
+  bc_threshold: 2
  
   # SD threshold for most stringent hits
   # mean deltaPSI > sd_threshold * SD
