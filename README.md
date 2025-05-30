@@ -5,8 +5,21 @@
 [![Tests](https://github.com/niekwit/gps-orfeome/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/niekwit/gps-orfeome/actions/workflows/main.yml)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15473715.svg)](https://doi.org/10.5281/zenodo.15473715)
 
+[![Bioconda version](https://anaconda.org/bioconda/gpsw/badges/version.svg)](https://anaconda.org/bioconda/gpsw) 
+[![Bioconda downloads](https://anaconda.org/bioconda/gpsw/badges/downloads.svg)](https://anaconda.org/bioconda/gpsw) 
 
-`GPSW` is a tool for analysing and processing Global Protein Stability Profiling data.
+
+## Description
+
+`GPSW` is a tool for analysing Global Protein Stability Profiling data.
+
+It can deal with two types of experiments:
+1. **Protein stability profiling** using Protein Stability Index (PSI) as a metric, which is calculated from the proportion of reads across multiple bins. Publications that include this type of data are [Koren et al. Cell 2018](https://pubmed.ncbi.nlm.nih.gov/29779948/) and [Timms et al. Science 2019](https://pubmed.ncbi.nlm.nih.gov/31273098/).
+
+![Sorting for PSI analysis](images/psi-flow-plot.png "Cell sort strategy for PSI analysis")
+
+2. **Pairwise comparison** of ORF counts between two conditions using MAGeCK/DrugZ 
+
 
 ## Installation of required software 
 
@@ -14,22 +27,20 @@ It is recommended to run `GPSW` on a Linux-based system (e.g. Ubuntu).
 
 Make sure you have [Conda](https://docs.conda.io/projects/conda/en/latest/index.html) installed.
 
-## Installation of stable version via Conda
-
-NOT YET SETUP! COMING SOON.
+### Installation of stable version via Conda
 
 ```shell
-$ conda create -n gpsw bioconda::gpsw
+$ conda create -n gpsw bioconda::gpsw pandas=2.2.3  pygments=2.19.1
 ```
 
 This will install the stable version of `GPSW` and all of its dependencies. This is the recommended way to install `GPSW`.
 
-## Installation of development version
+### Installation of development version
 
 First, create a Conda env with the dependencies:
 
 ```shell
-$ conda create -n gpsw snakemake=8.25.5 apptainer=1.4.0
+$ conda create -n gpsw snakemake=8.25.5 apptainer=1.4.0 pandas=2.2.3  pygments=2.19.1
 ```
 
 > [!NOTE]  
@@ -50,7 +61,7 @@ At a later point, `GPSW` can be updated:
 $ git pull
 ```
 
-## `GPSW` command line arguments
+## `GPSW` sub-commands and command line arguments
 
 ```shell
 $ gpsw --version
@@ -103,7 +114,6 @@ options:
   
 ```
 
-
 ## Configuration of Snakemake
 
 To setup a profile for custom `Snakemake` command line arguments, create a new profile (`config.yaml`) in `$HOME/.config/snakemake/standard/`:
@@ -118,9 +128,21 @@ show-failed-logs: True
 use-apptainer: True
 ```
 
-## Analysis preparation
+## Run `GPSW` with test data
 
-Prepare an analysis directory as follows:
+First activate the `GPSW` Conda env:
+```shell
+$ conda activate gpsw
+```
+
+Download workflow code and small test data set:
+
+```shell
+$ cd /path/to/test/dir
+$ gpsw fetch --test-data
+```
+
+This will download the workflow code, configuration files and test data, and should look as follows:
 
 ```shell
 .
@@ -140,11 +162,20 @@ Prepare an analysis directory as follows:
 │   ├── Test_5.fastq.gz
 │   └── Test_6.fastq.gz
 ├── resources
-│   └── uORF_ORF81.csv
+│   └── orfs.csv
 └── workflow
     ├── envs
     │   └── stats.yaml
     ├── report
+    │   ├── alignment-rates.rst
+    │   ├── barcoderank.rst
+    │   ├── drugz.rst
+    │   ├── lfc_neg.rst
+    │   ├── lfc_pos.rst
+    │   ├── missed-barcodes.rst
+    │   ├── multiqc.rst
+    │   ├── pca.rst
+    │   └── plot-coverage.rst
     ├── rules
     │   ├── count.smk
     │   ├── qc.smk
@@ -152,23 +183,74 @@ Prepare an analysis directory as follows:
     ├── schemas
     │   └── config.schema.yaml
     ├── scripts
+    │   ├── calculate_proportion_of_reads_in_bins.py
     │   ├── calculate_psi.py
+    │   ├── count_barcodes.sh
     │   ├── create_count_table.py
     │   ├── csv_to_fasta.py
     │   ├── general_functions.smk
     │   ├── plot_alignment_rate.R
+    │   ├── plot_barcode_multi_conditions_profiles.R
     │   ├── plot_barcode_profiles.R
     │   ├── plot_barcoderank.R
     │   ├── plot_coverage.R
+    │   ├── plot_dotplot.R
     │   ├── plot_lfc.R
     │   ├── plot_missed_barcodes.R
+    │   ├── plot_pca.R
     │   └── rename_to_barcode.py
     └── Snakefile
 
+10 directories, 45 files
+```
+
+To start the workflow on the test data:
+
+```shell
+$ cd /path/to/test/dir
+$ gpsw run --profile $HOME/.config/snakemake/standard/
 ```
 
 
-The analysis settings are in `config.yaml`:
+> [!NOTE]  
+> The `--profile` argument will only have to be provided on the first run of `GPSW`, as it will create a config file (~/.gpsw/config.ini) that will store the profile path. To run `GPSW` without a profile use `--profile None`.
+
+
+## Run `GPSW` with your own data data
+
+Download workflow code and small test data set:
+
+```shell
+$ cd /path/to/analysis/dir
+$ gpsw fetch
+```
+
+Provide a CSV file with the ORF library information in `resources/` directory. The CSV file should contain the following columns: `ID`, `sequence`, `IOH_ID`, and `Gene_ID`. See the example below:
+
+
+| ID                    | sequence                 | IOH_ID    | Gene_ID    |
+|-----------------------|--------------------------|-----------|------------|
+|1_IOH10003_2802_PLD2	  | ATCCGAGTATAGAGACGTAAACTA | IOH10003	 | PLD2       |
+|2_IOH10003_2802_PLD2	  | AACTACGTCATGAGCCGGATACCG | IOH10003	 | PLD2       |
+|3_IOH10003_2802_PLD2	  | TTGCGCGCTGTGTTGTAACGTTAT | IOH10003	 | PLD2       |
+|4_IOH10003_2802_PLD2	  | GACTAGGATGACTACGGAGTTTGC | IOH10003	 | PLD2       |
+|5_IOH10003_2802_PLD2	  | GCGTCCTGTTATTCGTGATTGCGC | IOH10003	 | PLD2       |
+|6_IOH10004_585_RAB22A	| ATACAGAGTAAGTTTCTCAAAATA | IOH10004	 | RAB22A     |
+|7_IOH10004_585_RAB22A	| CGGAGCATCTATTACAGAAAGGTA | IOH10004	 | RAB22A     |
+
+In `config/config.yaml` set the columns for this info as follows:
+
+```yaml
+csv: 
+  # CSV file with the gene/ORF/barcode information
+  # 0-indexed column numbers (First column is 0)
+  gene_column: 3 # Column number with gene names
+  orf_column: 2 # Column number with unique ORF names
+  barcode_id_column: 0 # Column with unique barcode IDs
+  sequence_column: 1 # Column number with barcode sequences
+```
+
+Further analysis settings can also be found in `config.yaml`:
 
 ```yaml
 orfeome_name: uORFbarcodes
@@ -187,7 +269,7 @@ conditions:
 # a protein stability analysis using PSI (Protein Stability Index) as a metric.
 # With bin_number = 1, the user wants to perform a pairwise comparison 
 # of ORF counts between two conditions using MAGeCK/DrugZ.
-bin_number: 1
+bin_number: 6
 
 cutadapt:
   # Sequence of an adapter ligated to the 5' end. 
@@ -253,62 +335,146 @@ psi:
   sd_threshold: [2, 2, 2.5]
 ```
 
+EXPLAIN PSI SETTINGS HERE
 
-## ORF library data
+Sequencing files should be placed in the `reads/` directory, and should follow the naming convention `<condition>_<bin_number>.fastq.gz`, where `<condition>` is one of the conditions defined in the `config.yaml` file (e.g. `Test_1.fastq.gz`, `Control_1.fastq.gz`, etc.).
 
-Information on the ORF library should be stored in a csv file located in `resources/`.
-
-See below for an example:
-
-| ID                    | sequence                 | IOH_ID    | Gene_ID    |
-|-----------------------|--------------------------|-----------|------------|
-|1_IOH10003_2802_PLD2	  | ATCCGAGTATAGAGACGTAAACTA | IOH10003	 | PLD2       |
-|2_IOH10003_2802_PLD2	  | AACTACGTCATGAGCCGGATACCG | IOH10003	 | PLD2       |
-|3_IOH10003_2802_PLD2	  | TTGCGCGCTGTGTTGTAACGTTAT | IOH10003	 | PLD2       |
-|4_IOH10003_2802_PLD2	  | GACTAGGATGACTACGGAGTTTGC | IOH10003	 | PLD2       |
-|5_IOH10003_2802_PLD2	  | GCGTCCTGTTATTCGTGATTGCGC | IOH10003	 | PLD2       |
-|6_IOH10004_585_RAB22A	| ATACAGAGTAAGTTTCTCAAAATA | IOH10004	 | RAB22A     |
-|7_IOH10004_585_RAB22A	| CGGAGCATCTATTACAGAAAGGTA | IOH10004	 | RAB22A     |
-
-In `config/config.yaml` set the columns for this info as follows:
-
-```yaml
-csv: 
-  # CSV file with the gene/ORF/barcode information
-  # 0-indexed column numbers (First column is 0)
-  gene_column: 3 # Column number with gene names
-  orf_column: 2 # Column number with unique ORF names
-  barcode_id_column: 0 # Column with unique barcode IDs
-  sequence_column: 1 # Column number with barcode sequences
-```
-
-
-## Usage
-
-To test the workflow, execute a dry-run first:
+To initiate the workflow, run the following command:
 
 ```shell
-$ snakemake -np
+$ gpsw run
 ```
 
-To create a rule graph:
+It will first create a rule graph (located in `images/`) of the workflow:
+
+![Rule graph](images/rulegraph.png "Rule graph of the GPSW workflow (dPSI analysis)")
+
+The workflow will then be executed, and the results will be stored in the `results/` directory. The results include:
 
 ```shell
-$ mkdir images
-$ snakemake --forceall --rulegraph | grep -v '\-> 0\|0\[label = \"all\"' | dot -Tpng > images/rule_graph.png
+results/
+├── count
+│   └── counts-aggregated.tsv
+├── psi
+│   └── hit-th1.25_sd-th2.25_prop_th0.4_pen_th4
+│       ├── Test_vs_Control_barcode.proportions.csv
+│       ├── Test_vs_Control_barcode.summary.csv
+│       └── Test_vs_Control_gene.summary.csv
+├── psi_plots
+│   └── hit-th1.25_sd-th2.25_prop_th0.4_pen_th4
+│       ├── Test_vs_Control
+│       │   ├── destabilised_in_Test
+│       │   │   └── ...pdf
+│       │   ├── destabilised_in_Test_hc
+│       │   │   └── ...pdf
+│       │   ├── stabilised_in_Test
+│       │   │   └── ...pdf
+│       │   └── stabilised_in_Test_hc
+│       │       └── ...pdf
+│       ├── Test_vs_Control_dotplot.pdf
+│       └── Test_vs_Control_dpsi_histogram.png
+├── qc
+│   ├── alignment-rates.pdf
+│   ├── fastqc
+│   │   ├── Control_1_fastqc.zip
+│   │   ├── Control_1.html
+│   │   ├── Control_2_fastqc.zip
+│   │   ├── Control_2.html
+│   │   ├── Control_3_fastqc.zip
+│   │   ├── Control_3.html
+│   │   ├── Control_4_fastqc.zip
+│   │   ├── Control_4.html
+│   │   ├── Control_5_fastqc.zip
+│   │   ├── Control_5.html
+│   │   ├── Control_6_fastqc.zip
+│   │   ├── Control_6.html
+│   │   ├── Test_1_fastqc.zip
+│   │   ├── Test_1.html
+│   │   ├── Test_2_fastqc.zip
+│   │   ├── Test_2.html
+│   │   ├── Test_3_fastqc.zip
+│   │   ├── Test_3.html
+│   │   ├── Test_4_fastqc.zip
+│   │   ├── Test_4.html
+│   │   ├── Test_5_fastqc.zip
+│   │   ├── Test_5.html
+│   │   ├── Test_6_fastqc.zip
+│   │   └── Test_6.html
+│   ├── missed-barcodes.pdf
+│   ├── multiqc.html
+│   └── sequence-coverage.pdf
+└── trimmed
+    ├── Control_1.qc.txt
+    ├── Control_2.qc.txt
+    ├── Control_3.qc.txt
+    ├── Control_4.qc.txt
+    ├── Control_5.qc.txt
+    ├── Control_6.qc.txt
+    ├── Test_1.qc.txt
+    ├── Test_2.qc.txt
+    ├── Test_3.qc.txt
+    ├── Test_4.qc.txt
+    ├── Test_5.qc.txt
+    └── Test_6.qc.txt
+
+13 directories, 180 files
 ```
+### Output files by directory
 
-To run the workflow:
+#### Count
 
-```shell
-$ snakemake --profile $HOME/.config/snakemake/standard/
-```
+The `count` directory contains the aggregated, non-normalised counts of barcodes across all conditions and bins (`counts-aggregated.tsv`).
 
+#### PSI
 
-## Citation
+For each combination of hit threshold, SD threshold, proportion threshold and penalty factor, the `psi` directory contains the following files:
 
-If you use this workflow in a paper, don't forget to give credits to the authors by citing the URL of this (original) repository and its DOI (see above).
+- `Test_vs_Control_barcode.proportions.csv`: a CSV file with the proportions of reads in each bin for each barcode.
+- `Test_vs_Control_barcode.summary.csv`: a CSV file with barcode-level results.
+- `Test_vs_Control_gene.summary.csv`: a CSV file with the gene-level results. This file contains, among others, the z-scores for each gene, and whether a gene is stabilised/destabilised in the test condition compared to the control condition, as well as an associated ranking.
 
+#### PSI Plots
+
+The `psi_plots` directory contains the following subdirectories for each combination of hit threshold, SD threshold, proportion threshold and penalty factor:
+
+- `Test_vs_Control`: contains the following subdirectories:
+  - `destabilised_in_Test`: contains PDF files with the barcode profiles for each destabilised gene in the test condition.
+  - `destabilised_in_Test_hc`: contains PDF files with the barcode profiles for each destabilised gene in the test condition, with a higher cutoff for the number of barcodes.
+  - `stabilised_in_Test`: contains PDF files with the barcode profiles for each stabilised gene in the test condition.
+  - `stabilised_in_Test_hc`: contains PDF files with the barcode profiles for each stabilised gene in the test condition, with a higher cutoff for the number of barcodes.
+- `Test_vs_Control_dotplot.pdf`: a PDF file with a dot plot of the z-scores for each gene in the test condition compared to the control condition.
+- `Test_vs_Control_dpsi_histogram.png`: a PNG file with a histogram of the $\Delta PSI$ values for all genes.
+![histogram](images/dpsi_histogram.png "Histogram of delta PSI values")
+
+#### QC
+
+##### Alignment rates of individual samples
+
+`Bowtie2` alignment rates for each sample are visualised in `alignment-rates.pdf` file.
+
+![Alignment rates](images/alignment-rates.png "Alignment rates of individual samples")
+
+##### Missed barcodes
+
+The `missed-barcodes.pdf` file contains a plot of the number of barcodes that were not detected in each bin for each condition. This is useful to identify bins with low coverage or issues with barcode detection.
+
+![Missed barcodes](images/missed-barcodes.png "Missed barcodes")
+
+##### Sequence coverage
+
+The `sequence-coverage.pdf` file contains a plot of the sequence coverage across all bins for each condition. This is useful to identify bins with low coverage or issues with barcode detection.
+
+![Sequence coverage](images/sequence-coverage.png "Sequence coverage")
+
+##### MultiQC report
+
+The `multiqc.html` file contains a summary of the quality control metrics for the trimmed reads.
+
+![MultiQC report](images/multiqc.png "MultiQC report")
+
+#### Trimmed
+
+The `trimmed` directory contains the quality control files for each sample after trimming with `cutadapt`. These files contain information about the number of reads before and after trimming, the number of reads that were discarded, and the number of reads that were kept.
 
 # Background
 ## z-score calculation
@@ -395,4 +561,12 @@ Where:
 - $D_{neg}$ represents all the negative values among all $z_{corr}'$ values.
 - $L_{neg}$ is the desired lower bound for the scaled negative values (-128).
 - $U_{neg}$ is the desired upper bound for the scaled negative values (-2).
+
+
+## Citation
+
+If you use this workflow in a paper, don't forget to give credits to the authors by citing the URL of this (original) repository and its DOI (see above).
+
+
+## References
 
