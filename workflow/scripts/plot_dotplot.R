@@ -9,7 +9,7 @@ library(ggrepel)
 
 csv <- snakemake@input[["csv"]]
 csv.rank <- snakemake@input[["ranked"]]
-dpsi.cutoff <- snakemake@wildcards[["ht"]]
+dpsi.cutoff <- as.numeric(snakemake@wildcards[["ht"]])
 pdf <- snakemake@output[["pdf"]]
 
 # Load data
@@ -22,14 +22,49 @@ data <- data %>%
   left_join(data.rank, by = "orf_id") %>%
   filter(!is.na(delta_PSI_mean))
 
-# Split data in stabilised and destabilised genes/ORFs
-# And log2 transform z_score_corr (preserve sign)
+# Determine x min/x masx for delta_PSI_mean
+max <- ceiling(max(abs(data$delta_PSI_mean), na.rm = TRUE))
+
+# Create values for color
+data <- data %>%
+  mutate(
+    category = ifelse(delta_PSI_mean > 0, "Stabilised", "Destabilised"),
+    colour_group = factor(
+      case_when(
+        category == "Stabilised" & delta_PSI_mean > dpsi.cutoff ~
+          "Significant Stabilised",
+        category == "Destabilised" & delta_PSI_mean < -dpsi.cutoff ~
+          "Significant Destabilised",
+        TRUE ~ "Other" # Catches all other cases
+      ),
+      levels = c(
+        "Significant Stabilised",
+        "Significant Destabilised",
+        "Within Threshold",
+        "Other"
+      )
+    ) # Define factor levels for consistent legend order
+  )
+
+my.colours <- c(
+  "Significant Stabilised" = "green3",
+  "Significant Destabilised" = "red",
+  "Other" = "black"
+)
+
+# Create df for labels
 stabilised <- data %>%
   filter(delta_PSI_mean > 0, z_score_corr > 0)
 
 labels.stabilised <- stabilised %>%
   filter(stabilised_rank <= 7) %>%
-  select(gene, z_score_corr, delta_PSI_mean, delta_PSI_SD) %>%
+  select(
+    gene,
+    z_score_corr,
+    delta_PSI_mean,
+    delta_PSI_SD,
+    category
+  ) %>%
   distinct()
 
 destabilised <- data %>%
@@ -37,56 +72,52 @@ destabilised <- data %>%
 
 labels.destabilised <- destabilised %>%
   filter(destabilised_rank <= 7) %>%
-  select(gene, z_score_corr, delta_PSI_mean, delta_PSI_SD) %>%
+  select(
+    gene,
+    z_score_corr,
+    delta_PSI_mean,
+    delta_PSI_SD,
+    category
+  ) %>%
   distinct()
 
-# Determine shared size limits for dot sizes
-size_limits <- range(0:ceiling(max(abs(data$delta_PSI_mean))))
-range <- range(c(size_limits[1], size_limits[length(size_limits)]))
+labels <- rbind(labels.stabilised, labels.destabilised)
 
-plotting <- function(data, labels, text, no.legend) {
-  p <- ggplot(data, aes(x = z_score_corr, y = -log10(delta_PSI_SD))) +
-    geom_point(aes(
-      color = abs(delta_PSI_mean) > dpsi.cutoff,
-      size = abs(delta_PSI_mean)
-    )) +
-    theme_cowplot(15) +
-    scale_color_manual(
-      values = c("TRUE" = "red", "FALSE" = "black"),
-      name = paste("abs(dPSI) >", dpsi.cutoff)
-    ) +
-    geom_label_repel(
-      data = labels,
-      aes(label = gene, ),
-      box.padding = 0.5,
-      point.padding = 0.5,
-      size = 2.5
-    ) +
-    labs(title = text, x = "z-score", y = "-log10(dPSI SD)") +
-    scale_size_continuous(limits = size_limits, range = range) +
-    guides(
-      color = guide_legend(title = paste("|dPSI| >", dpsi.cutoff)),
-      size = guide_legend(title = "|dPSI|")
-    )
+# Data for vertical lines
+vline_data <- data.frame(
+  category = factor(
+    c("Destabilised", "Stabilised"),
+    levels = c("Destabilised", "Stabilised")
+  ),
+  xintercept_value = c(-dpsi.cutoff, dpsi.cutoff)
+)
 
-  if (no.legend) {
-    p <- p + theme(legend.position = "none")
-  }
-  return(p)
-}
-
-# Create plots
-p1 <- plotting(destabilised, labels.destabilised, "Destabilised proteins", TRUE)
-p2 <- plotting(stabilised, labels.stabilised, "Stabilised proteins", FALSE)
-# Extract legend and turn into plot
-# Otherwise dotplot with legend will be too narrow
-legend <- get_legend(p2)
-p2 <- p2 + theme(legend.position = "none")
-p3 <- plot_grid(p1, p2, legend, nrow = 1, rel_widths = c(1, 1, 0.35))
+# Create plot
+p <- ggplot(data, aes(y = abs(z_score_corr), x = delta_PSI_mean)) +
+  geom_point(aes(colour = colour_group)) +
+  facet_wrap(~category, scales = "free_x") +
+  theme_cowplot(15) +
+  scale_color_manual(
+    values = my.colours,
+  ) +
+  labs(y = "|z-score|", x = "dPSI") +
+  guides(
+    colour = "none"
+  ) +
+  geom_vline(
+    data = vline_data,
+    aes(xintercept = xintercept_value),
+    color = "grey",
+    linetype = "dashed"
+  ) +
+  geom_label_repel(
+    data = labels,
+    aes(label = gene, ),
+    box.padding = 0.5,
+    point.padding = 0.5,
+    size = 2.5,
+    max.overlaps = 20
+  )
 
 # Save plot
-ggsave(pdf, p3, width = 10, height = 4)
-
-# Close log file
-sink(log, type = "output")
-sink(log, type = "message")
+ggsave(pdf, p, width = 8, height = 5)
