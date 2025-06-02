@@ -218,39 +218,17 @@ $ gpsw run --profile $HOME/.config/snakemake/standard/
 
 ## Run `GPSW` with your own data data
 
-Download workflow code and small test data set:
+Download workflow code:
 
 ```shell
 $ cd /path/to/analysis/dir
 $ gpsw fetch
 ```
 
-Provide a CSV file with the ORF library information in `resources/` directory. The CSV file should contain the following columns: `ID`, `sequence`, `IOH_ID`, and `Gene_ID`. See the example below:
 
+### Workflow settings
 
-| ID                    | sequence                 | IOH_ID    | Gene_ID    |
-|-----------------------|--------------------------|-----------|------------|
-|1_IOH10003_2802_PLD2	  | ATCCGAGTATAGAGACGTAAACTA | IOH10003	 | PLD2       |
-|2_IOH10003_2802_PLD2	  | AACTACGTCATGAGCCGGATACCG | IOH10003	 | PLD2       |
-|3_IOH10003_2802_PLD2	  | TTGCGCGCTGTGTTGTAACGTTAT | IOH10003	 | PLD2       |
-|4_IOH10003_2802_PLD2	  | GACTAGGATGACTACGGAGTTTGC | IOH10003	 | PLD2       |
-|5_IOH10003_2802_PLD2	  | GCGTCCTGTTATTCGTGATTGCGC | IOH10003	 | PLD2       |
-|6_IOH10004_585_RAB22A	| ATACAGAGTAAGTTTCTCAAAATA | IOH10004	 | RAB22A     |
-|7_IOH10004_585_RAB22A	| CGGAGCATCTATTACAGAAAGGTA | IOH10004	 | RAB22A     |
-
-In `config/config.yaml` set the columns for this info as follows:
-
-```yaml
-csv: 
-  # CSV file with the gene/ORF/barcode information
-  # 0-indexed column numbers (First column is 0)
-  gene_column: 3 # Column number with gene names
-  orf_column: 2 # Column number with unique ORF names
-  barcode_id_column: 0 # Column with unique barcode IDs
-  sequence_column: 1 # Column number with barcode sequences
-```
-
-Further analysis settings can also be found in `config.yaml`:
+Workflow setting are in `config.yaml`:
 
 ```yaml
 orfeome_name: uORFbarcodes
@@ -295,8 +273,10 @@ csv:
   barcode_id_column: 0 # Column with unique barcode IDs
   sequence_column: 1 # Column number with barcode sequences
 
-# Mismatches allowed during alignment
-mismatch: 0 
+# Alignment settings
+bowtie2:
+  mismatch: 0 # mismatches allowed in the alignment
+  extra: "" # Extra arguments for bowtie2
 
 # MAGeCK/DrugZ can be used when bin_number is set to 1
 mageck:
@@ -335,9 +315,140 @@ psi:
   sd_threshold: [2, 2, 2.5]
 ```
 
-EXPLAIN PSI SETTINGS HERE
+#### Sample names
 
-Sequencing files should be placed in the `reads/` directory, and should follow the naming convention `<condition>_<bin_number>.fastq.gz`, where `<condition>` is one of the conditions defined in the `config.yaml` file (e.g. `Test_1.fastq.gz`, `Control_1.fastq.gz`, etc.).
+The `conditions` section defines the conditions in the experiment. The sample files should be placed in the `reads/` directory and should follow the naming convention `<condition>_<bin_number>.fastq.gz`, where `<condition>` is one of the conditions defined in the `config.yaml` file (e.g. `Test_1.fastq.gz`, `Control_1.fastq.gz`, etc.).
+
+```yaml
+conditions:
+  test: [Test]
+  control: [Control]
+```
+
+`GPSW` calculates $\Delta PSI$ values by pairing corresponding test and control conditions. For instance, if you define tests as `[Test1, Test2]` and controls as `[Control1, Control2]`, `GPSW` will compare Test1 with Control1 and Test2 with Control2. It's essential that all samples share the same `bin_number`.
+
+
+#### Bin number
+
+If the `bin_number` is set to 1, the workflow will perform a pairwise comparison of ORF counts between two conditions using MAGeCK/DrugZ. If the `bin_number` is greater than 1, the workflow will perform a protein stability analysis using Protein Stability Index (PSI) as a metric.
+
+```yaml
+bin_number: 6
+```
+
+#### Cutadapt settings
+
+The `cutadapt` section defines the settings for trimming the raw reads. The `five_prime_adapter` and `three_prime_adapter` are the sequences of the adapters ligated to the 5' and 3' ends of the reads, respectively. The `barcode_length` is the length of the barcode sequence, which will override the 3' adapter sequence trimming if set to a value greater than 0.
+
+Extra arguments for `cutadapt` can be specified in the `extra` field. For example, `--discard-untrimmed` will discard reads that were not trimmed (recommended).
+
+```yaml
+cutadapt:
+  # Sequence of an adapter ligated to the 5' end. 
+  # The adapter and any preceding bases are trimmed.
+  five_prime_adapter: CCAGTAGGTCCACTATGAGT
+  
+  # Sequence of an adapter ligated to the 3' end.
+  # The adapter and subsequent bases are trimmed.
+  three_prime_adapter: AGCTGTGTAAGCGGAACTAG
+
+  # Length of barcode sequence
+  # This option will override 3'adapter sequence trimming if > 0
+  barcode_length: 20
+  
+  # Extra cutadapt arguments
+  extra: "--discard-untrimmed" 
+```
+
+#### ORF library information
+
+Provide a CSV file with the ORF library information in `resources/` directory. The CSV file should contain the following columns: `ID`, `sequence`, `IOH_ID`, and `Gene_ID`. See the example below:
+
+
+| ID                    | sequence                 | IOH_ID    | Gene_ID    |
+|-----------------------|--------------------------|-----------|------------|
+|1_IOH10003_2802_PLD2	  | ATCCGAGTATAGAGACGTAAACTA | IOH10003	 | PLD2       |
+|2_IOH10003_2802_PLD2	  | AACTACGTCATGAGCCGGATACCG | IOH10003	 | PLD2       |
+|3_IOH10003_2802_PLD2	  | TTGCGCGCTGTGTTGTAACGTTAT | IOH10003	 | PLD2       |
+|4_IOH10003_2802_PLD2	  | GACTAGGATGACTACGGAGTTTGC | IOH10003	 | PLD2       |
+|5_IOH10003_2802_PLD2	  | GCGTCCTGTTATTCGTGATTGCGC | IOH10003	 | PLD2       |
+|6_IOH10004_585_RAB22A	| ATACAGAGTAAGTTTCTCAAAATA | IOH10004	 | RAB22A     |
+|7_IOH10004_585_RAB22A	| CGGAGCATCTATTACAGAAAGGTA | IOH10004	 | RAB22A     |
+
+In `config/config.yaml` set the columns for this info as follows:
+
+```yaml
+csv: 
+  # CSV file with the gene/ORF/barcode information
+  # 0-indexed column numbers (First column is 0)
+  gene_column: 3 # Column number with gene names
+  orf_column: 2 # Column number with unique ORF names
+  barcode_id_column: 0 # Column with unique barcode IDs
+  sequence_column: 1 # Column number with barcode sequences
+```
+
+#### Alignment settings
+
+`GPSW` uses `Bowtie2` for aligning the reads to the ORF library. The `bowtie2` section defines the settings for the alignment. The `mismatch` is the number of mismatches allowed in the alignment, and `extra` can be used to specify additional arguments for `Bowtie2`.
+
+```yaml
+bowtie2:
+  mismatch: 0 # mismatches allowed in the alignment
+  extra: "" # Extra arguments for bowtie2
+```
+
+#### MAGeCK/DrugZ settings
+
+When `bin_number` is set to 1, the workflow runs MAGeCK/DrugZ. The `mageck` section defines the settings for the MAGeCK analysis. The `run` field specifies to run MAGeCK/DrugZ analysis, and `extra_mageck_arguments` can be used to specify additional arguments for MAGeCK. The `mageck_control_barcodes` field specifies whether to use all control barcodes or a file with control barcodes. The `fdr` field specifies the FDR threshold for downstream MAGeCK analysis.
+
+```yaml
+mageck:
+  run: True # Run MAGeCK analysis
+  extra_mageck_arguments: "--sort-criteria pos" 
+  mageck_control_barcodes: all # All or file with control barcodes
+  fdr: 0.25 # FDR threshold for downstream mageck analysis
+
+drugz:
+  run: True # Run DrugZ analysis
+  extra: "" # Extra DrugZ arguments
+```
+
+#### PSI settings
+
+When `bin_number` is greater than 1, the workflow performs a protein stability analysis using PSI as a metric. The `psi` section defines the settings for the PSI analysis. The `sob_threshold` is the minimum value of the sum of barcode counts across all bins to keep an ORF (100 is recommended). The `hit_threshold`, `proportion_threshold`, and `penalty_factor` are lists of values that define the thresholds for hits, proportion of reads in bins, and penalty factor for having less than median number of good barcodes, respectively. The `bc_threshold` is the minimum number of 'good' barcodes required to keep an ORF (examples in Note below), and the `sd_threshold` is the SD threshold for marking high confidence hits (i.e is  $\Delta PSI$ > n $\times$ SD, with n the `sd_threshold`). More on the PSI analysis can be found in the [Background](#background) section below.
+
+```yaml
+psi:
+  # Minimum value of sum of barcode counts across all bins to keep
+  sob_threshold: 100
+
+  # deltaPSI thresholds for hits
+  hit_threshold: [0.75, 1.0, 1.25]
+
+  # Exclude barcode with twin peaks
+  exclude_twin_peaks: True
+  # Proportion threshold for second peak of first peak
+  proportion_threshold: [0.5, 0.4, 0.35]  
+  
+  # Penalty factor for having less than median number of good barcodes
+  penalty_factor: [4, 4, 4]
+
+  # Barcode threshold for hits
+  # Keep ORFs with at least bc_threshold barcodes
+  bc_threshold: 2
+ 
+  # SD threshold for most stringent hits
+  # mean deltaPSI > sd_threshold * SD
+  sd_threshold: [2, 2, 2.5]
+```
+
+> [!NOTE]  
+> Good barcodes are defined as those which do not have a twin peak in the distribution of their counts across bins. Barcodes with twin peaks are defined as having two peaks that are at least two bins apart $(\Delta Bin > 1)$ and the second peak has to be a minimum proportion of the highest peak. This proportion is defined by the user in the config.yaml file (`proportion_threshold`). See the example below for a visual representation of this. Not all twin peaks are marked in this example.
+![Twin peaks example](images/twin_peak_example.png "Twin peaks example")
+
+
+
+### Running the workflow
 
 To initiate the workflow, run the following command:
 
@@ -442,9 +553,18 @@ The `psi_plots` directory contains the following subdirectories for each combina
   - `destabilised_in_Test_hc`: contains PDF files with the barcode profiles for each destabilised gene in the test condition, with a higher cutoff for the number of barcodes.
   - `stabilised_in_Test`: contains PDF files with the barcode profiles for each stabilised gene in the test condition.
   - `stabilised_in_Test_hc`: contains PDF files with the barcode profiles for each stabilised gene in the test condition, with a higher cutoff for the number of barcodes.
+
+  Example of barcode profile:
+
+  ![Barcode profile](images/profile.png "Barcode profile for a stabilised gene in the test condition")
+
 - `Test_vs_Control_dotplot.pdf`: a PDF file with a dot plot of the z-scores for each gene in the test condition compared to the control condition.
+
+  ![Dot plot](images/dotplot.png "Dot plot of z-scores for each gene in the test condition compared to the control condition")
+
 - `Test_vs_Control_dpsi_histogram.png`: a PNG file with a histogram of the $\Delta PSI$ values for all genes.
-![histogram](images/dpsi_histogram.png "Histogram of delta PSI values")
+
+  ![histogram](images/dpsi_histogram.png "Histogram of delta PSI values")
 
 #### QC
 
@@ -504,33 +624,35 @@ where:
 The z-score of ORFs with a low number of `good barcodes` (see note below) is corrected, as follows:
 
 ```math
-z_{corr} =
+z_{c} =
 \begin{cases}
   \frac{z}{\sqrt{ \left( 1 + \frac{m - n}{p} \right) }} & \text{if } n < m \\
   z & \text{if } n \ge m
 \end{cases}
 ```
 Where:
-- $z_{corr}$ is the corrected $z$.
+- $z_{c}$ is the corrected $z$.
 - $z$ is the z-score.
 - $n$ is the number of `good barcodes`.
 - $m$ is the median of `good barcodes` of all ORFs.
-- $p$ is a user-defined penalty factor.
-
-> [!NOTE]  
-> Good barcodes are defined as those which do not have a twin peak in the distribution of their counts across bins. Barcodes with twin peaks are defined as having two peaks that are at least two bins apart $(\Delta Bin > 1)$ and the second peak has to be a minimum proportion of the highest peak. This proportion is defined by the user in the config.yaml file (`proportion_threshold`). See the example below for a visual representation of this. Not all twin peaks are marked in this example.
-![Twin peaks example](images/twin_peak_example.png "Twin peaks example")
-
+- $p$ is a user-defined penalty factor (`penalty_factor` in `config.yaml`).
 
 A final z-score correction is applied to correct for intra-ORF variability:
 
-$$z_{corr}' = \frac{z_{corr}}{SD_{\Delta PSI}} \times \frac{|\Delta PSI|}{h} $$
+$$
+z_{c}' = \begin{cases}
+\frac{z_{c}}{\sigma_i} & \text{if } \sigma_i > 0 \\
+\frac{z_{c}}{\epsilon} & \text{if } \sigma_i = 0
+\end{cases} \times \frac{|\Delta PSI|}{h}
+$$
+
 
 Where:
-- $z_{corr}'$ is the final corrected z-score.
-- $SD_{\Delta PSI}$ is the standard deviation of $\Delta PSI$ values of individual ORFs.
+- $z_{c}'$ is the final corrected z-score.
+- $\sigma_{i}$ is the standard deviation of $\Delta PSI$ values of an individual ORF.
 - $h$ is a user-defined, absolute, $\Delta PSI$ threshold for calling a hit.
 - $|\Delta PSI|$ is the absolute value of $\Delta PSI$ for the individual ORF.
+- $\epsilon$ is the lowest $\sigma_i$ of all ORFs (to avoid division by zero).
 
 ## z-score scaling
 
@@ -570,3 +692,6 @@ If you use this workflow in a paper, don't forget to give credits to the authors
 
 ## References
 
+* Hsueh-Chi Sherry Yen, Stephen J. Elledge. Identification of SCF Ubiquitin Ligase Substrates by Global Protein Stability Profiling. **Science** (2008)
+* Itay Koren et al. The Eukaryotic Proteome Is Shaped by E3 Ubiquitin Ligases Targeting C-Terminal Degrons. **Cell** (2018)
+* Richard T. Timms et al. A glycine-specific N-degron pathway mediates the quality control of protein N-myristoylation. **Science** (2019)
