@@ -40,8 +40,10 @@ csv:
   barcode_id_column: 0 # Column with unique barcode IDs
   sequence_column: 1 # Column number with barcode sequences
 
-# Mismatches allowed during alignment
-mismatch: 0 
+# Alignment settings
+bowtie2:
+  mismatch: 0 # mismatches allowed in the alignment
+  extra: "" # Extra arguments for bowtie2
 
 # MAGeCK/DrugZ can be used when bin_number is set to 1
 mageck:

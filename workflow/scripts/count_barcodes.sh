@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 zcat ${snakemake_input[fq]} | \
-bowtie2 --no-hd -p ${snakemake[threads]} -t -N ${snakemake_params[mm]} -x ${snakemake_params[idx]} - 2> ${snakemake_log[0]} | \
+bowtie2 ${snakemake_params[extra]} --no-hd -p ${snakemake[threads]} -t -N ${snakemake_params[mm]} -x ${snakemake_params[idx]} - 2> ${snakemake_log[0]} | \
 sed '/XS:/d' | \
 cut -f3 | \
 sort | \

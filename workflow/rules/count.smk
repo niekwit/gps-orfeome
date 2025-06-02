@@ -65,10 +65,11 @@ rule count_barcodes:
             ".rev.2.bt2",
         ),
     output:
-        "results/count/{sample}.barcode.counts.txt",
+        temp("results/count/{sample}.barcode.counts.txt"),
     params:
-        mm=config["mismatch"],
+        mm=config["bowtie2"]["mismatch"],
         idx=lambda wc, input: input["idx"][0].replace(".1.bt2", ""),
+        extra=config["bowtie2"]["extra"],
     threads: 8
     resources:
         runtime=45,
