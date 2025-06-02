@@ -79,6 +79,7 @@ def compute_psi(row, condition):
 # Read counts for all samples
 df = pd.read_csv(counts, sep="\t")
 
+
 # Order bin count columns so that they are in numerical order
 # Bin count columns are assumed to be in the format f"{reference}_bin" and f"{test}_bin"
 # where bin is an integer, sort first by reference and then by test
@@ -271,7 +272,14 @@ df["z_score_corr"] = df["z_score"] / np.where(
 
 logging.info("Correcting z-scores for intra ORF variability")
 # Correct for delta_PSI_SD
-df["z_score_corr"] = df["z_score_corr"] / df["delta_PSI_SD"]
+# in rare cases this can be zero, so we need to avoid division by zero
+# by adding a small value to the SD (epsilon): lowest delta_PSI_SD value of all ORFs
+epsilon = min(df["delta_PSI_SD"][df["delta_PSI_SD"] > 0])
+df["z_score_corr"] = np.where(
+    df["delta_PSI_SD"] > 0,
+    df["z_score_corr"] / df["delta_PSI_SD"],
+    df["z_score_corr"] / epsilon,
+)
 
 logging.info("Correcting z-scores for deltaPSI")
 # Multiply z-scores by absolute delta_PSI value
