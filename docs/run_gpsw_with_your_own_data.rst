@@ -1,9 +1,27 @@
 Run ``GPSW`` with your own data
 ================================================================================
 
-Download workflow code:
+Fetching workflow code
+--------------------------------------------------------------------------------
+
+Download workflow code as follows:
 
 .. code-block:: shell
 
    $ cd /path/to/analysis/dir
    $ gpsw fetch
+
+
+Configuring GPSW
+--------------------------------------------------------------------------------
+
+To configure the GPSW, edit the `config/config.yaml` file. This file contains various parameters that control the workflow's behavior, as explained in the workflow settings section
+
+
+Running the workflow
+--------------------------------------------------------------------------------
+To initiate the workflow, run the following command:
+
+.. code-block:: shell
+
+   $ gpsw run
