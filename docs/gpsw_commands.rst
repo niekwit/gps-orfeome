@@ -4,7 +4,7 @@
 .. code-block:: shell
 
    $ gpsw --version
-   gpsw 0.6.3
+   gpsw 0.7.0
 
    $ gpsw --help
    usage: gpsw [-h] [--version] {fetch,run} ...
