@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gpsw"
-version = "0.6.3"
+version = "0.7.0"
 authors = [
     { name="Niek Wit", email="nw416@cam.ac.uk" },
 ]
-description="GPSW: A tool for analysing and processing Global Protein Stability Profiling data."
+description="GPSW: A tool for analysing Global Protein Stability Profiling data."
 readme = "README.md"
 requires-python = ">=3.12"
 license = {text = "MIT License"}
@@ -22,7 +22,11 @@ classifiers=[
 dependencies = [
     "pygithub==2.6.1", 
     "pydot==3.0.4",
- ]
+    "snakemake==8.25.5",
+    "snakemake-executor-plugin-slurm==1.3.6",
+    "pandas==2.2.3",
+    "pygments=2.19.1",
+]
 
 [project.urls]
 Repository = "https://github.com/niekwit/gps-orfeome"
