@@ -22,6 +22,7 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
+# html_css_files = ["css/custom.css"]
 html_js_files = ["force-light-mode.js"]
 
 # -- Theme options -----------------------------------------------------------
@@ -47,6 +48,11 @@ html_theme_options = {
             "type": "fontawesome",
         },
     ],
+    "logo": {
+        "text": "GPSW",
+        "image_light": "_static/gpsw_logo.svg",
+        "image_dark": "_static/gpsw_logo.svg",
+    },
 }
 
 html_context = {"default_mode": "light"}
