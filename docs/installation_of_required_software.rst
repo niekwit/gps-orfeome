@@ -41,4 +41,5 @@ At a later point, `GPSW` can be updated:
 
 Installation of Snakemake plugins
 --------------------------------------------------------------------------------
-For running `GPSW` on
+
+Snakemake plugins are required for the workflow to run correctly in certain environments. Please follow the instructions `here <https://snakemake.github.io/snakemake-plugin-catalog/index.html>`_ to install the required plugins. For convenience, the Snakemake plugin for SLURM execution comes pre-installed with the `GPSW`.
