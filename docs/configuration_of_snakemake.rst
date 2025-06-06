@@ -1,7 +1,7 @@
 Configuration of Snakemake
 ================================================================================
 
-To setup a profile for custom `Snakemake` command line arguments, create a new profile (`config.yaml`) in ``$HOME/.config/snakemake/standard/``:
+To set up a profile for custom `Snakemake` command line arguments, create a new profile (`config.yaml`) in ``$HOME/.config/snakemake/standard/``:
 
 .. code-block:: yaml
 

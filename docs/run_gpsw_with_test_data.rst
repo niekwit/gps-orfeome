@@ -1,7 +1,7 @@
 Run ``GPSW`` with test data
 ================================================================================
 
-First activate the `GPSW` Conda env:
+First activate the `GPSW` Conda environment:
 
 .. code-block:: shell
 
