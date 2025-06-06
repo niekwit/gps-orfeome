@@ -31,7 +31,7 @@
      --test-data           Include test data in the download (and relating config
                            and resources directories)
      -d DIRECTORY, --directory DIRECTORY
-                           Directory to download the code to target diectory
+                           Directory to download the code to target directory
                            (default: current directory)
 
    $ gpsw run --help
