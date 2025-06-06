@@ -2,59 +2,105 @@
    :description: GPSW is a tool for analysing Global Protein Stability Profiling data.
    :keywords: Snakemake, bioinformatics, protein stability
 
-.. |rtdBadge| image:: https://readthedocs.org/projects/gpsw/badge/?version=latest
-    :target: https://gpsw.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
-.. |testsBadge| image:: https://github.com/niekwit/gps-orfeome/actions/workflows/main.yml/badge.svg?branch=main
-   :target: https://github.com/niekwit/gps-orfeome/actions/workflows/main.yml
-   :alt: Tests
-.. |snakemakeBadge| image:: https://img.shields.io/badge/snakemake-%E2%89%A58.25.5-brightgreen.svg
-   :target: https://snakemake.github.io
-   :alt: Snakemake
-.. |biocondaVersionBadge| image:: https://anaconda.org/bioconda/gpsw/badges/version.svg
-   :target: https://anaconda.org/bioconda/gpsw
-   :alt: Bioconda version
-.. |biocondaDownloadsBadge| image:: https://anaconda.org/bioconda/gpsw/badges/downloads.svg
-   :target: https://anaconda.org/bioconda/gpsw
-   :alt: Bioconda downloads
-.. |blackStyleBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-   :target: https://github.com/psf/black
-   :alt: Code style: black
-.. |githubStars| image:: https://img.shields.io/github/stars/niekwit/gpsw?style=social
-    :alt: GitHub stars
-.. |zenodoDOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.15473715.svg
-  :target: https://doi.org/10.5281/zenodo.15473715
-  :alt: DOI
 
-==========
-GPSW
-==========
+==================
+GPSW documentation
+==================
 
-|rtdBadge| |testsBadge| |snakemakeBadge| |biocondaVersionBadge| |biocondaDownloadsBadge| |blackStyleBadge| |githubStars| |zenodoDOI|
+**Version**: |version|
 
 Description
 ===========
 
-`GPSW` is a Python package for analysing Global Protein Stability Profiling data as described in `Koren et al. Cell 2018 <https://pubmed.ncbi.nlm.nih.gov/29779948/>`_ and `Timms et al. Science 2019 <https://pubmed.ncbi.nlm.nih.gov/31273098/>`_.
+:mod:`GPSW` is a Python package for analysing Global Protein Stability Profiling data as described in `Koren et al. Cell 2018 <https://pubmed.ncbi.nlm.nih.gov/29779948/>`_ and `Timms et al. Science 2019 <https://pubmed.ncbi.nlm.nih.gov/31273098/>`_. It employs the `Snakemake <https://snakemake.readthedocs.io/>`_ workflow management system to provide a reproducible and scalable analysis workflow.
 
 It can deal with two types of experiments:
 
 1. **Protein stability profiling** using Protein Stability Index (PSI) as a metric, which is calculated from the proportion of reads across multiple bins.
 
-   .. figure:: images/psi-flow-plot.png
-      :alt: Sorting for PSI analysis
+2. **Pairwise comparison** of ORF counts between two conditions (or populations) using MAGeCK/DrugZ.
 
-      Cell sort strategy for PSI analysis
 
-2. **Pairwise comparison** of ORF counts between two conditions (or populations) using MAGeCK/DrugZ
+.. grid:: 1 2 2 2
+   :gutter: 4
+   :padding: 2 2 0 0
+   :class-container: sd-text-center
+
+   .. grid-item-card:: Background
+      :class-card: intro-card
+      :shadow: md
+
+      The background section provides an overview of the Global Protein Stability Profiling (GPS) method and the output of the *GPSW* workflow.
+
+      +++
+
+      .. button-ref:: background
+         :ref-type: ref
+         :click-parent:
+         :color: secondary
+         :expand:
+
+         To the background guides
+
+   .. grid-item-card::  User guide
+      :class-card: intro-card
+      :shadow: md
+
+      The user guide provides in-depth information on how to install and use *GPSW*.
+
+      +++
+
+      .. button-ref:: user_guide
+         :ref-type: ref
+         :click-parent:
+         :color: secondary
+         :expand:
+
+         To the user guide
+
+   .. grid-item-card::  About GPSW
+      :class-card: intro-card
+      :shadow: md
+
+      Information about the GPSW project, its authors, and how to cite it.
+
+      +++
+
+      .. button-ref:: about
+         :ref-type: ref
+         :click-parent:
+         :color: secondary
+         :expand:
+
+         To the about section
+
+   .. grid-item-card::  Report issues
+      :class-card: intro-card
+      :shadow: md
+
+      Saw a typo in the documentation? Want to improve
+      existing functionalities? The contributing guidelines will guide
+      you through the process of improving GPSW.
+
+      +++
+
+      .. button-ref:: report_issues
+         :ref-type: ref
+         :click-parent:
+         :color: secondary
+         :expand:
+
+         To the issues guide
+
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :hidden:
+   :titlesonly:
    
    background
    user_guide
-   citation
+   about
    report_issues
 
 .. toctree::
