@@ -265,7 +265,7 @@ The ``sob_threshold`` is the minimum value of the sum of barcode counts across a
 ``hit_threshold``
 ~~~~~~~~~~~~~~~~~~
 
-The ``hit_threshold`` defines the $$\Delta PSI$$ thresholds value for calling a hits. For example, if the `hit_threshold` is set to 0.75, then an ORF will be considered a hit if its $$\Delta PSI$$ is greater than 0.75.
+The ``hit_threshold`` defines the :math:`\Delta PSI` thresholds value for calling a hits. For example, if the `hit_threshold` is set to 0.75, then an ORF will be considered a hit if its :math:`\Delta PSI` is greater than 0.75.
 
 ``proportion_threshold``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -316,4 +316,4 @@ The `bc_threshold` is the minimum number of 'good' barcodes required to keep an 
 ``sd_threshold``
 ~~~~~~~~~~~~~~~~~
 
-The `sd_threshold` is the standard deviation threshold for marking high confidence hits. For example, if the `sd_threshold` is set to 2, then an ORF will be considered a high confidence hit if its $$\Delta PSI$$ is greater than 2 times the standard deviation of the $$\Delta PSI$$ values for all ORFs.
+The `sd_threshold` is the standard deviation threshold for marking high confidence hits. For example, if the `sd_threshold` is set to 2, then an ORF will be considered a high confidence hit if its :math:`\Delta PSI` is greater than 2 times the standard deviation of the :math:`\Delta PSI` valueof that ORFs.
