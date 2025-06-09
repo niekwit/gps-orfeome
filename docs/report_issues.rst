@@ -7,7 +7,7 @@ If you find a bug or have a feature request, please open an issue on the `GitHub
 
 .. button-link:: https://github.com/niekwit/gps-orfeome/issues/new/choose
    :color: primary
-   :font
+   :class: btn-bold-white
 
    Open new issue
 

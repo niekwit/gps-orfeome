@@ -39,3 +39,10 @@
 }
 
 
+.btn-bold-white {
+  color: white !important;
+  font-weight: bold !important;
+}
+.btn-bold-white:hover {
+  color: white !important;
+}
