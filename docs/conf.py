@@ -6,10 +6,12 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+from importlib.metadata import version
+
 project = "GPSW"
 copyright = "2025, Niek Wit"
 author = "Niek Wit"
-version = "0.7.0"
+version = version("gpsw")
 
 extensions = [
     "sphinx_design",
@@ -22,7 +24,7 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
-# html_css_files = ["css/custom.css"]
+html_css_files = ["css/custom.css"]
 html_js_files = ["force-light-mode.js"]
 
 # -- Theme options -----------------------------------------------------------
