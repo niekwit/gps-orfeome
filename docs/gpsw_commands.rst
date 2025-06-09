@@ -14,7 +14,7 @@ To display the `GPSW` version:
 Help
 --------
 
-To display the `GPSW` help message, use the --help option. This will show you the available sub-commands and options for `GPSW`. The help message provides a brief overview of the tool and its functionalities:
+To display the `GPSW` help message, use the ``--help`` option. This will show you the available sub-commands and options for `GPSW`. The help message provides a brief overview of the tool and its functionalities:
 
 .. code-block:: shell
 
@@ -35,7 +35,7 @@ To display the `GPSW` help message, use the --help option. This will show you th
 `GPSW` fetch
 --------------------
 
-The sub-command `fetch` is used to download the GPSW code and analysis-specific configuration files from a specific release on GitHub:
+The sub-command ``fetch`` is used to download the GPSW code and analysis-specific configuration files from a specific release on GitHub:
 
 .. code-block:: shell
 
@@ -55,7 +55,7 @@ The sub-command `fetch` is used to download the GPSW code and analysis-specific 
                            (default: current directory)
 
 .. note::
-   If you specify the `tag` as anything other than `latest`, make sure that the `gpsw` conda environment was made with the same version of `GPSW`. For example, if you want to use the `0.6.3` release, you should create the conda environment with the command:
+   If you specify the ``TAG`` as anything other than `latest` and `0.6.3` or earlier, make sure that the `gpsw` conda environment was made with the same version of `GPSW`. For example, if you want to use the `0.6.3` release, you should create the conda environment with the command:
    
    .. code-block:: shell
 
@@ -65,7 +65,7 @@ The sub-command `fetch` is used to download the GPSW code and analysis-specific 
 `GPSW` run
 --------------------
 
-The sub-command `run` is used to run the GPSW pipeline and create a report:
+The sub-command ``run`` is used to run the GPSW pipeline and create a report:
 
 .. code-block:: shell
 

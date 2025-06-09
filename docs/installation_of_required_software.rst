@@ -8,7 +8,7 @@ Make sure you have `Conda <https://docs.conda.io/projects/conda/en/latest/index.
 Installation of the latest version via Conda
 --------------------------------------------------------------------------------
 
-For versions "0.7.0" and later, run:
+For the latest version, run:
 
 .. code-block:: shell
 
@@ -23,6 +23,13 @@ This will install the latest stable version of `GPSW` and all of its dependencie
 
       $ conda create -n gpsw=0.6.3 bioconda::gpsw pandas=2.2.3  pygments=2.19.1
 
+   Otherwise, run:
+
+   .. code-block:: shell
+
+      $ conda create -n gpsw=VERSION
+
+   All available releases can be found on the `GitHub releases page <https://github.com/niekwit/gps-orfeome/releases>`_.
 
 
 Installation of development version

@@ -211,9 +211,18 @@ When `bin_number` is set to 1, the workflow runs MAGeCK/DrugZ. The `mageck` sect
      run: True # Run DrugZ analysis
      extra: "" # Extra DrugZ arguments
 
+
 PSI settings
 --------------------------------------------------------------------------------
-When `bin_number` is greater than 1, the workflow performs a protein stability analysis using PSI as a metric. The `psi` section defines the settings for the PSI analysis. The `sob_threshold` is the minimum value of the sum of barcode counts across all bins to keep an ORF (100 is recommended). The `hit_threshold`, `proportion_threshold`, and `penalty_factor` are lists of values that define the thresholds for hits, proportion of reads in bins, and penalty factor for having less than median number of good barcodes, respectively. The `bc_threshold` is the minimum number of 'good' barcodes required to keep an ORF (examples in Note below), and the `sd_threshold` is the SD threshold for marking high confidence hits (i.e is :math:`\Delta PSI` > n :math:`\times` SD, with n the `sd_threshold`). More on the PSI analysis can be found in the :ref:`background` section below.
+
+The variables that control the PSI analysis are defined in the `psi` section of the `config.yaml` file. The PSI analysis is performed when `bin_number` is greater than 1, and it calculates the Protein Stability Index (PSI) for each ORF based on the proportion of reads across multiple bins.
+
+The values between square brackets (e.g. `[0.75, 1.0, 1.25]`) indicate that the workflow will run the analysis for each value in the list, allowing for multiple thresholds to be applied in the analysis. The results will be saved in separate files for each threshold.
+
+.. note::
+   
+   All of the values in brackets are lists, and all of these must have the same length (i.e. the same number of values).
+
 
 .. code-block:: yaml
 
@@ -240,6 +249,29 @@ When `bin_number` is greater than 1, the workflow performs a protein stability a
      # mean deltaPSI > sd_threshold * SD
      sd_threshold: [2, 2, 2.5]
 
+
+More on the PSI analysis can be found in the :ref:`background` section.
+
+``bin_number``
+~~~~~~~~~~~~~~~
+
+When `bin_number` is greater than 1, the workflow performs a protein stability analysis using PSI as a metric. The `psi` section defines the settings for the PSI analysis. 
+
+``sob_threshold``
+~~~~~~~~~~~~~~~~~~
+
+The ``sob_threshold`` is the minimum value of the sum of barcode counts across all bins to keep an ORF (100 is recommended). 
+
+``hit_threshold``
+~~~~~~~~~~~~~~~~~~
+
+The ``hit_threshold`` defines the $$\Delta PSI$$ thresholds value for calling a hits. For example, if the `hit_threshold` is set to 0.75, then an ORF will be considered a hit if its $$\Delta PSI$$ is greater than 0.75.
+
+``proportion_threshold``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``proportion_threshold`` is used in the twin peaks analysis. It defines the minimum proportion of the second peak relative to the first peak for a barcode to be considered a twin peak. For example, if the `proportion_threshold` is set to 0.5, then a barcode will be considered a twin peak if its second peak is at least 50% of the first peak.
+
 .. note::
    Good barcodes are defined as those which do not have a twin peak in the distribution of their counts across bins. Barcodes with twin peaks are defined as having two peaks that are at least two bins apart (:math:`\Delta Bin > 1`) and the second peak has to be a minimum proportion of the highest peak. This proportion is defined by the user in the config.yaml file (`proportion_threshold`). See the example below for a visual representation of this. Not all twin peaks are marked in this example.
 
@@ -247,3 +279,41 @@ When `bin_number` is greater than 1, the workflow performs a protein stability a
       :alt: Twin peaks example
 
       Twin peaks example
+
+
+``penalty_factor``
+~~~~~~~~~~~~~~~~~~~~~
+
+The ``penalty_factor`` is a list of values that defines the penalty factor for having less than the median number of good barcodes. This is used to penalize ORFs with fewer good barcodes, which can affect the reliability of the PSI analysis.
+
+The ``penalty_factor`` is applied as follows:
+
+.. math::
+
+   z_{c} =
+   \begin{cases}
+     \frac{z}{\sqrt{ \left( 1 + \frac{m - n}{p} \right) }} & \text{if } n < m \\
+     z & \text{if } n \ge m
+   \end{cases}
+
+Where:
+
+- :math:`z_{c}` is the corrected :math:`z`.
+- :math:`z` is the z-score.
+- :math:`n` is the number of `good barcodes`.
+- :math:`m` is the median of `good barcodes` of all ORFs.
+- :math:`p` is a user-defined penalty factor (`penalty_factor` in `config.yaml`).
+
+This correction applies a mild penalty to the z-score of ORFs with fewer good barcodes, which helps to account for the reduced reliability of the PSI analysis in those cases. The recommended value for `penalty_factor` is 4, but it can be adjusted based on the specific requirements of the analysis (a lower value gives a higher penalty).
+
+
+``bc_threshold``
+~~~~~~~~~~~~~~~~~
+
+The `bc_threshold` is the minimum number of 'good' barcodes required to keep an ORF (examples in Note below), and the `sd_threshold` is the SD threshold for marking high confidence hits (i.e is :math:`\Delta PSI` > n :math:`\times` SD, with n the `sd_threshold`). 
+
+
+``sd_threshold``
+~~~~~~~~~~~~~~~~~
+
+The `sd_threshold` is the standard deviation threshold for marking high confidence hits. For example, if the `sd_threshold` is set to 2, then an ORF will be considered a high confidence hit if its $$\Delta PSI$$ is greater than 2 times the standard deviation of the $$\Delta PSI$$ values for all ORFs.
