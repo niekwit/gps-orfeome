@@ -316,4 +316,4 @@ The `bc_threshold` is the minimum number of 'good' barcodes required to keep an 
 ``sd_threshold``
 ~~~~~~~~~~~~~~~~~
 
-The `sd_threshold` is the standard deviation threshold for marking high confidence hits. For example, if the `sd_threshold` is set to 2, then an ORF will be considered a high confidence hit if its :math:`\Delta PSI` is greater than 2 times the standard deviation of the :math:`\Delta PSI` valueof that ORFs.
+The `sd_threshold` is the standard deviation threshold for marking high confidence hits. For example, if the `sd_threshold` is set to 2, then an ORF will be considered a high confidence hit if its :math:`\Delta PSI` is greater than 2 times the standard deviation of the :math:`\Delta PSI` value of that ORF.
