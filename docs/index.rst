@@ -27,6 +27,7 @@ It can deal with two types of experiments:
    :class-container: sd-text-center
 
    .. grid-item-card:: Background
+      :img-top: _static/background.svg
       :class-card: intro-card
       :shadow: md
 
@@ -37,12 +38,14 @@ It can deal with two types of experiments:
       .. button-ref:: background
          :ref-type: ref
          :click-parent:
-         :color: secondary
+         :color: warning
+         :class: btn-custom-orange
          :expand:
 
          To the background guides
 
    .. grid-item-card::  User guide
+      :img-top: _static/user_guide.svg
       :class-card: intro-card
       :shadow: md
 
@@ -53,12 +56,14 @@ It can deal with two types of experiments:
       .. button-ref:: user_guide
          :ref-type: ref
          :click-parent:
-         :color: secondary
+         :color: warning
+         :class: btn-custom-orange
          :expand:
 
          To the user guide
 
    .. grid-item-card::  About GPSW
+      :img-top: _static/about.svg
       :class-card: intro-card
       :shadow: md
 
@@ -69,12 +74,14 @@ It can deal with two types of experiments:
       .. button-ref:: about
          :ref-type: ref
          :click-parent:
-         :color: secondary
+         :color: warning
+         :class: btn-custom-orange
          :expand:
 
          To the about section
 
    .. grid-item-card::  Report issues
+      :img-top: _static/issues.svg
       :class-card: intro-card
       :shadow: md
 
@@ -87,7 +94,8 @@ It can deal with two types of experiments:
       .. button-ref:: report_issues
          :ref-type: ref
          :click-parent:
-         :color: secondary
+         :color: warning
+         :class: btn-custom-orange
          :expand:
 
          To the issues guide
