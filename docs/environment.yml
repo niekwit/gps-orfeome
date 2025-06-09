@@ -10,3 +10,7 @@ dependencies:
   - sphinx-design=0.6.1
   - sphinx-copybutton=0.5.2
   - gpsw
+  - snakemake=8.25.5
+  - pip
+  - pip:
+      - sphinx-substitution-extensions==2025.6.6 
