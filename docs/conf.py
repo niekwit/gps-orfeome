@@ -6,16 +6,17 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-from importlib.metadata import version
+import importlib.metadata
 
 project = "GPSW"
 copyright = "2025, Niek Wit"
 author = "Niek Wit"
-version = version("gpsw")
+version = importlib.metadata.version("gpsw")
 
 extensions = [
     "sphinx_design",
     "sphinx_copybutton",
+    "sphinx_substitution_extensions"
 ]
 
 templates_path = ["_templates"]
@@ -61,3 +62,9 @@ html_context = {"default_mode": "light"}
 
 copybutton_prompt_text = r">>> |\.\.\. |\$ "
 copybutton_prompt_is_regexp = True
+
+snakemake_version = importlib.metadata.version("snakemake")
+
+rst_prolog = f"""
+.. |snakemake_version| replace:: {snakemake_version}
+"""
