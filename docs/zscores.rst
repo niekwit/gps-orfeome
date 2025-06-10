@@ -31,7 +31,7 @@ where:
 - :math:`\Delta\Psi_j` represents :math:`\Delta\Psi` values for all ORFs.
 - :math:`k` is a standard scaling constant (:math:`1.4826`). It is approximately :math:`1/(\Phi^{-1}(3/4))`, where :math:`\Phi^{-1}` is the inverse of the cumulative distribution function for a standard normal distribution. 
 
-The z-score of ORFs with a low number of `good barcodes` (see note below) is corrected, as follows:
+The z-score of ORFs with a low number of `good barcodes` (see :ref:`here <good_barcodes>` for definition) is corrected, as follows:
 
 .. math::
 

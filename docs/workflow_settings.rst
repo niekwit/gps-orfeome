@@ -271,10 +271,13 @@ The ``sob_threshold`` is the minimum value of the sum of barcode counts across a
 
 The ``hit_threshold`` defines the :math:`\Delta PSI` thresholds value for calling a hits. For example, if the `hit_threshold` is set to 0.75, then an ORF will be considered a hit if its :math:`\Delta PSI` is greater than 0.75.
 
+
 ``proportion_threshold``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``proportion_threshold`` is used in the twin peaks analysis. It defines the minimum proportion of the second peak relative to the first peak for a barcode to be considered a twin peak. For example, if the `proportion_threshold` is set to 0.5, then a barcode will be considered a twin peak if its second peak is at least 50% of the first peak.
+
+.. _good_barcodes:
 
 .. note::
    Good barcodes are defined as those which do not have a twin peak in the distribution of their counts across bins. Barcodes with twin peaks are defined as having two peaks that are at least two bins apart (:math:`\Delta Bin > 1`) and the second peak has to be a minimum proportion of the highest peak. This proportion is defined by the user in the config.yaml file (``proportion_threshold``). See the example below for a visual representation of this. Not all twin peaks are marked in this example.
