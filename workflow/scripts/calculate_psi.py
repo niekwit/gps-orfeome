@@ -256,9 +256,15 @@ plt.title("Distribution of delta_PSI_mean")
 plt.savefig(snakemake.output["hist"])
 
 logging.info("Calculating z-scores")
-df["z_score"] = (df["delta_PSI_mean"] - df["delta_PSI_mean"].mean()) / df[
-    "delta_PSI_mean"
-].std()
+# Calculate robust z-score based of median and Median Absolute Deviation (MAD)
+# https://en.wikipedia.org/wiki/Median_absolute_deviation
+# https://en.wikipedia.org/wiki/Robust_measures_of_scale
+mad = abs(df["delta_PSI_mean"] - df["delta_PSI_mean"].median())
+df["z_score"] = (
+    df["delta_PSI_mean"] - df["delta_PSI_mean"].median()
+) / (
+    mad.median() * 1.4826
+)  # 1.4826 is a constant to make MAD comparable to standard deviation
 
 logging.info("Correcting z-scores for number of barcodes")
 # Correct for number of barcodes, but only if good barcode number is less than median
