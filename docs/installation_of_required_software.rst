@@ -16,7 +16,10 @@ For the latest version, run:
 
 This will install the latest stable version of `GPSW` and all of its dependencies. This is the recommended way to install `GPSW`.
 
-.. note::
+.. dropdown:: Installation of older versions
+   :icon: info
+   :color: primary
+   
    To install versions older than "0.7.0" use the following command:
 
    .. code-block:: shell
