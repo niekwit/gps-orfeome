@@ -56,14 +56,14 @@ A final z-score correction is applied to correct for intra-ORF variability:
    z_{c}' = \begin{cases}
    \frac{z_{c}}{\sigma_i} & \text{if } \sigma_i > 0 \\
    \frac{z_{c}}{\epsilon} & \text{if } \sigma_i = 0
-   \end{cases} \times \frac{|\Delta\Psi|}{h}
+   \end{cases} \times \frac{|\Delta\Psi_i|}{h}
 
 Where:
 
 - :math:`z_{c}'` is the final corrected z-score.
 - :math:`\sigma_{i}` is the standard deviation of :math:`\Delta\Psi` values of an individual ORF.
 - :math:`h` is a user-defined, absolute, :math:`\Delta\Psi` threshold for calling a hit.
-- :math:`|\Delta\Psi|` is the absolute value of :math:`\Delta\Psi` for the individual ORF.
+- :math:`|\Delta\Psi_i|` is the absolute value of :math:`\Delta\Psi` for the individual ORF.
 - :math:`\epsilon` is the lowest :math:`\sigma_i` of all ORFs (to avoid division by zero).
 
 z-score scaling
