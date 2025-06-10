@@ -1,10 +1,11 @@
 z-score calculation
 --------------------------------------------------------------------------------
-With `bin_number` greater than 1, `GPSW` will perform a protein stability analysis using Protein Stability Index (PSI) as a metric. This is calculated as follows:
+
+With `bin_number` greater than 1, `GPSW` will perform a protein stability analysis using Protein Stability Index (PSI, :math:`\Psi`) as a metric. This is calculated as follows:
 
 .. math::
 
-   PSI=\sum_{i=1}^nR_i \times i
+   \Psi=\sum_{i=1}^nR_i \times i
 
 where:
 
@@ -12,23 +13,23 @@ where:
 - :math:`n` is the number of bins.
 - :math:`i` is the bin number.
 
-Between two conditions (test and control), the :math:`\Delta PSI` is calculated as:
+Between two conditions (test and control), the :math:`\Delta\Psi` is calculated as:
 
 .. math::
 
-   \Delta PSI = PSI_{test} - PSI_{control}
+   \Delta\Psi = \Psi_{test} - \Psi_{control}
 
-Next, the :math:`\Delta PSI` is normalized to the mean and standard deviation of the :math:`\Delta PSI` values for all ORFs, resulting in a z-score:
+Next, :math:`\Delta\Psi` is converted to a robust z-score:
 
 .. math::
+   z = \frac{\Delta\Psi_i - \text{median}(\Delta\Psi_j)}{k \times \text{median}(|\Delta\Psi_j - \text{median}(\Delta\Psi_j)|)}
 
-   z = \frac{\Delta PSI - \mu}{\sigma}
 
 where:
 
-- :math:`z` is the z-score.
-- :math:`\mu` is the mean :math:`\Delta PSI` for all ORFs.
-- :math:`\sigma` is the standard deviation of :math:`\Delta PSI` for all ORFs.
+- :math:`\Delta\Psi_i` represents a single :math:`\Delta\Psi` value for a given ORF :math:`i`.
+- :math:`\Delta\Psi_j` represents :math:`\Delta\Psi` values for all ORFs.
+- :math:`k` is a standard scaling constant (:math:`1.4826`). It is approximately :math:`1/(\Phi^{-1}(3/4))`, where :math:`\Phi^{-1}` is the inverse of the cumulative distribution function for a standard normal distribution. 
 
 The z-score of ORFs with a low number of `good barcodes` (see note below) is corrected, as follows:
 
@@ -55,14 +56,14 @@ A final z-score correction is applied to correct for intra-ORF variability:
    z_{c}' = \begin{cases}
    \frac{z_{c}}{\sigma_i} & \text{if } \sigma_i > 0 \\
    \frac{z_{c}}{\epsilon} & \text{if } \sigma_i = 0
-   \end{cases} \times \frac{|\Delta PSI|}{h}
+   \end{cases} \times \frac{|\Delta\Psi|}{h}
 
 Where:
 
 - :math:`z_{c}'` is the final corrected z-score.
-- :math:`\sigma_{i}` is the standard deviation of :math:`\Delta PSI` values of an individual ORF.
-- :math:`h` is a user-defined, absolute, :math:`\Delta PSI` threshold for calling a hit.
-- :math:`|\Delta PSI|` is the absolute value of :math:`\Delta PSI` for the individual ORF.
+- :math:`\sigma_{i}` is the standard deviation of :math:`\Delta\Psi` values of an individual ORF.
+- :math:`h` is a user-defined, absolute, :math:`\Delta\Psi` threshold for calling a hit.
+- :math:`|\Delta\Psi|` is the absolute value of :math:`\Delta\Psi` for the individual ORF.
 - :math:`\epsilon` is the lowest :math:`\sigma_i` of all ORFs (to avoid division by zero).
 
 z-score scaling
