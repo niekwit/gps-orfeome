@@ -56,9 +56,11 @@ def fetch_code(args):
         else:
             dirs = ["config", "workflow"]
 
-            # Create empty resources directory if it doesn't exist
+            # Create empty resources/reads directory if it doesn't exist
             resources_dir = os.path.join(args.directory, "resources")
             os.makedirs(resources_dir, exist_ok=True)
+            reads_dir = os.path.join(args.directory, "reads")
+            os.makedirs(reads_dir, exist_ok=True)
 
             end_message = "Please configure the workflow in config/config.yaml and provide a CSV file with barcode information in resources/"
 
@@ -147,7 +149,7 @@ def main():
         "--tag",
         type=str,
         default="latest",
-        help="Release tag of the code to download",
+        help="Release tag of the code to download (default: latest)",
     )
     parser_fetch.add_argument(
         "--test-data",
@@ -159,7 +161,7 @@ def main():
         "--directory",
         type=str,
         default=".",
-        help="Directory to download the code to target diectory (default: current directory)",
+        help="Directory to download the code to target directory (default: current directory)",
     )
     parser_fetch.set_defaults(func=fetch_code)
 
