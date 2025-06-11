@@ -100,10 +100,13 @@ def run_workflow(args):
     if args.snakemake_args is not None:
         # Use shlex for robust argument parsing
         command.extend(shlex.split(args.snakemake_args))
-        command.append("-p")
-    else:
+    
+    if args.quiet:
         command.extend(["--quiet", "all"])
+    else:
+        command.append("-p")
 
+    # Run command
     try:
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
