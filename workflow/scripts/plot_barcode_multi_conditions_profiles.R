@@ -54,8 +54,6 @@ rank.list <- lapply(rank.files, read_csv) %>%
 # Combine orf_id and gene into gene.id and remove orf_id/gene columns
 rank.list <- lapply(rank.list, create.geneid)
 
-columns <- colnames(rank.list[[1]])[2:5]
-
 # Join data
 data.list <- mapply(
   function(x, y) {
@@ -67,7 +65,7 @@ data.list <- mapply(
   SIMPLIFY = FALSE
 )
 
-# Remove line where twin_peaks are TRUE
+# Remove lines where twin_peaks are TRUE
 data.list <- lapply(data.list, function(x) {
   dpeak.values <- unique(x[["twin_peaks"]])
   if (length(dpeak.values) == 1) {
@@ -123,6 +121,7 @@ if (length(ref.overlap) > 0) {
 }
 
 # Join data
+# only keep orfs were both conditions have data
 df <- inner_join(mean.list[[1]], mean.list[[2]], by = "gene.id") %>%
   pivot_longer(
     cols = -gene.id,
@@ -179,7 +178,3 @@ stopCluster(cl)
 
 print("Plotting complete")
 print(Sys.time())
-
-# Close log file
-sink(log, type = "output")
-sink(log, type = "message")

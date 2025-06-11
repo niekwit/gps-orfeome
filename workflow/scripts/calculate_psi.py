@@ -345,14 +345,14 @@ df.to_csv(output_file_csv, index=False, na_rep="NA")
 logging.info("Calling hits")
 
 # Identify ORFs that are stabilised in test condition
-df[f"stabilised_in_{test}"] = df["delta_PSI_mean"] >= hit_th
-stab = len(df[(df[f"stabilised_in_{test}"])]["orf_id"].unique())
-logging.info(f"  Number of stabilised ORFs in {test}: {stab}")
+df[f"stabilised_in_{comparison}"] = df["delta_PSI_mean"] >= hit_th
+stab = len(df[(df[f"stabilised_in_{comparison}"])]["orf_id"].unique())
+logging.info(f"  Number of stabilised ORFs in {comparison}: {stab}")
 
 # Identify ORFs that are destabilised in test condition
-df[f"destabilised_in_{test}"] = df["delta_PSI_mean"] <= -hit_th
-destab = len(df[(df[f"destabilised_in_{test}"])]["orf_id"].unique())
-logging.info(f"  Number of destabilised ORFs in {test}: {destab}")
+df[f"destabilised_in_{comparison}"] = df["delta_PSI_mean"] <= -hit_th
+destab = len(df[(df[f"destabilised_in_{comparison}"])]["orf_id"].unique())
+logging.info(f"  Number of destabilised ORFs in {comparison}: {destab}")
 
 # Identify high confidence hits:
 # ORFs with delta_PSI_mean >= sd_th * delta_PSI_SD &
@@ -362,19 +362,19 @@ df["high_confidence"] = (abs(df["delta_PSI_mean"]) >= sd_th * df["delta_PSI_SD"]
 )
 
 hc_stabilised = len(
-    df[(df[f"stabilised_in_{test}"]) & (df["high_confidence"])]["orf_id"].unique()
+    df[(df[f"stabilised_in_{comparison}"]) & (df["high_confidence"])]["orf_id"].unique()
 )
-logging.info(f"  Number of high confidence stabilised ORFs in {test}: {hc_stabilised}")
+logging.info(f"  Number of high confidence stabilised ORFs in {comparison}: {hc_stabilised}")
 hc_destabilised = len(
-    df[(df[f"destabilised_in_{test}"]) & (df["high_confidence"])]["orf_id"].unique()
+    df[(df[f"destabilised_in_{comparison}"]) & (df["high_confidence"])]["orf_id"].unique()
 )
 logging.info(
-    f"  Number of high confidence destabilised ORFs in {test}: {hc_destabilised}"
+    f"  Number of high confidence destabilised ORFs in {comparison}: {hc_destabilised}"
 )
 
 # Make separate columns for high confidence hits (easier for plotting)
-df[f"stabilised_in_{test}_hc"] = df[f"stabilised_in_{test}"] & df["high_confidence"]
-df[f"destabilised_in_{test}_hc"] = df[f"destabilised_in_{test}"] & df["high_confidence"]
+df[f"stabilised_in_{comparison}_hc"] = df[f"stabilised_in_{comparison}"] & df["high_confidence"]
+df[f"destabilised_in_{comparison}_hc"] = df[f"destabilised_in_{comparison}"] & df["high_confidence"]
 df = df.drop(columns=["high_confidence"])
 
 
@@ -383,7 +383,7 @@ logging.info("Ranking hits")
 
 # Remove all non-hit ORFs
 df_rank = df[
-    (df[f"stabilised_in_{test}"]) | (df[f"destabilised_in_{test}"])
+    (df[f"stabilised_in_{comparison}"]) | (df[f"destabilised_in_{comparison}"])
 ].reset_index(drop=True)
 
 # Collapse data to ORF level
@@ -396,10 +396,10 @@ df_rank = (
             "delta_PSI_SD",
             "num_barcodes",
             "good_barcodes",
-            f"stabilised_in_{test}",
-            f"stabilised_in_{test}_hc",
-            f"destabilised_in_{test}",
-            f"destabilised_in_{test}_hc",
+            f"stabilised_in_{comparison}",
+            f"stabilised_in_{comparison}_hc",
+            f"destabilised_in_{comparison}",
+            f"destabilised_in_{comparison}_hc",
             "z_score",
             "z_score_corr",
         ]
@@ -410,14 +410,14 @@ df_rank = (
 
 # Create separate rankings for stabilised and destabilised hits
 df_rank_stab = (
-    df_rank[df_rank[f"stabilised_in_{test}"]]
+    df_rank[df_rank[f"stabilised_in_{comparison}"]]
     .sort_values(by="z_score_corr", ascending=False)
     .reset_index(drop=True)
 )
 df_rank_stab["stabilised_rank"] = df_rank_stab.index + 1
 
 df_rank_destab = (
-    df_rank[df_rank[f"destabilised_in_{test}"]]
+    df_rank[df_rank[f"destabilised_in_{comparison}"]]
     .sort_values(by="z_score_corr", ascending=True)
     .reset_index(drop=True)
 )

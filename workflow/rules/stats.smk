@@ -215,6 +215,42 @@ else:
             ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
             proportions="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.proportions.csv",
         output:
+            d=report(
+                directory(
+                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/destabilised_in_{comparison}/"
+                ),
+                patterns=["{name}.pdf"],
+                caption="../report/profiles.rst",
+                category="Barcode profiles {comparison}",
+                subcategory="Destabilised",
+            ),
+            dhc=report(
+                directory(
+                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/destabilised_in_{comparison}_hc/"
+                ),
+                patterns=["{name}.pdf"],
+                caption="../report/profiles.rst",
+                category="Barcode profiles {comparison}",
+                subcategory="Destabilised (high confidence)",
+            ),
+            s=report(
+                directory(
+                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/stabilised_in_{comparison}/"
+                ),
+                patterns=["{name}.pdf"],
+                caption="../report/profiles.rst",
+                category="Barcode profiles {comparison}",
+                subcategory="Stabilised",
+            ),
+            shc=report(
+                directory(
+                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/stabilised_in_{comparison}_hc/"
+                ),
+                patterns=["{name}.pdf"],
+                caption="../report/profiles.rst",
+                category="Barcode profiles {comparison}",
+                subcategory="Stabilised (high confidence)",
+            ),
             flag=temp(
                 touch(
                     "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/plotting_done.txt"
@@ -244,6 +280,14 @@ else:
                 comparison=COMPARISONS,
             ),
         output:
+            pdf=report(
+                directory(
+                    "results/psi_plots_multi_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/"
+                ),
+                patterns=["{name}.pdf"],
+                caption="../report/profiles_multi_conditions.rst",
+                category="Barcode profiles multi conditions",
+            ),
             flag=temp(
                 touch(
                     "results/psi_plots_multi_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/plotting_done.txt"
@@ -267,7 +311,16 @@ else:
             csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
             ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
         output:
-            pdf="results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dotplot.pdf",
+            pdf=report(
+                "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dotplot.pdf",
+                caption="../report/dotplot.rst",
+                category="PSI dot plots",
+                subcategory="{comparison}",
+                labels={
+                    "Comparison": "{comparison}",
+                    "Figure": "Dotplot of dPSI values",
+                },
+            ),
         threads: 1
         resources:
             runtime=5,
