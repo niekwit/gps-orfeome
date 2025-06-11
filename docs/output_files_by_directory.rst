@@ -593,7 +593,7 @@ The `psi_plots` directory contains the following subdirectories for each combina
   .. figure:: images/dpsi_histogram.png
      :alt: Histogram of delta PSI values
 
-     Histogram of delta PSI values
+     Histogram of delta PSI values.
 
 
 QC
@@ -606,7 +606,7 @@ Alignment rates of individual samples
 .. figure:: images/alignment-rates.png
    :alt: Alignment rates of individual samples
 
-   Alignment rates of individual samples
+   Alignment rates of individual samples.
 
 
 Missed barcodes
@@ -616,7 +616,7 @@ The `missed-barcodes.pdf` file contains a plot of the number of barcodes that we
 .. figure:: images/missed-barcodes.png
    :alt: Missed barcodes
 
-   Missed barcodes
+   Missed barcodes.
 
 
 Sequence coverage
@@ -626,7 +626,7 @@ The `sequence-coverage.pdf` file contains a plot of the sequence coverage across
 .. figure:: images/sequence-coverage.png
    :alt: Sequence coverage
 
-   Sequence coverage
+   Sequence coverage.
 
 
 MultiQC report
@@ -636,7 +636,7 @@ The `multiqc.html` file contains a summary of the quality control metrics for th
 .. figure:: images/multiqc.png
    :alt: MultiQC report
 
-   MultiQC report
+   MultiQC report.
 
 
 Trimmed
@@ -696,3 +696,28 @@ The `trimmed` directory contains the quality control files for each sample after
       40	1	0.0	2	1
       47	1	0.0	2	1
       57	1	0.0	2	0 1
+
+
+Output with multiple test conditions
+======================================
+
+When running the workflow with multiple test conditions, additional files will be created in *results/*.
+
+PCA plot
+--------------------------------------------------------------------------------
+The `qc/pca_plot.pdf` file contains a PCA plot of the ORF counts for all conditions. This plot is useful to visualise the overall distribution of ORF counts across different conditions and to identify potential outliers.
+
+.. figure:: images/pca.png
+   :alt: PCA plot
+
+   PCA plot of the ORF counts for all conditions.
+
+Multi condition barcode profile plots
+---------------------------------------------------------------------------------
+
+The `psi_plots_multi_conditions` directory contains pdf files with the barcode profiles of mean proportions for each ORF found as hits in both test conditions.
+
+.. figure:: images/multi_profile.png
+   :alt: Profile plot with multiple conditions
+
+   Profile plot with multiple conditions.
