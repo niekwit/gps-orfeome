@@ -3,7 +3,7 @@ Installation of required software
 
 It is recommended to run `GPSW` on a Linux-based system (e.g. Ubuntu).
 
-Make sure you have `Conda <https://docs.conda.io/projects/conda/en/latest/index.html>`_ installed.
+Make sure you have `Conda <https://docs.conda.io/projects/conda/en/latest/index.html>`_ installed (at least 24.7.1).
 
 Installation of the latest version via Conda
 --------------------------------------------------------------------------------
