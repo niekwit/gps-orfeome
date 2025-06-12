@@ -330,3 +330,21 @@ else:
             "logs/plot_psi/dotplot_hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
         script:
             "../scripts/plot_dotplot.R"
+
+    rule merge_gene_summary_data:
+        input:
+            ranks=expand(
+                "results/psi/hit-th{{ht}}_sd-th{{st}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_gene.summary.csv",
+                comparison=COMPARISONS,
+            ),
+        output:
+            "results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/gene.summary_all_conditions.csv",
+        threads: 1
+        resources:
+            runtime=5,
+        conda:
+            "../envs/stats.yaml"
+        log:
+            "logs/merge_rank_data_all_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}.log",
+        script:
+            "../scripts/merge_gene_summary_data.py"
