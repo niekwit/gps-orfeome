@@ -183,6 +183,7 @@ def targets():
         if multiple_conditions(COMPARISONS):
             TARGETS.extend(
                 [
+                    "results/qc/pca_plot.pdf",
                     expand(
                         "results/psi_plots_multi_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/plotting_done.txt",
                         zip,
@@ -191,7 +192,14 @@ def targets():
                         pt=PROP_TH,
                         pnth=PEN_TH,
                     ),
-                    "results/qc/pca_plot.pdf",
+                    expand(
+                        "results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/gene.summary_all_conditions.csv",
+                        zip,
+                        ht=HIT_TH,
+                        st=SD_TH,
+                        pt=PROP_TH,
+                        pnth=PEN_TH,
+                    ),
                 ]
             )
 
