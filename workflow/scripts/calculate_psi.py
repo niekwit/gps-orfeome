@@ -381,14 +381,9 @@ df = df.drop(columns=["high_confidence"])
 ### Ranking of hits
 logging.info("Ranking hits")
 
-# Remove all non-hit ORFs
-df_rank = df[
-    (df[f"stabilised_in_{comparison}"]) | (df[f"destabilised_in_{comparison}"])
-].reset_index(drop=True)
-
 # Collapse data to ORF level
 df_rank = (
-    df_rank[
+    df[
         [
             "orf_id",
             "gene",
@@ -430,11 +425,9 @@ df_rank = pd.merge(
 df_rank = pd.merge(
     df_rank, df_rank_destab[["orf_id", "destabilised_rank"]], on="orf_id", how="left"
 )
-# Convert to integer values
-df_rank["stabilised_rank"] = df_rank["stabilised_rank"].fillna("NA").astype(str)
-
-# Replace all missing values with NA
-df_rank = df_rank.fillna("NA")
+# Convert ranks to integer values
+df_rank["stabilised_rank"] = df_rank["stabilised_rank"].astype("Int64")
+df_rank["destabilised_rank"] = df_rank["destabilised_rank"].astype("Int64")
 
 # Write to file
 logging.info(f"Writing ranked results to {output_file_rank}")
