@@ -48,7 +48,12 @@ rank.list <- lapply(rank.files, read_csv) %>%
       c("orf_id", "gene"),
       starts_with("stabilised_in_"),
       starts_with("destabilised_in_")
-    )
+    ) %>%
+      # Only keep rows with TRUE in any of the stabilised or destabilised columns
+      filter(
+        rowSums(select(., starts_with("stabilised_in_"))) > 0 |
+          rowSums(select(., starts_with("destabilised_in_"))) > 0
+      )
   })
 
 # Combine orf_id and gene into gene.id and remove orf_id/gene columns
