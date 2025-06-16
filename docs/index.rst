@@ -39,7 +39,7 @@ It can deal with two types of experiments:
          :ref-type: ref
          :click-parent:
          :color: warning
-         :class: btn-custom-orange
+         :class: btn-custom-colour
          :expand:
 
          To the background guides
@@ -57,7 +57,7 @@ It can deal with two types of experiments:
          :ref-type: ref
          :click-parent:
          :color: warning
-         :class: btn-custom-orange
+         :class: btn-custom-colour
          :expand:
 
          To the user guide
@@ -75,7 +75,7 @@ It can deal with two types of experiments:
          :ref-type: ref
          :click-parent:
          :color: warning
-         :class: btn-custom-orange
+         :class: btn-custom-colour
          :expand:
 
          To the about section
@@ -95,7 +95,7 @@ It can deal with two types of experiments:
          :ref-type: ref
          :click-parent:
          :color: warning
-         :class: btn-custom-orange
+         :class: btn-custom-colour
          :expand:
 
          To the issues guide
