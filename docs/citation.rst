@@ -2,7 +2,7 @@
   :target: https://doi.org/10.5281/zenodo.15473715
   :alt: DOI
 
-Citation
+How to cite GPSW
 ================================================================================
 
 |zenodoDOI|
