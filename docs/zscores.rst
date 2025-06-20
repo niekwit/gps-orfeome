@@ -56,7 +56,7 @@ Where:
 Intra-ORF variability correction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A final z-score correction is applied to correct for intra-ORF variability:
+For each ORF, the :math:`\Delta\Psi` values are calculated for each individual good barcode. The intra-ORF variability is then assessed by calculating the standard deviation (:math:`\sigma`) of these :math:`\Delta\Psi` values. This standard deviation is then used to correct the z-score for intra-ORF variability:
 
 .. math::
 
@@ -68,7 +68,9 @@ A final z-score correction is applied to correct for intra-ORF variability:
 Where:
 
 - :math:`\sigma_{i}` is the standard deviation of :math:`\Delta\Psi` values of an individual ORF.
-- :math:`\epsilon` is the lowest :math:`\sigma_i` of all ORFs (to avoid division by zero).
+- :math:`\epsilon` is the lowest :math:`\sigma_i` of all ORFs.
+
+In rare cases, an ORF may have no variability in its :math:`\Delta\Psi` values (i.e. :math:`\sigma = 0`). In such cases, we apply a small :math:`\epsilon` value to avoid division by zero. :math:`\epsilon` is the lowest :math:`\sigma` of all ORFs, ensuring that the z-score remains defined.
 
 
 Low :math:`\Delta\Psi_i` values correction
