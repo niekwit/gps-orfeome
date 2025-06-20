@@ -29,7 +29,7 @@ where:
 - :math:`i` is the bin number.
 
 
-Between two experimental conditions (e.g., a test condition and a control condition), the difference in protein stability index (:math:`\Delta\Psi_1`) is computed for each individual ORF:
+Between two experimental conditions (e.g., a test condition and a control condition), the difference in protein stability index is computed for each individual ORF:
 
 .. math::
 
