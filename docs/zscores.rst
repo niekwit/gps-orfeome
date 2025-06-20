@@ -90,13 +90,13 @@ Applying this correction ensures that ORFs with very low :math:`\Delta\Psi_i` va
 z-score scaling
 =====================
 
-We next scaled the z-scores to a range of -128 to -2 for negative z-scores and 2 to 128 for positive z-scores, followed by log2 transformation. As the z-score's direction is important, we are scaling the positive and negative z-scores separately. Scaling the z-scores allows for more consistent plotting of the results, and it ensures that the z-scores are within a defined range, making them easier to compare across different datasets.
+We next scale the z-scores to a range of -128 to -2 for negative z-scores and 2 to 128 for positive z-scores, followed by log2 transformation. As the z-score's direction is important, we are scaling the positive and negative z-scores separately. Scaling the z-scores allows for more consistent plotting of the results, and it ensures that the z-scores are within a defined range, making them easier to compare across different datasets.
 
 
 Positive z-score scaling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The scaled positive values, :math:`z_{spos}`, are calculated and log2 transformed as follows:
+The scaled positive values, :math:`z_{scaled,pos}`, are calculated and log2 transformed as follows:
 
 .. math::
 
@@ -113,7 +113,7 @@ Where:
 Negative z-score scaling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The scaled negative values, :math:`z_{sneg}`, are calculated and log2 transformed as follows:
+The scaled negative values, :math:`z_{scaled,neg}`, are calculated and log2 transformed as follows:
 
 .. math::
 
