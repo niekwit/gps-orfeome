@@ -68,3 +68,5 @@ snakemake_version = importlib.metadata.version("snakemake")
 rst_prolog = f"""
 .. |snakemake_version| replace:: {snakemake_version}
 """
+
+html_last_updated_fmt = '%b %d, %Y at %H:%M:%S %Z'
