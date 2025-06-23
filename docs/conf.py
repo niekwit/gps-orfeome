@@ -52,7 +52,9 @@ html_theme_options = {
         "image_light": "_static/gpsw_logo.svg",
         "image_dark": "_static/gpsw_logo.svg",
     },
-    "footer_items": ["copyright", "sphinx-version", "last-updated", "theme-version"],
+    "footer_start": ["copyright", "sphinx-version"],
+    "footer_center": ["last-updated"],
+    "footer_end": ["theme-version"]
 }
 
 html_context = {"default_mode": "light"}
