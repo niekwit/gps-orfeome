@@ -13,11 +13,7 @@ copyright = "2025, Niek Wit"
 author = "Niek Wit"
 version = importlib.metadata.version("gpsw")
 
-extensions = [
-    "sphinx_design",
-    "sphinx_copybutton",
-    "sphinx_substitution_extensions"
-]
+extensions = ["sphinx_design", "sphinx_copybutton", "sphinx_substitution_extensions"]
 
 templates_path = ["_templates"]
 exclude_patterns = []
@@ -56,6 +52,7 @@ html_theme_options = {
         "image_light": "_static/gpsw_logo.svg",
         "image_dark": "_static/gpsw_logo.svg",
     },
+    "footer_items": ["copyright", "sphinx-version", "last-updated", "theme-version"],
 }
 
 html_context = {"default_mode": "light"}
@@ -69,4 +66,4 @@ rst_prolog = f"""
 .. |snakemake_version| replace:: {snakemake_version}
 """
 
-html_last_updated_fmt = '%b %d, %Y at %H:%M:%S %Z'
+html_last_updated_fmt = "%b %d, %Y at %H:%M:%S %Z"
