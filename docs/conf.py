@@ -48,9 +48,8 @@ html_theme_options = {
         },
     ],
     "logo": {
-        "text": "GPSW",
-        "image_light": "_static/gpsw_logo.svg",
-        "image_dark": "_static/gpsw_logo.svg",
+        "image_light": "_static/gpsw_logo9.png",
+        "image_dark": "_static/gpsw_logo9.png",
     },
     "footer_start": ["copyright", "sphinx-version"],
     "footer_center": ["last-updated"],

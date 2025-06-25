@@ -2,6 +2,11 @@
    :description: GPSW is a tool for analysing Global Protein Stability Profiling data.
    :keywords: Snakemake, bioinformatics, protein stability
 
+.. figure:: _static/gpsw_logo9.png
+   :width: 150px
+   :align: center
+   :name: gpsw_logo
+   :alt: GPSW logo
 
 ==================
 GPSW documentation

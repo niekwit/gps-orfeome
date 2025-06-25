@@ -46,3 +46,8 @@
 .btn-bold-white:hover {
   color: white !important;
 }
+
+
+.bd-navbar .navbar-brand {
+    padding: 0; /* Sometimes padding around the brand limits size */
+}
