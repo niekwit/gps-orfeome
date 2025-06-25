@@ -129,18 +129,18 @@ To install `GPSW`, you can use `conda`:
 
 ::
 
-   conda install -c bioconda gpsw
+   $ conda install -c bioconda gpsw
 
 To download the workflow code:
 
 
 ::
 
-   gpsw fetch
+   $ gpsw fetch
 
 Configure your analysis in `config/config.yaml`, place your sequencing data in `reads`, and provide ORF metadata in a csv file in `resources`. Then run the workflow with:
 
 
 ::
 
-   gpsw run
+   $ gpsw run
