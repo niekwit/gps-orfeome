@@ -1,6 +1,6 @@
-<div style="text-align: center;">
-  <img src="docs/_static/gpsw_logo9.png" width="250" alt="GPSW Logo" />
-</div>
+<p align="center">
+  <img src="docs/_static/gpsw_logo9.png" width="200" alt="GPSW Logo" />
+</p>
 
 [![Snakemake](https://img.shields.io/badge/snakemake-≥8.25.5-brightgreen.svg)](https://snakemake.github.io)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
