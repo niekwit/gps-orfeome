@@ -338,7 +338,7 @@ else:
         output:
             pdf=report(
                 "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_psi_histogram.pdf",
-                caption="../report/dpsi_histogram.rst",
+                caption="../report/psi_histogram.rst",
                 category="PSI histograms",
                 subcategory="{comparison}",
                 labels={
