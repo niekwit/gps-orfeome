@@ -17,14 +17,14 @@ control_column <- paste0("PSI_", control, "_mean")
 
 # Get PSI values
 data <- read_csv(snakemake@input[["csv"]], show_col_types = FALSE) %>%
-    dplyr::select(orf_id, gene, {{ test_column }}, {{ control_column }}) %>%
+    dplyr::select(orf_id, gene, all_of(test_column), all_of(control_column)) %>%
     # remove duplciated rows (only keep 1 copy)
     distinct()
 
 # Convert to long format
 data_long <- data %>%
     pivot_longer(
-        cols = c({{ test_column }}, {{ control_column }}),
+        cols = c(all_of(test_column), all_of(control_column)),
         names_to = "condition",
         values_to = "psi"
     ) %>%
