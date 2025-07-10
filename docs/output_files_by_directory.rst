@@ -570,9 +570,9 @@ The `psi_plots` directory contains the following subdirectories for each combina
 
 - `Test_vs_Control`: contains the following subdirectories:
    * `destabilised_in_Test`: contains PDF files with the barcode profiles for each destabilised gene in the test condition.
-   * `destabilised_in_Test_hc`: contains PDF files with the barcode profiles for each high confidence (:math:`\Delta PSI > 2 \times SD`) destabilised gene in the test condition.
+   * `destabilised_in_Test_hc`: contains PDF files with the barcode profiles for each high confidence (:math:`\Delta\Psi_i > sd\_threshold \times SD`) destabilised gene in the test condition.
    * `stabilised_in_Test`: contains PDF files with the barcode profiles for each stabilised gene in the test condition.
-   * `stabilised_in_Test_hc`: contains PDF files with the barcode profiles for each high confidence (:math:`\Delta PSI > 2 \times SD`) stabilised gene in the test condition.
+   * `stabilised_in_Test_hc`: contains PDF files with the barcode profiles for each high confidence (:math:`\Delta\Psi_i > sd\_threshold \times SD`) stabilised gene in the test condition.
 
   Example of barcode profile:
 
@@ -581,10 +581,6 @@ The `psi_plots` directory contains the following subdirectories for each combina
 
      Barcode profile for a stabilised gene in the test condition.
 
-   .. note::
-
-      Proteins with :math:`|\Delta\Psi_i|` whose absolute value is smaller than the mean :math:`|\Delta\Psi_i|` are omitted from the plots to avoid visual clutter around the origin.
-
 - `Test_vs_Control_dotplot.pdf`: a PDF file with a dot plot of the z-scores for each gene in the test condition compared to the control condition.
 
   .. figure:: images/dotplot.png
@@ -592,16 +588,20 @@ The `psi_plots` directory contains the following subdirectories for each combina
 
      Dot plot of z-scores for each gene in the test condition compared to the control condition.
 
-- `Test_vs_Control_dpsi_histogram.png`: a PNG file with a histogram of the :math:`\Delta PSI` values for all genes.
+.. note::
+
+   Proteins whose :math:`|\Delta\Psi_i|` is smaller than the mean :math:`|\Delta\Psi_i|` are omitted from the plots to avoid visual clutter around the origin.
+
+- `Test_vs_Control_dpsi_histogram.png`: a PNG file with a histogram of the :math:`\Delta\Psi_i` values for all genes.
 
   .. figure:: images/dpsi_histogram.png
      :alt: Histogram of delta PSI values
 
      Histogram of delta PSI values.
 
-- `Test_vs_Control_dpsi_sd_histogram.png`: a PNG file with a histogram of the :math:`\Delta PSI` SD values for all genes.
+- `Test_vs_Control_dpsi_sd_histogram.png`: a PNG file with a histogram of the :math:`\Delta\Psi_i` SD values for all genes.
 
-  .. figure:: images/dpsi_sd_histogram.png
+  .. figure:: images/sd_histogram.png
      :alt: Histogram of delta PSI SD values
 
      Histogram of delta PSI SD values.
@@ -637,6 +637,8 @@ The `sequence-coverage.pdf` file contains a plot of the sequence coverage across
    :alt: Sequence coverage
 
    Sequence coverage.
+
+The sequence coverage is calculated by dividing the number of sequencing reads in each bin by the total number of barcodes in the ORF library.
 
 
 MultiQC report
