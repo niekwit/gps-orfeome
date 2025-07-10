@@ -583,7 +583,7 @@ The `psi_plots` directory contains the following subdirectories for each combina
 
    .. note::
 
-      Proteins with :math:`\Delta\Psi_i` values between the mean :math:`\Delta\Psi_i` and zero are omitted from the plots.
+      Proteins with :math:`|\Delta\Psi_i|` whose absolute value is smaller than the mean :math:`|\Delta\Psi_i|` are omitted from the plots to avoid visual clutter around the origin.
 
 - `Test_vs_Control_dotplot.pdf`: a PDF file with a dot plot of the z-scores for each gene in the test condition compared to the control condition.
 
