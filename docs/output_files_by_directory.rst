@@ -592,6 +592,13 @@ The `psi_plots` directory contains the following subdirectories for each combina
 
    Proteins whose :math:`|\Delta\Psi_i|` is smaller than the mean :math:`|\Delta\Psi_i|` are omitted from the plots to avoid visual clutter around the origin.
 
+- `Test_vs_Control_psi_histogram.pdf`: a PDF file with a histogram of the :math:`\Psi_i` values for all genes.
+
+  .. figure:: images/psi_histogram.png
+     :alt: Histogram of PSI values
+
+     Histogram of PSI values.
+
 - `Test_vs_Control_dpsi_histogram.png`: a PNG file with a histogram of the :math:`\Delta\Psi_i` values for all genes.
 
   .. figure:: images/dpsi_histogram.png
