@@ -253,7 +253,32 @@ plt.axvline(data.mean(), color="red", linestyle="dashed", linewidth=1)
 plt.xlabel("delta_PSI_mean")
 plt.ylabel("Frequency")
 plt.title("Distribution of delta_PSI_mean")
-plt.savefig(snakemake.output["hist"])
+plt.savefig(snakemake.output["hist_psi"])
+
+# Plot distribution of delta_PSI_SD
+# Create a separate histogram for SDs comming from negative and positive delta_PSI_mean values
+# overlay the two histograms
+
+data_sd = df["delta_PSI_SD"].dropna().unique()
+data_sd = data_sd[~np.isinf(data_sd)]
+data_sd_neg = df[df["delta_PSI_mean"] < 0]["delta_PSI_SD"].dropna().unique()
+data_sd_neg = data_sd_neg[~np.isinf(data_sd_neg)]
+data_sd_pos = df[df["delta_PSI_mean"] > 0]["delta_PSI_SD"].dropna().unique()
+data_sd_pos = data_sd_pos[~np.isinf(data_sd_pos)]
+
+logging.info("Plotting distribution of delta_PSI_SD")
+# Clear the current figure to avoid overlaying on previous plots
+plt.clf()  
+# Overlay the two histograms
+plt.hist(data_sd_neg, bins=150, color="#1900FF", alpha=0.5, label="Destabilised proteins")
+plt.hist(data_sd_pos, bins=150, color="#FFD000", alpha=0.5, label="Stabilised proteins")
+plt.axvline(data_sd_neg.mean(), color="#1900FF", linestyle="dashed", linewidth=1)
+plt.axvline(data_sd_pos.mean(), color="#FFD000", linestyle="dashed", linewidth=1)
+plt.xlabel("delta_PSI_SD")
+plt.ylabel("Frequency")
+plt.title("Distribution of delta_PSI_SD")
+plt.legend()
+plt.savefig(snakemake.output["hist_sd"])
 
 logging.info("Calculating z-scores")
 # Calculate robust z-score based of median and Median Absolute Deviation (MAD)
@@ -278,14 +303,11 @@ df["z_score_corr"] = df["z_score"] / np.where(
 
 logging.info("Correcting z-scores for intra ORF variability")
 # Correct for delta_PSI_SD
-# in rare cases this can be zero, so we need to avoid division by zero
-# by adding a small value to the SD (epsilon): lowest delta_PSI_SD value of all ORFs
-epsilon = min(df["delta_PSI_SD"][df["delta_PSI_SD"] > 0])
-df["z_score_corr"] = np.where(
-    df["delta_PSI_SD"] > 0,
-    df["z_score_corr"] / df["delta_PSI_SD"],
-    df["z_score_corr"] / epsilon,
-)
+# Set a floor value for SD correction
+# This avoids inflation of z-scores when delta_PSI_SD is very low
+sd_floor = hit_th * 0.15
+df["z_score_corr"] = df["z_score_corr"] / df["delta_PSI_SD"].clip(lower=sd_floor)
+#df["z_score_corr"] = df["z_score_corr"] / np.sqrt(df["delta_PSI_SD"] ** 2 + sd_floor ** 2)
 
 logging.info("Correcting z-scores for deltaPSI")
 # Multiply z-scores by absolute delta_PSI value

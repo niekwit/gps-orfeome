@@ -22,6 +22,22 @@ data <- data %>%
   left_join(data.rank, by = "orf_id") %>%
   filter(!is.na(delta_PSI_mean))
 
+# Calculate the mean of delta_PSI_mean
+mean_dpsi <- mean(data$delta_PSI_mean, na.rm = TRUE)
+
+# Remove rows where delta_PSI_mean is between mean_dpsi and 0 (destabilised) or 
+# zero and mean_dpsi (stabilised)
+# These proteins are not significantly stabilised or destabilised and can create a 
+# visual artifact on the volcano plot, as the "volcano" does not have the centre at zero
+if (mean_dpsi > 0) {
+  data <- data %>%
+    filter(delta_PSI_mean >= mean_dpsi | delta_PSI_mean <= 0)
+} else {
+  data <- data %>%
+    filter(delta_PSI_mean <= mean_dpsi | delta_PSI_mean >= 0)
+}
+
+
 # Determine x min/x masx for delta_PSI_mean
 max <- ceiling(max(abs(data$delta_PSI_mean), na.rm = TRUE))
 
