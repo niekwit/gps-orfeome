@@ -23,27 +23,27 @@ properties:
     description: Cutadapt settings
     type: object
     properties:
-      five_prime_adapter:
-        description: Sequence of an adapter ligated to the 5' end
+      g:
+        description: 5' adapter sequence to trim
         type: string
-        pattern: "^[ACGTNacgtn]+$"
-        default: ""
-      three_prime_adapter:
-        description: Sequence of an adapter ligated to the 3' end
+      a:
+        description: 3' adapter sequence to trim
         type: string
-        pattern: "^[ACGTNacgtn]+$"
-        default: ""
-      barcode_length:
-        description: Length of barcode sequence
+      u:
+        description: Trim nucleotides from the beginning or end
         type: integer
-        minimum: 0
+      l:
+        description: Shorten reads to a specific length
+        type: integer
       extra:
-        description: Extra cutadapt arguments
+        description: Extra arguments for cutadapt
         type: string
-        default: ""
     required:
-      - five_prime_adapter
-      - three_prime_adapter
+      - g
+      - a
+      - u
+      - l
+      - extra
 
   csv:
     description: CSV settings

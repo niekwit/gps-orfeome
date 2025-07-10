@@ -17,20 +17,27 @@ conditions:
 bin_number: 6
 
 cutadapt:
-  # Sequence of an adapter ligated to the 5' end. 
-  # The adapter and any preceding bases are trimmed.
-  five_prime_adapter: CCAGTAGGTCCACTATGAGT
+  # 5' adapter sequence to trim
+  # Use "" to disable 5' adapter trimming
+  g: CCAGTAGGTCCACTATGAGT
   
-  # Sequence of an adapter ligated to the 3' end.
-  # The adapter and subsequent bases are trimmed.
-  three_prime_adapter: AGCTGTGTAAGCGGAACTAG
+  # 3' adapter sequence to trim
+  # Use "" to disable 3' adapter trimming
+  a: AGCTGTGTAAGCGGAACTAG
 
-  # Length of barcode sequence
-  # This option will override 3'adapter sequence trimming if > 0
-  barcode_length: 20
+  # Trim <INT> nucleotides (before a/g trimming)
+  # If positive, remove bases from the beginning
+  # If negative, remove bases from the end. 
+  u: 0 
   
-  # Extra cutadapt arguments
-  extra: "--discard-untrimmed" 
+  # Shorten reads to <INT> nucleotides
+  # Positive values remove bases at the end 
+  # negative values remove bases at the beginning.
+  # This and the following modifications are applied after adapter trimming (a,b).
+  l: 20 
+
+  # Extra arguments for cutadapt
+  extra: "-q 20 --discard-untrimmed"
 
 csv: 
   # CSV file with the gene/ORF/barcode information

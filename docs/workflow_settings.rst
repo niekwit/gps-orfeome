@@ -28,20 +28,27 @@ Workflow setting are in `config.yaml`:
     bin_number: 6
 
     cutadapt:
-      # Sequence of an adapter ligated to the 5' end.
-      # The adapter and any preceding bases are trimmed.
-      five_prime_adapter: CCAGTAGGTCCACTATGAGT
+      # 5' adapter sequence to trim
+      # Use "" to disable 5' adapter trimming
+      g: CCAGTAGGTCCACTATGAGT
+      
+      # 3' adapter sequence to trim
+      # Use "" to disable 3' adapter trimming
+      a: AGCTGTGTAAGCGGAACTAG
 
-      # Sequence of an adapter ligated to the 3' end.
-      # The adapter and subsequent bases are trimmed.
-      three_prime_adapter: AGCTGTGTAAGCGGAACTAG
+      # Trim <INT> nucleotides (before a/g trimming)
+      # If positive, remove bases from the beginning
+      # If negative, remove bases from the end. 
+      u: 0 
+      
+      # Shorten reads to <INT> nucleotides
+      # Positive values remove bases at the end 
+      # negative values remove bases at the beginning.
+      # This and the following modifications are applied after adapter trimming (a,b).
+      l: 20 
 
-      # Length of barcode sequence
-      # This option will override 3'adapter sequence trimming if > 0
-      barcode_length: 20
-
-      # Extra cutadapt arguments
-      extra: "--discard-untrimmed"
+      # Extra arguments for cutadapt
+      extra: "-q 20 --discard-untrimmed" 
 
     csv:
       # CSV file with the gene/ORF/barcode information
@@ -114,27 +121,35 @@ If the ``bin_number`` is set to 1, the workflow will perform a pairwise comparis
 
 Cutadapt settings
 --------------------------------------------------------------------------------
-The `cutadapt` section defines the settings for trimming the raw reads. The ``five_prime_adapter`` and ``three_prime_adapter``` are the sequences of the adapters ligated to the 5' and 3' ends of the reads, respectively. The ``barcode_length`` is the length of the barcode sequence, which will override the 3' adapter sequence trimming if set to a value greater than 0.
+The `cutadapt` section defines the settings for trimming the raw reads. The options correspond to command line arguments for `cutadapt`. The `g` and `a` fields specify the 5' and 3' adapter sequences to trim, respectively. If you want to disable trimming, set these fields to an empty string (`""`). The `u` field specifies the number of nucleotides to trim from the beginning or end of the reads, and the `l` field specifies the length to which the reads should be shortened.
+If `l` is positive, it removes bases from the end of the reads; if negative, it removes bases from the beginning.
 
-Extra arguments for `cutadapt` can be specified in the ``extra`` field. For example, ``--discard-untrimmed`` will discard reads that were not trimmed (recommended).
+Extra arguments for `cutadapt` can be specified in the ``extra`` field.
 
 .. code-block:: yaml
 
-   cutadapt:
-     # Sequence of an adapter ligated to the 5' end.
-     # The adapter and any preceding bases are trimmed.
-     five_prime_adapter: CCAGTAGGTCCACTATGAGT
+  cutadapt:
+    # 5' adapter sequence to trim
+    # Use "" to disable 5' adapter trimming
+    g: CCAGTAGGTCCACTATGAGT
+    
+    # 3' adapter sequence to trim
+    # Use "" to disable 3' adapter trimming
+    a: AGCTGTGTAAGCGGAACTAG
 
-     # Sequence of an adapter ligated to the 3' end.
-     # The adapter and subsequent bases are trimmed.
-     three_prime_adapter: AGCTGTGTAAGCGGAACTAG
+    # Trim <INT> nucleotides (before a/g trimming)
+    # If positive, remove bases from the beginning
+    # If negative, remove bases from the end. 
+    u: 0 
+    
+    # Shorten reads to <INT> nucleotides
+    # Positive values remove bases at the end 
+    # negative values remove bases at the beginning.
+    # This and the following modifications are applied after adapter trimming (a,b).
+    l: 20 
 
-     # Length of barcode sequence
-     # This option will override 3'adapter sequence trimming if > 0
-     barcode_length: 20
-
-     # Extra cutadapt arguments
-     extra: "--discard-untrimmed"
+    # Extra arguments for cutadapt
+    extra: "-q 20 --discard-untrimmed"
 
 ORF library information
 --------------------------------------------------------------------------------
