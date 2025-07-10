@@ -332,6 +332,30 @@ else:
         script:
             "../scripts/plot_dotplot.R"
 
+    rule plot_psi_histogram:
+        input:
+            csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
+        output:
+            pdf=report(
+                "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_psi_histogram.pdf",
+                caption="../report/dpsi_histogram.rst",
+                category="PSI histograms",
+                subcategory="{comparison}",
+                labels={
+                    "Comparison": "{comparison}",
+                    "Figure": "Histogram of PSI values",
+                },
+            ),
+        threads: 1
+        resources:
+            runtime=10,
+        conda:
+            "../envs/stats.yaml"
+        log:
+            "logs/plot_psi_histogram/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
+        script:
+            "../scripts/plot_psi_histogram.R"
+
     rule merge_gene_summary_data:
         input:
             ranks=expand(
