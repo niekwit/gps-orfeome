@@ -9,6 +9,10 @@ Lab websites:
 - `Timms lab <https://www.timmslab.com/>`_
 - `Lehner lab <https://www.lehnerlab.com/>`_
 
+.. figure:: images/medicine_logo.jpg
+   :alt: University of Cambridge Department of Medicine logo
+   :align: center
+
 .. figure:: images/citiid.png
    :alt: CITIID building
    :align: center
