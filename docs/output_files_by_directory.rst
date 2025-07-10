@@ -579,14 +579,18 @@ The `psi_plots` directory contains the following subdirectories for each combina
   .. figure:: images/profile.png
      :alt: Barcode profile for a stabilised gene in the test condition
 
-     Barcode profile for a stabilised gene in the test condition
+     Barcode profile for a stabilised gene in the test condition.
+
+   .. note::
+
+      Proteins with :math:`|\Delta\Psi_i|` whose absolute value is smaller than the mean :math:`|\Delta\Psi_i|` are omitted from the plots to avoid visual clutter around the origin.
 
 - `Test_vs_Control_dotplot.pdf`: a PDF file with a dot plot of the z-scores for each gene in the test condition compared to the control condition.
 
   .. figure:: images/dotplot.png
      :alt: Dot plot of z-scores for each gene in the test condition compared to the control condition
 
-     Dot plot of z-scores for each gene in the test condition compared to the control condition
+     Dot plot of z-scores for each gene in the test condition compared to the control condition.
 
 - `Test_vs_Control_dpsi_histogram.png`: a PNG file with a histogram of the :math:`\Delta PSI` values for all genes.
 
@@ -595,6 +599,12 @@ The `psi_plots` directory contains the following subdirectories for each combina
 
      Histogram of delta PSI values.
 
+- `Test_vs_Control_dpsi_sd_histogram.png`: a PNG file with a histogram of the :math:`\Delta PSI` SD values for all genes.
+
+  .. figure:: images/dpsi_sd_histogram.png
+     :alt: Histogram of delta PSI SD values
+
+     Histogram of delta PSI SD values.
 
 QC
 --------------------------------------------------------------------------------

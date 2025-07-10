@@ -182,7 +182,8 @@ else:
         output:
             csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
             ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
-            hist="results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_histogram.png",
+            hist_psi="results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_histogram.png",
+            hist_sd="results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_sd_histogram.png",
         threads: 1
         resources:
             runtime=10,

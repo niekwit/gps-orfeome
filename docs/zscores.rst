@@ -6,7 +6,7 @@ Robust z-score derivation, corrections and scaling
 Initial z-score derivation
 ===========================
 
-``GPSW`` converts the :math:`\Delta\Psi_i` for individual ORFs to robust z-scores. This is done for two reasons:
+``GPSW`` converts the :math:`\Delta\Psi_i` for individual ORFs to a robust z-score. This is done for two reasons:
 
 1. Standardization and Comparability: converting :math:`\Delta\Psi_i` to a z-score standardizes the data, expressing each value in terms of its distance from the central tendency relative to the spread. This allows for meaningful comparisons of a specific metric value across different contexts or datasets, even if their original scales or distributions vary. It also helps in identifying how "unusual" an individual data point is.
 2. Robustness to Outliers: while a standard z-score uses the mean and standard deviation, which are sensitive to extreme values, our robust z-score employs the median and median absolute deviation (MAD). The median is resistant to outliers as a measure of central tendency, and the MAD provides a robust estimate of data variability. This ensures that the resulting z-score is a more reliable and stable indicator of deviation, particularly crucial in datasets where outliers are present or the data is not perfectly normally distributed.
@@ -60,17 +60,14 @@ For each ORF, the :math:`\Delta\Psi` values are calculated for each individual g
 
 .. math::
 
-   z_{variability\_corrected} = \begin{cases}
-   \frac{z_{barcode\_corrected}}{\sigma_i} & \text{if } \sigma_i > 0 \\
-   \frac{z_{barcode\_corrected}}{\epsilon} & \text{if } \sigma_i = 0
-   \end{cases}
+   z_{variability\_corrected} = \frac{z_{barcode\_corrected}}{\max(\sigma_i, \sigma_{floor})}
 
 Where:
 
-- :math:`\sigma_{i}` is the standard deviation of :math:`\Delta\Psi` values of an individual ORF.
-- :math:`\epsilon` is the lowest :math:`\sigma_i` of all ORFs.
+- :math:`\sigma_{i}` is the standard deviation of :math:`\Delta\Psi` values for an individual ORF.
+- :math:`\sigma_{floor}` is a minimum standard deviation floor, calculated as :math:`h \times 0.15` (where :math:`h` is the :math:`\Delta\Psi` hit threshold).
 
-In rare cases, an ORF may have no variability in its :math:`\Delta\Psi` values (i.e. :math:`\sigma = 0`). In such cases, we apply a small :math:`\epsilon` value to avoid division by zero. :math:`\epsilon` is the lowest :math:`\sigma` of all ORFs, ensuring that the z-score remains defined.
+The use of :math:`\sigma_{floor}` prevents artificial inflation from very low variability.
 
 
 Low :math:`\Delta\Psi_i` values correction
@@ -88,6 +85,7 @@ Where:
 - :math:`h` is a user-defined, absolute, :math:`\Delta\Psi` threshold for calling a hit (defined in `config.yaml`).
 
 Applying this correction ensures that ORFs with very low :math:`\Delta\Psi_i` values are penalised, preventing them from having a disproportionately high z-score.
+
 
 z-score scaling
 =====================
