@@ -28,7 +28,7 @@ rule bowtie2_index:
         extra="",
     log:
         "logs/bowtie2/index.log",
-    threads: 6
+    threads: 1
     resources:
         runtime=20,
     wrapper:
@@ -42,7 +42,7 @@ rule cutadapt:
         fastq=temp("results/trimmed/{sample}.fastq.gz"),
         qc="results/trimmed/{sample}.qc.txt",
     params:
-        extra=f"-q 20 {cut_adapt_arg()}",
+        extra=cut_adapt_arg(config),
     log:
         "logs/cutadapt/{sample}.log",
     threads: 4  # Set desired number of threads here
