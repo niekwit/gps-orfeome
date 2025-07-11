@@ -33,9 +33,11 @@ Between two experimental conditions (e.g., a test condition and a control condit
 
 .. math::
 
-   \Delta\Psi_i = \Psi_{test} - \Psi_{control}
+   \Delta\Psi = \Psi_{test} - \Psi_{control}
 
-Negative :math:`\Delta\Psi_i` values indicate that the ORF is less stable in the test condition compared to the control, while positive values indicate greater stability in the test condition.
+Negative :math:`\Delta\Psi` values indicate that the ORF is less stable in the test condition compared to the control, while positive values indicate greater stability in the test condition.
+
+:math:`\Delta\Psi` values are generated for each barcode of an individual ORF, after which the mean is calculated, :math:`\Delta\Psi_i`.
 
 In the :ref:`next section <zscore>`, we will discuss how :math:`\Delta\Psi_i` values are converted to robust z-scores, which standardize the data and allow for meaningful comparisons across different datasets.
 
