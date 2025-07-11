@@ -183,8 +183,8 @@ def create_rule_graph():
             safe_id = re.sub(r"\W+", "_", category.lower())
             f.write(f"    subgraph cluster_{safe_id} {{\n")
             f.write(f'        label = "{category}";\n')
-            f.write(f'        style = "filled,dashed";\n')
-            f.write(f"        color = lightgrey;\n")
+            f.write('        style = "filled,dashed";\n')
+            f.write("        color = lightgrey;\n")
             f.write(f'        fillcolor = "{fill}";\n')
             for rule_id, rule_name in nodes:
                 f.write(f'        {rule_id} [label="{rule_name}"];\n')
