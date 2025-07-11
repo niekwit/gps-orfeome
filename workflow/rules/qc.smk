@@ -1,3 +1,4 @@
+# category: QC
 rule fastqc:
     input:
         "results/trimmed/{sample}.fastq.gz",
@@ -15,6 +16,7 @@ rule fastqc:
     wrapper:
         f"{wrapper_version}/bio/fastqc"
 
+# category: QC
 
 rule multiqc:
     input:
@@ -36,7 +38,7 @@ rule multiqc:
     wrapper:
         f"{wrapper_version}/bio/multiqc"
 
-
+# category: QC
 rule plot_alignment_rate:
     input:
         expand("logs/count/{sample}.log", sample=SAMPLES),
@@ -56,7 +58,7 @@ rule plot_alignment_rate:
     script:
         "../scripts/plot_alignment_rate.R"
 
-
+# category: QC
 rule plot_coverage:
     input:
         tsv="results/count/counts-aggregated.tsv",
@@ -79,7 +81,7 @@ rule plot_coverage:
     script:
         "../scripts/plot_coverage.R"
 
-
+# category: QC
 rule plot_missed_barcodes:
     input:
         "results/count/counts-aggregated.tsv",
@@ -101,7 +103,7 @@ rule plot_missed_barcodes:
     script:
         "../scripts/plot_missed_barcodes.R"
 
-
+# category: QC
 rule plot_pca:
     input:
         counts="results/count/counts-aggregated.tsv",
