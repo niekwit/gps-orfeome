@@ -1,5 +1,7 @@
 import unittest
 import os
+import tempfile
+import shutil
 from unittest.mock import patch, MagicMock, mock_open
 import subprocess
 from pathlib import Path
@@ -224,8 +226,8 @@ digraph G {
         # If the last filtered line in the input has a newline, it will be preserved.
         expected_content_to_write = "\n".join(expected_lines_after_filter)
 
-        mock_file_open.assert_called_once_with("images/rulegraph.dot", "w")
-        mock_file_open().write.assert_called_once_with(expected_content_to_write)
+        mock_file_open.assert_any_call("images/rulegraph.dot", "w")
+        self.assertGreater(mock_file_open().write.call_count, 1)
 
         mock_graph_from_dot_file.assert_called_once_with("images/rulegraph.dot")
         mock_graph.write_pdf.assert_called_once_with("images/rulegraph.pdf")
@@ -408,6 +410,90 @@ digraph G {
         )  # <--- Use the Path object here
         MockOsMakedirs.assert_not_called()
         mock_file_open.assert_not_called()
+
+    def test_extract_rule_categories_basic(self):
+        # Create a temporary directory with .smk files
+        temp_dir = tempfile.mkdtemp()
+        try:
+            # File with two rules and categories
+            file_content = """
+    # category: Preprocessing
+    rule cutadapt:
+        input: ...
+        output: ...
+
+    # category: Quality Control
+    rule fastqc:
+        input: ...
+        output: ...
+    """
+            file_path = os.path.join(temp_dir, "test.smk")
+            with open(file_path, "w") as f:
+                f.write(file_content)
+
+            # Call the function
+            result = utils.extract_rule_categories(rules_dir=temp_dir)
+
+            # Assert
+            expected = {"cutadapt": "Preprocessing", "fastqc": "Quality Control"}
+            self.assertEqual(result, expected)
+        finally:
+            shutil.rmtree(temp_dir)
+
+    @patch("src.gpsw.utils.extract_rule_categories")
+    @patch("pydot.graph_from_dot_file")
+    @patch("builtins.open", new_callable=mock_open)
+    @patch("subprocess.run")
+    @patch("os.makedirs")
+    def test_create_rule_graph_minimal(
+        self,
+        mock_makedirs,
+        mock_subprocess_run,
+        mock_file_open,
+        mock_graph_from_dot_file,
+        mock_extract_categories,
+    ):
+        # Mock category mapping
+        mock_extract_categories.return_value = {
+            "cutadapt": "Preprocessing",
+            "fastqc": "Quality Control",
+        }
+
+        # DOT output from snakemake
+        mock_subprocess_run.return_value = MagicMock(
+            stdout="""
+    digraph G {
+        0[label = "all"];
+        1[label = "cutadapt"];
+        2[label = "fastqc"];
+        2 -> 1;
+        1 -> 0;
+    }
+    """
+        )
+
+        mock_graph = MagicMock()
+        mock_graph_from_dot_file.return_value = [mock_graph]
+
+        # Run
+        utils.create_rule_graph()
+
+        # Verify DOT file written
+        mock_file_open.assert_any_call("images/rulegraph.dot", "w")
+        handle = mock_file_open()
+        written = "".join(call.args[0] for call in handle.write.call_args_list)
+
+        # Key assertions: content reflects expected structure
+        self.assertIn("subgraph cluster_preprocessing", written.lower())
+        self.assertIn("subgraph cluster_quality_control", written.lower())
+        self.assertIn("cutadapt", written)
+        self.assertIn("fastqc", written)
+        self.assertIn("2 -> 1", written)
+        self.assertNotIn("-> 0", written)  # should be filtered
+
+        # PDF written
+        mock_graph_from_dot_file.assert_called_once_with("images/rulegraph.dot")
+        mock_graph.write_pdf.assert_called_once_with("images/rulegraph.pdf")
 
 
 if __name__ == "__main__":

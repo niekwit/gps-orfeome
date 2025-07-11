@@ -1,6 +1,7 @@
 if config["bin_number"] == 1:
     if config["mageck"]["run"]:
 
+        # category: Analysis
         rule mageck:
             input:
                 counts="results/count/counts-aggregated.tsv",
@@ -33,6 +34,7 @@ if config["bin_number"] == 1:
                 "{params.extra} "
                 "2> {log}"
 
+        # category: Analysis
         rule lfc_plots:
             input:
                 "results/mageck/temp/{comparison}/{comparison}.gene_summary.txt",
@@ -67,6 +69,7 @@ if config["bin_number"] == 1:
             script:
                 "../scripts/plot_lfc.R"
 
+        # category: Analysis
         rule barcode_rank_plot:
             input:
                 "results/mageck/temp/{comparison}/{comparison}.sgrna_summary.txt",
@@ -91,7 +94,7 @@ if config["bin_number"] == 1:
             script:
                 "../scripts/plot_barcoderank.R"
 
-        # Change all references of sgRNA to barcode in all relevant files
+        # category: Analysis
         rule rename_to_barcode:
             input:
                 gs="results/mageck/temp/{comparison}/{comparison}.gene_summary.txt",
@@ -111,6 +114,7 @@ if config["bin_number"] == 1:
             script:
                 "../scripts/rename_to_barcode.py"
 
+        # category: Analysis
         rule rename_to_barcode_count_file:
             input:
                 "results/count/counts-aggregated.tsv",
@@ -128,6 +132,7 @@ if config["bin_number"] == 1:
 
     if config["drugz"]["run"]:
 
+        # category: Analysis
         rule install_drugz:
             output:
                 directory("resources/drugz"),
@@ -141,6 +146,7 @@ if config["bin_number"] == 1:
             shell:
                 "git clone https://github.com/hart-lab/drugz.git {output} 2> {log}"
 
+        # category: Analysis
         rule drugz:
             input:
                 counts="results/count/counts-aggregated.tsv",
@@ -176,6 +182,7 @@ if config["bin_number"] == 1:
 
 else:
 
+    # category: Analysis
     rule calculate_psi:
         input:
             counts="results/count/counts-aggregated.tsv",
@@ -192,6 +199,7 @@ else:
         script:
             "../scripts/calculate_psi.py"
 
+    # category: Analysis
     rule calculate_proportion_of_reads_in_bins:
         input:
             csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
@@ -209,6 +217,7 @@ else:
         script:
             "../scripts/calculate_proportion_of_reads_in_bins.py"
 
+    # category: Analysis
     rule plot_barcode_profiles:
         input:
             ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
@@ -268,6 +277,7 @@ else:
         script:
             "../scripts/plot_barcode_profiles.R"
 
+    # category: Analysis
     rule plot_barcode_multi_conditions_profiles:
         input:
             ranked=expand(
@@ -305,6 +315,7 @@ else:
         script:
             "../scripts/plot_barcode_multi_conditions_profiles.R"
 
+    # category: Analysis
     rule plot_dotplot:
         input:
             csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
@@ -330,6 +341,7 @@ else:
         script:
             "../scripts/plot_dotplot.R"
 
+    # category: Analysis
     rule plot_histograms:
         input:
             csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
@@ -374,6 +386,7 @@ else:
         script:
             "../scripts/plot_histograms.R"
 
+    # category: Analysis
     rule merge_gene_summary_data:
         input:
             ranks=expand(

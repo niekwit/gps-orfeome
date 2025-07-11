@@ -1,3 +1,4 @@
+# category: Alignment/counting
 rule create_fasta:
     input:
         csv=csv,
@@ -11,6 +12,7 @@ rule create_fasta:
         "../scripts/csv_to_fasta.py"
 
 
+# category: Alignment/counting
 rule bowtie2_index:
     input:
         ref=fasta,
@@ -35,6 +37,7 @@ rule bowtie2_index:
         f"{wrapper_version}/bio/bowtie2/build"
 
 
+# category: Preprocessing
 rule cutadapt:
     input:
         f"reads/{{sample}}.fastq{EXT}",
@@ -52,6 +55,7 @@ rule cutadapt:
         f"{wrapper_version}/bio/cutadapt/se"
 
 
+# category: Alignment/counting
 rule count_barcodes:
     input:
         fq="results/trimmed/{sample}.fastq.gz",
@@ -81,6 +85,7 @@ rule count_barcodes:
         "../scripts/count_barcodes.sh"
 
 
+# category: Alignment/counting
 rule create_count_table:
     input:
         files=expand("results/count/{sample}.barcode.counts.txt", sample=SAMPLES),
