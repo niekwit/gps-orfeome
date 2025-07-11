@@ -5,7 +5,6 @@ import shutil
 from unittest.mock import patch, MagicMock, mock_open
 import subprocess
 from pathlib import Path
-from collections import defaultdict
 
 from src.gpsw import utils
 
