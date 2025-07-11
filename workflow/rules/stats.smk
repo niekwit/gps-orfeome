@@ -182,8 +182,6 @@ else:
         output:
             csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
             ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
-            hist_psi="results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_histogram.png",
-            hist_sd="results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_sd_histogram.png",
         threads: 1
         resources:
             runtime=10,
@@ -332,18 +330,38 @@ else:
         script:
             "../scripts/plot_dotplot.R"
 
-    rule plot_psi_histogram:
+    rule plot_histograms:
         input:
             csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
         output:
-            pdf=report(
+            psi=report(
                 "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_psi_histogram.pdf",
-                caption="../report/psi_histogram.rst",
-                category="PSI histograms",
+                caption="../report/histograms.rst",
+                category="Histograms",
                 subcategory="{comparison}",
                 labels={
                     "Comparison": "{comparison}",
                     "Figure": "Histogram of PSI values",
+                },
+            ),
+            dpsi=report(
+                "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_histogram.pdf",
+                caption="../report/histograms.rst",
+                category="Histograms",
+                subcategory="{comparison}",
+                labels={
+                    "Comparison": "{comparison}",
+                    "Figure": "Histogram of dPSI values",
+                },
+            ),
+            dpsi_sd=report(
+                "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_sd_histogram.pdf",
+                caption="../report/histograms.rst",
+                category="Histograms",
+                subcategory="{comparison}",
+                labels={
+                    "Comparison": "{comparison}",
+                    "Figure": "Histogram of dPSI SD values",
                 },
             ),
         threads: 1
@@ -352,9 +370,9 @@ else:
         conda:
             "../envs/stats.yaml"
         log:
-            "logs/plot_psi_histogram/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
+            "logs/plot_histograms/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
         script:
-            "../scripts/plot_psi_histogram.R"
+            "../scripts/plot_histograms.R"
 
     rule merge_gene_summary_data:
         input:

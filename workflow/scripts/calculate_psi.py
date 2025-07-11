@@ -243,43 +243,6 @@ df["delta_PSI_mean"] = df.groupby("orf_id")["deltaPSI"].transform("mean")
 # Calculate SD of PSI values for each condition of each ORF
 df["delta_PSI_SD"] = df.groupby("orf_id")["deltaPSI"].transform("std")
 
-# Plot distribution of delta_PSI_mean
-data = df["delta_PSI_mean"].dropna().unique()
-data = data[~np.isinf(data)]
-
-logging.info("Plotting distribution of delta_PSI_mean")
-plt.hist(data, bins=150, color="#419179")
-plt.axvline(data.mean(), color="red", linestyle="dashed", linewidth=1)
-plt.xlabel("delta_PSI_mean")
-plt.ylabel("Frequency")
-plt.title("Distribution of delta_PSI_mean")
-plt.savefig(snakemake.output["hist_psi"])
-
-# Plot distribution of delta_PSI_SD
-# Create a separate histogram for SDs comming from negative and positive delta_PSI_mean values
-# overlay the two histograms
-
-data_sd = df["delta_PSI_SD"].dropna().unique()
-data_sd = data_sd[~np.isinf(data_sd)]
-data_sd_neg = df[df["delta_PSI_mean"] < 0]["delta_PSI_SD"].dropna().unique()
-data_sd_neg = data_sd_neg[~np.isinf(data_sd_neg)]
-data_sd_pos = df[df["delta_PSI_mean"] > 0]["delta_PSI_SD"].dropna().unique()
-data_sd_pos = data_sd_pos[~np.isinf(data_sd_pos)]
-
-logging.info("Plotting distribution of delta_PSI_SD")
-# Clear the current figure to avoid overlaying on previous plots
-plt.clf()  
-# Overlay the two histograms
-plt.hist(data_sd_neg, bins=150, color="#1900FF", alpha=0.5, label="Destabilised proteins")
-plt.hist(data_sd_pos, bins=150, color="#FFD000", alpha=0.5, label="Stabilised proteins")
-plt.axvline(data_sd_neg.mean(), color="#1900FF", linestyle="dashed", linewidth=1)
-plt.axvline(data_sd_pos.mean(), color="#FFD000", linestyle="dashed", linewidth=1)
-plt.xlabel("delta_PSI_SD")
-plt.ylabel("Frequency")
-plt.title("Distribution of delta_PSI_SD")
-plt.legend()
-plt.savefig(snakemake.output["hist_sd"])
-
 logging.info("Calculating z-scores")
 # Calculate robust z-score based of median and Median Absolute Deviation (MAD)
 # https://en.wikipedia.org/wiki/Median_absolute_deviation

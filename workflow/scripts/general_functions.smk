@@ -187,6 +187,24 @@ def targets():
                     pt=PROP_TH,
                     pnth=PEN_TH,
                 ),
+                expand(
+                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_histogram.pdf",
+                    zip,
+                    comparison=COMPARISONS,
+                    ht=HIT_TH,
+                    st=SD_TH,
+                    pt=PROP_TH,
+                    pnth=PEN_TH,
+                ),
+                expand(
+                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_sd_histogram.pdf",
+                    zip,
+                    comparison=COMPARISONS,
+                    ht=HIT_TH,
+                    st=SD_TH,
+                    pt=PROP_TH,
+                    pnth=PEN_TH,
+                ),
             ]
         )
         if multiple_conditions(COMPARISONS):
