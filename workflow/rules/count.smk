@@ -11,6 +11,7 @@ rule create_fasta:
     script:
         "../scripts/csv_to_fasta.py"
 
+
 # category: Alignment/counting
 rule bowtie2_index:
     input:
@@ -35,6 +36,7 @@ rule bowtie2_index:
     wrapper:
         f"{wrapper_version}/bio/bowtie2/build"
 
+
 # category: Preprocessing
 rule cutadapt:
     input:
@@ -51,6 +53,7 @@ rule cutadapt:
         runtime=25,
     wrapper:
         f"{wrapper_version}/bio/cutadapt/se"
+
 
 # category: Alignment/counting
 rule count_barcodes:
@@ -80,6 +83,7 @@ rule count_barcodes:
         "../envs/stats.yaml"
     script:
         "../scripts/count_barcodes.sh"
+
 
 # category: Alignment/counting
 rule create_count_table:

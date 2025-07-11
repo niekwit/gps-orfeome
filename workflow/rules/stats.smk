@@ -181,6 +181,7 @@ if config["bin_number"] == 1:
                 "-o {output} 2> {log} "
 
 else:
+
     # category: Analysis
     rule calculate_psi:
         input:

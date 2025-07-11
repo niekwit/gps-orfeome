@@ -16,8 +16,8 @@ rule fastqc:
     wrapper:
         f"{wrapper_version}/bio/fastqc"
 
-# category: QC
 
+# category: QC
 rule multiqc:
     input:
         expand("results/qc/fastqc/{sample}_fastqc.zip", sample=SAMPLES),
@@ -38,6 +38,7 @@ rule multiqc:
     wrapper:
         f"{wrapper_version}/bio/multiqc"
 
+
 # category: QC
 rule plot_alignment_rate:
     input:
@@ -57,6 +58,7 @@ rule plot_alignment_rate:
         "../envs/stats.yaml"
     script:
         "../scripts/plot_alignment_rate.R"
+
 
 # category: QC
 rule plot_coverage:
@@ -81,6 +83,7 @@ rule plot_coverage:
     script:
         "../scripts/plot_coverage.R"
 
+
 # category: QC
 rule plot_missed_barcodes:
     input:
@@ -102,6 +105,7 @@ rule plot_missed_barcodes:
         "../envs/stats.yaml"
     script:
         "../scripts/plot_missed_barcodes.R"
+
 
 # category: QC
 rule plot_pca:
