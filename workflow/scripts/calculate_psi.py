@@ -135,6 +135,9 @@ df = pd.concat([df, pd.DataFrame(sample_sums)], axis=1)
 nrows = df.shape[0]
 df = df[df[f"SOB_{reference}"] > MIN_SOB_THRESHOLD].reset_index(drop=True)
 
+# Do the same for the test sample
+df = df[df[f"SOB_{test}"] > MIN_SOB_THRESHOLD].reset_index(drop=True)
+
 # Raise error if no barcodes remain
 if df.shape[0] == 0:
     raise ValueError(
