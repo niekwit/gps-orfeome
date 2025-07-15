@@ -64,10 +64,6 @@ def compute_psi(row, condition):
     the sum of all bins for that sample.
     Multiple by bin number and sum all values for each sample.
     """
-    # Check if the barcode has twin peaks
-    if row["twin_peaks"]:
-        return np.nan
-
     sob = row[f"SOB_{condition}"]
     psi_score = 0
     for i in range(1, MAX_BIN + 1):
