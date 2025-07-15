@@ -239,9 +239,13 @@ df["deltaPSI"] = df[f"PSI_{test}"] - df[f"PSI_{reference}"]
 # Calculate mean deltaPSI values for each ORF
 # exclude barcodes with twin peaks (PSI value are still calculated for 
 # these barcodes, but should be excluded from deltaPSI calculation)
-df["delta_PSI_mean"] = df.groupby("orf_id")[
-    df["twin_peaks"] == False
-]["deltaPSI"].transform("mean")
+# Compute mean deltaPSI for each ORF, excluding barcodes with twin peaks
+delta_psi_mean = (
+    df[df["twin_peaks"] == False]
+    .groupby("orf_id")["deltaPSI"]
+    .mean()
+)
+df["delta_PSI_mean"] = df["orf_id"].map(delta_psi_mean)
 
 # Calculate SD of PSI values for each condition of each ORF
 df["delta_PSI_SD"] = df.groupby("orf_id")["deltaPSI"].transform("std")
