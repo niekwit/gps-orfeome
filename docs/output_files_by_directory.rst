@@ -27,9 +27,6 @@ The `logs/` directory contains the log files of the workflow.
       logs/
       ├── bowtie2
       │   └── index.log
-      ├── calculate_proportion_of_reads_in_bins
-      │   └── Test_vs_Control
-      │       └── hit-th1.25_prop_th0.4_pen_th4.log
       ├── calculate_psi
       │   └── Test_vs_Control
       │       └── hit-th1.25_prop_th0.4_pen_th4.log
@@ -85,11 +82,10 @@ The `logs/` directory contains the log files of the workflow.
       │   ├── dotplot_hit-th1.25_prop_th0.4_pen_th4_Test_vs_Control.log
       │   └── hit-th1.25_prop_th0.4_pen_th4_Test_vs_Control.log
       └── snakemake
-         ├── 2025-07-16_10-35-09_snakemake.log
-         ├── 2025-07-16_10-55-40_snakemake.log
-         └── 2025-07-16_10-59-03_snakemake.log
+         └── 2025-07-16_11-49-52_snakemake.log
 
-12 directories, 51 files
+      10 directories, 48 files
+
 
 Resources
 ==========
@@ -117,7 +113,6 @@ The output files of the workflow are stored in the `results/` directory. The str
       │   └── counts-aggregated.tsv
       ├── psi
       │   └── hit-th1.25_prop_th0.4_pen_th4
-      │       ├── Test_vs_Control_barcode.proportions.csv
       │       ├── Test_vs_Control_barcode.summary.csv
       │       └── Test_vs_Control_gene.summary.csv
       ├── psi_plots
@@ -191,7 +186,7 @@ The output files of the workflow are stored in the `results/` directory. The str
          ├── Test_5.qc.txt
          └── Test_6.qc.txt
 
-      11 directories, 66 files
+      11 directories, 65 files
 
 Count
 --------------------------------------------------------------------------------
@@ -267,133 +262,6 @@ PSI
 --------------------------------------------------------------------------------
 For each combination of hit threshold, SD threshold, proportion threshold and penalty factor, the `psi` directory contains the following files:
 
-- ``Test_vs_Control_barcode.proportions.csv``: a CSV file with the proportions of reads in each bin for each barcode.
-
-   .. list-table::
-      :header-rows: 1
-
-      * - Comparison
-        - barcode_id
-        - orf_id
-        - gene
-        - Control_1
-        - Control_2
-        - Control_3
-        - Control_4
-        - Control_5
-        - Control_6
-        - Test_1
-        - Test_2
-        - Test_3
-        - Test_4
-        - Test_5
-        - Test_6
-        - SOB_Control
-        - SOB_Test
-        - num_barcodes
-        - twin_peaks
-        - good_barcodes
-        - PSI_Control
-        - PSI_Test
-        - PSI_Control_mean
-        - PSI_Test_mean
-        - deltaPSI
-        - delta_PSI_mean
-        - delta_PSI_SD
-        - z_score
-        - z_score_corr
-      * - Test_vs_Control
-        - 18_IOH10009_315_C9orf80
-        - IOH10009
-        - C9orf80
-        - 0.0
-        - 0.047619047619047616
-        - 0.047619047619047616
-        - 0.0
-        - 0.42857142857142855
-        - 0.47619047619047616
-        - 0.034482758620689655
-        - 0.0
-        - 0.0
-        - 0.10344827586206896
-        - 0.5517241379310345
-        - 0.3103448275862069
-        - 21.0
-        - 29.0
-        - 4
-        - False
-        - 3
-        - 5.238095238095237
-        - 5.068965517241379
-        - 5.184920634920634
-        - 5.116708312510411
-        - -0.1691297208538582
-        - -0.0682123224102232
-        - 0.3114277581445016
-        - 0.3669830687507149
-        - 1.0101642127567318
-      * - Test_vs_Control
-        - 19_IOH10009_315_C9orf80
-        - IOH10009
-        - C9orf80
-        - 0.0
-        - 0.06666666666666667
-        - 0.13333333333333333
-        - 0.0
-        - 0.26666666666666666
-        - 0.5333333333333333
-        - 0.0
-        - 0.043478260869565216
-        - 0.0
-        - 0.043478260869565216
-        - 0.391304347826087
-        - 0.5217391304347826
-        - 15.0
-        - 23.0
-        - 4
-        - False
-        - 3
-        - 5.066666666666666
-        - 5.3478260869565215
-        - 5.184920634920634
-        - 5.116708312510411
-        - 0.2811594202898551
-        - -0.0682123224102232
-        - 0.3114277581445016
-        - 0.3669830687507149
-        - 1.0101642127567318
-      * - Test_vs_Control
-        - 20_IOH10009_315_C9orf80
-        - IOH10009
-        - C9orf80
-        - 0.045454545454545456
-        - 0.09090909090909091
-        - 0.0
-        - 0.2727272727272727
-        - 0.2727272727272727
-        - 0.3181818181818182
-        - 0.0
-        - 0.0
-        - 0.05
-        - 0.2
-        - 0.65
-        - 0.1
-        - 22.0
-        - 20.0
-        - 4
-        - True
-        - 3
-        - 
-        - 
-        - 5.184920634920634
-        - 5.116708312510411
-        - 
-        - -0.0682123224102232
-        - 0.3114277581445016
-        - 0.3669830687507149
-        - 1.0101642127567318
-
-
 - ``Test_vs_Control_barcode.summary.csv``: a CSV file with barcode-level results.
 
    .. list-table::
@@ -432,75 +300,75 @@ For each combination of hit threshold, SD threshold, proportion threshold and pe
         - IOH10009
         - C9orf80
         - 0.0
-        - 1.0
-        - 1.0
+        - 0.047
+        - 0.047
         - 0.0
-        - 9.0
-        - 10.0
-        - 1.0
+        - 0.428
+        - 0.476
+        - 0.034
         - 0.0
         - 0.0
-        - 3.0
-        - 16.0
-        - 9.0
+        - 0.103
+        - 0.551
+        - 0.310
         - 21.0
         - 29.0
         - 4
         - False
         - 3
-        - 5.238095238095237
-        - 5.068965517241379
-        - 5.184920634920634
-        - 5.116708312510411
-        - -0.16912972085385825
-        - -0.0682123224102232
-        - 0.3114277581445016
-        - 0.36698306875071496
-        - 1.0101642127567318
+        - 5.238
+        - 5.068
+        - 5.184
+        - 5.116
+        - -0.169
+        - -0.068
+        - 0.311
+        - 0.366
+        - 1.010
       * - 19_IOH10009_315_C9orf80
         - IOH10009
         - C9orf80
         - 0.0
-        - 1.0
-        - 2.0
+        - 0.066
+        - 0.133
         - 0.0
-        - 4.0
-        - 8.0
+        - 0.267
+        - 0.533
         - 0.0
-        - 1.0
+        - 0.043
         - 0.0
-        - 1.0
-        - 9.0
-        - 12.0
+        - 0.043
+        - 0.391
+        - 0.521
         - 15.0
         - 23.0
         - 4
         - False
         - 3
-        - 5.066666666666666
-        - 5.3478260869565215
-        - 5.184920634920634
-        - 5.116708312510411
-        - 0.2811594202898551
-        - -0.0682123224102232
-        - 0.3114277581445016
-        - 0.36698306875071496
-        - 1.0101642127567318
+        - 5.066
+        - 5.347
+        - 5.184
+        - 5.116
+        - 0.281
+        - -0.068
+        - 0.311
+        - 0.366
+        - 1.010
       * - 20_IOH10009_315_C9orf80
         - IOH10009
         - C9orf80
-        - 1.0
-        - 2.0
+        - 0.045
+        - 0.090
         - 0.0
-        - 6.0
-        - 6.0
-        - 7.0
+        - 0.272
+        - 0.272
+        - 0.318
         - 0.0
         - 0.0
-        - 1.0
-        - 4.0
-        - 13.0
-        - 2.0
+        - 0.05
+        - 0.2
+        - 0.65
+        - 0.1
         - 22.0
         - 20.0
         - 4
@@ -508,13 +376,13 @@ For each combination of hit threshold, SD threshold, proportion threshold and pe
         - 3
         - NA
         - NA
-        - 5.184920634920634
-        - 5.116708312510411
+        - 5.184
+        - 5.116
         - NA
-        - -0.0682123224102232
-        - 0.3114277581445016
-        - 0.36698306875071496
-        - 1.0101642127567318
+        - -0.068
+        - 0.311
+        - 0.366
+        - 1.010
 
 
 - ``Test_vs_Control_gene.summary.csv``: a CSV file with the gene-level results. This file contains, among others, the z-scores for each gene, and whether a gene is stabilised/destabilised in the test condition compared to the control condition, as well as an associated ranking.
@@ -525,57 +393,37 @@ For each combination of hit threshold, SD threshold, proportion threshold and pe
       * - orf_id
         - gene
         - delta_PSI_mean
-        - delta_PSI_SD
-        - num_barcodes
         - good_barcodes
-        - stabilised_in_Test
-        - stabilised_in_Test_hc
-        - destabilised_in_Test
-        - destabilised_in_Test_hc
-        - z_score
+        - stabilised
+        - destabilised
         - z_score_corr
         - stabilised_rank
         - destabilised_rank
       * - IOH10176
         - TYROBP
-        - 1.6377777777777773
-        - 1.9548950904881863
-        - 6
+        - 1.637
         - 3
         - True
         - False
-        - False
-        - False
-        - 4.207920867801403
-        - 1.3896578650327664
+        - 1.3896
         - 31
         - NA
       * - IOH10333
         - C10orf54
-        - 1.6477411477411479
-        - 1.2578462480865997
-        - 4
+        - 1.647
         - 3
         - True
         - False
-        - False
-        - False
-        - 4.230352817608157
-        - 1.5728263375759186
+        - 1.572
         - 22
         - NA
       * - IOH11069
         - UBD
-        - -1.8822843822843824
-        - 1.0664291082230677
-        - 3
+        - -1.882
         - 2
         - False
-        - False
         - True
-        - False
-        - -3.7172949960543247
-        - NA
+        - -3.717
         - NA
         - 1
 
