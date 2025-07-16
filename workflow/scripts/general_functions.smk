@@ -161,47 +161,42 @@ def targets():
         TARGETS.extend(
             [
                 expand(
-                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/plotting_done.txt",
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}/plotting_done.txt",
                     zip,
                     comparison=COMPARISONS,
                     ht=HIT_TH,
-                    st=SD_TH,
                     pt=PROP_TH,
                     pnth=PEN_TH,
                 ),
                 expand(
-                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dotplot.pdf",
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_dotplot.pdf",
                     zip,
                     comparison=COMPARISONS,
                     ht=HIT_TH,
-                    st=SD_TH,
                     pt=PROP_TH,
                     pnth=PEN_TH,
                 ),
                 expand(
-                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_psi_histogram.pdf",
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_psi_histogram.pdf",
                     zip,
                     comparison=COMPARISONS,
                     ht=HIT_TH,
-                    st=SD_TH,
                     pt=PROP_TH,
                     pnth=PEN_TH,
                 ),
                 expand(
-                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_histogram.pdf",
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_histogram.pdf",
                     zip,
                     comparison=COMPARISONS,
                     ht=HIT_TH,
-                    st=SD_TH,
                     pt=PROP_TH,
                     pnth=PEN_TH,
                 ),
                 expand(
-                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_sd_histogram.pdf",
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_sd_histogram.pdf",
                     zip,
                     comparison=COMPARISONS,
                     ht=HIT_TH,
-                    st=SD_TH,
                     pt=PROP_TH,
                     pnth=PEN_TH,
                 ),
@@ -212,18 +207,16 @@ def targets():
                 [
                     "results/qc/pca_plot.pdf",
                     expand(
-                        "results/psi_plots_multi_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/plotting_done.txt",
+                        "results/psi_plots_multi_conditions/hit-th{ht}_prop_th{pt}_pen_th{pnth}/plotting_done.txt",
                         zip,
                         ht=HIT_TH,
-                        st=SD_TH,
                         pt=PROP_TH,
                         pnth=PEN_TH,
                     ),
                     expand(
-                        "results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/gene.summary_all_conditions.csv",
+                        "results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/gene.summary_all_conditions.csv",
                         zip,
                         ht=HIT_TH,
-                        st=SD_TH,
                         pt=PROP_TH,
                         pnth=PEN_TH,
                     ),
@@ -336,14 +329,13 @@ def wildcard_values():
         COMPARISONS.append(f"{t}_vs_{c}")
 
     hit_th = config["psi"]["hit_threshold"]
-    sd_th = config["psi"]["sd_threshold"]
     prop_th = config["psi"]["proportion_threshold"]
     pen_th = config["psi"]["penalty_factor"]
-    threshold_list = [hit_th, sd_th, prop_th, pen_th]
+    threshold_list = [hit_th, prop_th, pen_th]
 
     # All threshold lists should be the same length
     assert (
-        len(hit_th) == len(sd_th) == len(prop_th) == len(pen_th)
+        len(hit_th) == len(prop_th) == len(pen_th)
     ), "Threshold lists are not the same length"
 
     # As not all permutations are used (zip argument is used with Snakemake expand),
@@ -363,7 +355,6 @@ def wildcard_values():
         extended_thresholds[0],
         extended_thresholds[1],
         extended_thresholds[2],
-        extended_thresholds[3],
     )
 
 

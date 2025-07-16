@@ -156,12 +156,7 @@ properties:
         type: integer
         minimum: 0
         default: 2
-      sd_threshold:
-        description: SD threshold for most stringent hits
-        type: array
-        items:
-          type: number
-          minimum: 0
+
     required:
       - sob_threshold
       - hit_threshold
@@ -169,7 +164,6 @@ properties:
       - proportion_threshold
       - penalty_factor
       - bc_threshold
-      - sd_threshold
 
 required: 
   - bin_number

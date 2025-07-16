@@ -95,10 +95,6 @@ Workflow setting are in `config.yaml`:
       # Keep ORFs with at least bc_threshold barcodes
       bc_threshold: 2
 
-      # SD threshold for most stringent hits
-      # mean deltaPSI > sd_threshold * SD
-      sd_threshold: [2, 2, 2.5]
-
 Sample names
 --------------------------------------------------------------------------------
 The `conditions` section defines the conditions in the experiment. The sample files should be placed in the `reads/` directory and should follow the naming convention ``<condition>_<bin_number>.fastq.gz``, where ``<condition>`` is one of the conditions defined in the `config.yaml` file (e.g. `Test_1.fastq.gz`, `Control_1.fastq.gz`, etc.).
@@ -332,10 +328,5 @@ This correction applies a mild penalty to the z-score of ORFs with fewer good ba
 ``bc_threshold``
 ~~~~~~~~~~~~~~~~~
 
-The ``bc_threshold`` is the minimum number of 'good' barcodes required to keep an ORF (examples in Note below).
+The ``bc_threshold`` is the minimum number of 'good' barcodes required to keep an ORF.
 
-
-``sd_threshold``
-~~~~~~~~~~~~~~~~~
-
-The ``sd_threshold`` is the standard deviation threshold for marking high confidence hits. For example, if the `sd_threshold` is set to 2, then an ORF will be considered a high confidence hit if its :math:`\Delta\Psi_i` is greater than 2 times the standard deviation of the :math:`\Delta\Psi_i` value of that ORF.

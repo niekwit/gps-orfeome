@@ -29,10 +29,10 @@ The `logs/` directory contains the log files of the workflow.
       │   └── index.log
       ├── calculate_proportion_of_reads_in_bins
       │   └── Test_vs_Control
-      │       └── hit-th1.25_sd-th2.25_prop_th0.4_pen_th4.log
+      │       └── hit-th1.25_prop_th0.4_pen_th4.log
       ├── calculate_psi
       │   └── Test_vs_Control
-      │       └── hit-th1.25_sd-th2.25_prop_th0.4_pen_th4.log
+      │       └── hit-th1.25_prop_th0.4_pen_th4.log
       ├── count
       │   ├── aggregate_counts.log
       │   ├── Control_1.log
@@ -79,14 +79,17 @@ The `logs/` directory contains the log files of the workflow.
       │   └── multiqc.log
       ├── plot-alignment-rate.log
       ├── plot-coverage.log
+      ├── plot_histograms
+      │   └── hit-th1.25_prop_th0.4_pen_th4_Test_vs_Control.log
       ├── plot_psi
-      │   ├── dotplot_hit-th1.25_sd-th2.25_prop_th0.4_pen_th4_Test_vs_Control.log
-      │   └── hit-th1.25_sd-th2.25_prop_th0.4_pen_th4_Test_vs_Control.log
+      │   ├── dotplot_hit-th1.25_prop_th0.4_pen_th4_Test_vs_Control.log
+      │   └── hit-th1.25_prop_th0.4_pen_th4_Test_vs_Control.log
       └── snakemake
-         ├── 2025-06-05_10-13-21_snakemake.log
-         └── 2025-06-05_11-51-32_snakemake.log
-   
-      11 directories, 49 files
+         ├── 2025-07-16_10-35-09_snakemake.log
+         ├── 2025-07-16_10-55-40_snakemake.log
+         └── 2025-07-16_10-59-03_snakemake.log
+
+12 directories, 51 files
 
 Resources
 ==========
@@ -113,23 +116,37 @@ The output files of the workflow are stored in the `results/` directory. The str
       ├── count
       │   └── counts-aggregated.tsv
       ├── psi
-      │   └── hit-th1.25_sd-th2.25_prop_th0.4_pen_th4
+      │   └── hit-th1.25_prop_th0.4_pen_th4
       │       ├── Test_vs_Control_barcode.proportions.csv
       │       ├── Test_vs_Control_barcode.summary.csv
       │       └── Test_vs_Control_gene.summary.csv
       ├── psi_plots
-      │   └── hit-th1.25_sd-th2.25_prop_th0.4_pen_th4
+      │   └── hit-th1.25_prop_th0.4_pen_th4
       │       ├── Test_vs_Control
-      │       │   ├── destabilised_in_Test
-      │       │   │   └── ...pdf
-      │       │   ├── destabilised_in_Test_hc
-      │       │   │   └── ...pdf
-      │       │   ├── stabilised_in_Test
-      │       │   │   └── ...pdf
-      │       │   └── stabilised_in_Test_hc
-      │       │       └── ...pdf
+      │       │   ├── destabilised
+      │       │   │   ├── AP2M1_IOH21478.pdf
+      │       │   │   ├── C3orf36_D52948.pdf
+      │       │   │   ├── C6orf201_U11005.pdf
+      │       │   │   ├── CDK16_D4804.pdf
+      │       │   │   ├── CXorf40B_IOH9866.pdf
+      │       │   │   ├── EIF3I_IOH3628.pdf
+      │       │   │   ├── GNAS_IOH39616.pdf
+      │       │   │   ├── INHBE_U3932.pdf
+      │       │   │   ├── MAPK8IP2_U13451.pdf
+      │       │   │   ├── PRPH2_IOH61916.pdf
+      │       │   │   ├── RPS18_IOH41520.pdf
+      │       │   │   ├── SCAMP1_IOH12951.pdf
+      │       │   │   └── UBL5_U5662.pdf
+      │       │   └── stabilised
+      │       │       ├── 0_U14469.pdf
+      │       │       ├── APOA2_IOH7290.pdf
+      │       │       ├── CHST9_IOH80001.pdf
+      │       │       ├── SLC31A2_U13112.pdf
+      │       │       └── XKR8_IOH14631.pdf
       │       ├── Test_vs_Control_dotplot.pdf
-      │       └── Test_vs_Control_dpsi_histogram.png
+      │       ├── Test_vs_Control_dpsi_histogram.pdf
+      │       ├── Test_vs_Control_dpsi_sd_histogram.pdf
+      │       └── Test_vs_Control_psi_histogram.pdf
       ├── qc
       │   ├── alignment-rates.pdf
       │   ├── fastqc
@@ -174,7 +191,7 @@ The output files of the workflow are stored in the `results/` directory. The str
          ├── Test_5.qc.txt
          └── Test_6.qc.txt
 
-      13 directories, 180 files
+      11 directories, 66 files
 
 Count
 --------------------------------------------------------------------------------

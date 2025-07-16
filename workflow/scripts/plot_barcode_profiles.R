@@ -47,12 +47,7 @@ data <- read_csv(prop.file) %>%
 
 # Get columns that contain hit information
 data.ranked <- read_csv(rank.file) %>%
-  select(
-    c("orf_id"),
-    starts_with("stabilised_in_"),
-    starts_with("destabilised_in_")
-  )
-columns <- colnames(data.ranked)[2:5]
+  select(orf_id, stabilised, destabilised)
 data <- data %>%
   left_join(data.ranked, by = "orf_id") %>%
   filter(complete.cases(.))
@@ -61,7 +56,7 @@ data <- data %>%
 # (assumes that at least one barcode with twin peaks in the entire data set exists)
 dpeak.values <- unique(data[["twin_peaks"]])
 if (length(dpeak.values) == 1) {
-  print("Barcodes with twin peaks detection was skipped...")
+  print("Barcode analysis with twin peaks detection was skipped...")
   dpeaks.shapes.removed <- FALSE
 } else {
   print("Barcodes with twin peaks detection was performed...")
@@ -69,6 +64,7 @@ if (length(dpeak.values) == 1) {
 }
 
 # Plot each gene and its proportion of reads in bins
+columns <- c("stabilised", "destabilised")
 for (column in columns) {
   # Create sub directory for each column
   dir <- file.path(outdir, column)
@@ -174,7 +170,3 @@ stopCluster(cl)
 
 print("Plotting complete")
 print(Sys.time())
-
-# Close log file
-sink(log, type = "output")
-sink(log, type = "message")

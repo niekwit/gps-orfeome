@@ -187,24 +187,24 @@ else:
         input:
             counts="results/count/counts-aggregated.tsv",
         output:
-            csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
-            ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
+            csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
+            ranked="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
         threads: 1
         resources:
             runtime=10,
         conda:
             "../envs/stats.yaml"
         log:
-            "logs/calculate_psi/{comparison}/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}.log",
+            "logs/calculate_psi/{comparison}/hit-th{ht}_prop_th{pt}_pen_th{pnth}.log",
         script:
             "../scripts/calculate_psi.py"
 
     # category: Analysis
     rule calculate_proportion_of_reads_in_bins:
         input:
-            csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
+            csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
         output:
-            csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.proportions.csv",
+            csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.proportions.csv",
         params:
             bin_number=config["bin_number"],
         threads: 1
@@ -213,55 +213,37 @@ else:
         conda:
             "../envs/stats.yaml"
         log:
-            "logs/calculate_proportion_of_reads_in_bins/{comparison}/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}.log",
+            "logs/calculate_proportion_of_reads_in_bins/{comparison}/hit-th{ht}_prop_th{pt}_pen_th{pnth}.log",
         script:
             "../scripts/calculate_proportion_of_reads_in_bins.py"
 
     # category: Analysis
     rule plot_barcode_profiles:
         input:
-            ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
-            proportions="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.proportions.csv",
+            ranked="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
+            proportions="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.proportions.csv",
         output:
             d=report(
                 directory(
-                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/destabilised_in_{comparison}/"
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}/destabilised/"
                 ),
                 patterns=["{name}.pdf"],
                 caption="../report/profiles.rst",
                 category="Barcode profiles {comparison}",
                 subcategory="Destabilised",
             ),
-            dhc=report(
-                directory(
-                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/destabilised_in_{comparison}_hc/"
-                ),
-                patterns=["{name}.pdf"],
-                caption="../report/profiles.rst",
-                category="Barcode profiles {comparison}",
-                subcategory="Destabilised (high confidence)",
-            ),
             s=report(
                 directory(
-                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/stabilised_in_{comparison}/"
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}/stabilised/"
                 ),
                 patterns=["{name}.pdf"],
                 caption="../report/profiles.rst",
                 category="Barcode profiles {comparison}",
                 subcategory="Stabilised",
             ),
-            shc=report(
-                directory(
-                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/stabilised_in_{comparison}_hc/"
-                ),
-                patterns=["{name}.pdf"],
-                caption="../report/profiles.rst",
-                category="Barcode profiles {comparison}",
-                subcategory="Stabilised (high confidence)",
-            ),
             flag=temp(
                 touch(
-                    "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}/plotting_done.txt"
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}/plotting_done.txt"
                 )
             ),
         params:
@@ -273,7 +255,7 @@ else:
         conda:
             "../envs/stats.yaml"
         log:
-            "logs/plot_psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
+            "logs/plot_psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
         script:
             "../scripts/plot_barcode_profiles.R"
 
@@ -281,17 +263,17 @@ else:
     rule plot_barcode_multi_conditions_profiles:
         input:
             ranked=expand(
-                "results/psi/hit-th{{ht}}_sd-th{{st}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_gene.summary.csv",
+                "results/psi/hit-th{{ht}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_gene.summary.csv",
                 comparison=COMPARISONS,
             ),
             proportions=expand(
-                "results/psi/hit-th{{ht}}_sd-th{{st}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_barcode.proportions.csv",
+                "results/psi/hit-th{{ht}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_barcode.proportions.csv",
                 comparison=COMPARISONS,
             ),
         output:
             pdf=report(
                 directory(
-                    "results/psi_plots_multi_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/"
+                    "results/psi_plots_multi_conditions/hit-th{ht}_prop_th{pt}_pen_th{pnth}/"
                 ),
                 patterns=["{name}.pdf"],
                 caption="../report/profiles_multi_conditions.rst",
@@ -299,7 +281,7 @@ else:
             ),
             flag=temp(
                 touch(
-                    "results/psi_plots_multi_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/plotting_done.txt"
+                    "results/psi_plots_multi_conditions/hit-th{ht}_prop_th{pt}_pen_th{pnth}/plotting_done.txt"
                 )
             ),
         params:
@@ -311,18 +293,18 @@ else:
         conda:
             "../envs/stats.yaml"
         log:
-            "logs/plot_psi_multi_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}.log",
+            "logs/plot_psi_multi_conditions/hit-th{ht}_prop_th{pt}_pen_th{pnth}.log",
         script:
             "../scripts/plot_barcode_multi_conditions_profiles.R"
 
     # category: Analysis
     rule plot_dotplot:
         input:
-            csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
-            ranked="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
+            csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
+            ranked="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
         output:
             pdf=report(
-                "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dotplot.pdf",
+                "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_dotplot.pdf",
                 caption="../report/dotplot.rst",
                 category="PSI dot plots",
                 subcategory="{comparison}",
@@ -337,17 +319,17 @@ else:
         conda:
             "../envs/stats.yaml"
         log:
-            "logs/plot_psi/dotplot_hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
+            "logs/plot_psi/dotplot_hit-th{ht}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
         script:
             "../scripts/plot_dotplot.R"
 
     # category: Analysis
     rule plot_histograms:
         input:
-            csv="results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
+            csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
         output:
             psi=report(
-                "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_psi_histogram.pdf",
+                "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_psi_histogram.pdf",
                 caption="../report/histograms.rst",
                 category="Histograms",
                 subcategory="{comparison}",
@@ -357,7 +339,7 @@ else:
                 },
             ),
             dpsi=report(
-                "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_histogram.pdf",
+                "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_histogram.pdf",
                 caption="../report/histograms.rst",
                 category="Histograms",
                 subcategory="{comparison}",
@@ -367,7 +349,7 @@ else:
                 },
             ),
             dpsi_sd=report(
-                "results/psi_plots/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_sd_histogram.pdf",
+                "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_sd_histogram.pdf",
                 caption="../report/histograms.rst",
                 category="Histograms",
                 subcategory="{comparison}",
@@ -382,7 +364,7 @@ else:
         conda:
             "../envs/stats.yaml"
         log:
-            "logs/plot_histograms/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
+            "logs/plot_histograms/hit-th{ht}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
         script:
             "../scripts/plot_histograms.R"
 
@@ -390,17 +372,17 @@ else:
     rule merge_gene_summary_data:
         input:
             ranks=expand(
-                "results/psi/hit-th{{ht}}_sd-th{{st}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_gene.summary.csv",
+                "results/psi/hit-th{{ht}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_gene.summary.csv",
                 comparison=COMPARISONS,
             ),
         output:
-            "results/psi/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}/gene.summary_all_conditions.csv",
+            "results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/gene.summary_all_conditions.csv",
         threads: 1
         resources:
             runtime=5,
         conda:
             "../envs/stats.yaml"
         log:
-            "logs/merge_rank_data_all_conditions/hit-th{ht}_sd-th{st}_prop_th{pt}_pen_th{pnth}.log",
+            "logs/merge_rank_data_all_conditions/hit-th{ht}_prop_th{pt}_pen_th{pnth}.log",
         script:
             "../scripts/merge_gene_summary_data.py"
