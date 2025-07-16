@@ -199,29 +199,12 @@ else:
         script:
             "../scripts/calculate_psi.py"
 
-    # category: Analysis
-    rule calculate_proportion_of_reads_in_bins:
-        input:
-            csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
-        output:
-            csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.proportions.csv",
-        params:
-            bin_number=config["bin_number"],
-        threads: 1
-        resources:
-            runtime=10,
-        conda:
-            "../envs/stats.yaml"
-        log:
-            "logs/calculate_proportion_of_reads_in_bins/{comparison}/hit-th{ht}_prop_th{pt}_pen_th{pnth}.log",
-        script:
-            "../scripts/calculate_proportion_of_reads_in_bins.py"
 
     # category: Analysis
     rule plot_barcode_profiles:
         input:
             ranked="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
-            proportions="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.proportions.csv",
+            proportions="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
         output:
             d=report(
                 directory(
@@ -267,7 +250,7 @@ else:
                 comparison=COMPARISONS,
             ),
             proportions=expand(
-                "results/psi/hit-th{{ht}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_barcode.proportions.csv",
+                "results/psi/hit-th{{ht}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_barcode.summary.csv",
                 comparison=COMPARISONS,
             ),
         output:
