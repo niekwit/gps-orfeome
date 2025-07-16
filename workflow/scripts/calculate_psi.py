@@ -323,9 +323,33 @@ df = df.drop(columns=[scaled_col])
 # This transformation is done to make it easier to plot
 df["z_score_corr"] = np.log2(abs(df["z_score_corr"])) * np.sign(df["z_score_corr"])
 
-# Save to file
+# Convert normalised counts to proportions of reads in bins
+# Do this in new df that will contain barcode-level results
+logging.info("Calculating proportions of reads in bins")
+df_barcodes = df.copy()
+
+test_cols = [f"{test}_{i}" for i in range(1, MAX_BIN + 1)]
+test_sums = df_barcodes[test_cols].sum(axis=1)  # Sum across rows for Test columns
+for col in test_cols:
+    df_barcodes[col] = df_barcodes[col] / test_sums
+    # Handle possible division by zero
+    df_barcodes[col] = df_barcodes[col].fillna(0)
+
+# Calculate proportions for Reference columns
+ref_cols = [f"{reference}_{i}" for i in range(1, MAX_BIN + 1)]
+ref_sums = df_barcodes[ref_cols].sum(axis=1)
+for col in ref_cols:
+    df_barcodes[col] = df_barcodes[col] / ref_sums
+    # Handle possible division by zero
+    df_barcodes[col] = df_barcodes[col].fillna(0)
+
+# Add column with comparison name (move to first position)
+# This saves time when plotting
+df_barcodes.insert(0, "Comparison", comparison)
+
+# Save barcode level results to file
 logging.info(f"Writing barcode-level results to {output_file_csv}")
-df.to_csv(output_file_csv, index=False, na_rep="NA")
+df_barcodes.to_csv(output_file_csv, index=False, na_rep="NA")
 
 ### Hit identification
 logging.info("Calling hits")
