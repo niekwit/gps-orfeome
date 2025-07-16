@@ -1,5 +1,4 @@
 import logging
-import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
@@ -20,7 +19,6 @@ reference = comparison.split("_vs_")[1]
 test = comparison.split("_vs_")[0]
 exclude_twin_peaks = snakemake.config["psi"]["exclude_twin_peaks"]
 hit_th = float(snakemake.wildcards["ht"])
-sd_th = float(snakemake.wildcards["st"])
 pr_th = float(snakemake.wildcards["pt"])
 penalty_factor = float(snakemake.wildcards["pnth"])
 bc_threshold = snakemake.config["psi"]["bc_threshold"]
@@ -333,45 +331,14 @@ df.to_csv(output_file_csv, index=False, na_rep="NA")
 logging.info("Calling hits")
 
 # Identify ORFs that are stabilised in test condition
-df[f"stabilised_in_{comparison}"] = df["delta_PSI_mean"] >= hit_th
-stab = len(df[(df[f"stabilised_in_{comparison}"])]["orf_id"].unique())
+df["stabilised"] = df["delta_PSI_mean"] >= hit_th
+stab = len(df[(df["stabilised"])]["orf_id"].unique())
 logging.info(f"  Number of stabilised ORFs in {comparison}: {stab}")
 
 # Identify ORFs that are destabilised in test condition
-df[f"destabilised_in_{comparison}"] = df["delta_PSI_mean"] <= -hit_th
-destab = len(df[(df[f"destabilised_in_{comparison}"])]["orf_id"].unique())
+df["destabilised"] = df["delta_PSI_mean"] <= -hit_th
+destab = len(df[(df["destabilised"])]["orf_id"].unique())
 logging.info(f"  Number of destabilised ORFs in {comparison}: {destab}")
-
-# Identify high confidence hits:
-# ORFs with delta_PSI_mean >= sd_th * delta_PSI_SD &
-# ORFs with delta_PSI_mean >= hit_th
-df["high_confidence"] = (abs(df["delta_PSI_mean"]) >= sd_th * df["delta_PSI_SD"]) & (
-    abs(df["delta_PSI_mean"]) >= hit_th
-)
-
-hc_stabilised = len(
-    df[(df[f"stabilised_in_{comparison}"]) & (df["high_confidence"])]["orf_id"].unique()
-)
-logging.info(
-    f"  Number of high confidence stabilised ORFs in {comparison}: {hc_stabilised}"
-)
-hc_destabilised = len(
-    df[(df[f"destabilised_in_{comparison}"]) & (df["high_confidence"])][
-        "orf_id"
-    ].unique()
-)
-logging.info(
-    f"  Number of high confidence destabilised ORFs in {comparison}: {hc_destabilised}"
-)
-
-# Make separate columns for high confidence hits (easier for plotting)
-df[f"stabilised_in_{comparison}_hc"] = (
-    df[f"stabilised_in_{comparison}"] & df["high_confidence"]
-)
-df[f"destabilised_in_{comparison}_hc"] = (
-    df[f"destabilised_in_{comparison}"] & df["high_confidence"]
-)
-df = df.drop(columns=["high_confidence"])
 
 
 ### Ranking of hits
@@ -387,10 +354,8 @@ df_rank = (
             "delta_PSI_SD",
             "num_barcodes",
             "good_barcodes",
-            f"stabilised_in_{comparison}",
-            f"stabilised_in_{comparison}_hc",
-            f"destabilised_in_{comparison}",
-            f"destabilised_in_{comparison}_hc",
+            "stabilised",
+            "destabilised",
             "z_score",
             "z_score_corr",
         ]
@@ -401,14 +366,14 @@ df_rank = (
 
 # Create separate rankings for stabilised and destabilised hits
 df_rank_stab = (
-    df_rank[df_rank[f"stabilised_in_{comparison}"]]
+    df_rank[df_rank["stabilised"]]
     .sort_values(by="z_score_corr", ascending=False)
     .reset_index(drop=True)
 )
 df_rank_stab["stabilised_rank"] = df_rank_stab.index + 1
 
 df_rank_destab = (
-    df_rank[df_rank[f"destabilised_in_{comparison}"]]
+    df_rank[df_rank["destabilised"]]
     .sort_values(by="z_score_corr", ascending=True)
     .reset_index(drop=True)
 )
