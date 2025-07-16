@@ -119,7 +119,7 @@ for col in df.columns:
         df[col] = df[col].multiply(correction_factor)
         df[col] = df[col].astype(int)
 
-# Compute sum of bins for each sample
+# Compute sum of bins for each condition
 sample_sums = {}
 for sample in [reference, test]:
     sample_sums[f"SOB_{sample}"] = df.filter(regex=f"^{sample}_").sum(axis=1)
@@ -350,19 +350,20 @@ df_rank = (
         [
             "orf_id",
             "gene",
-            "delta_PSI_mean",
-            "delta_PSI_SD",
-            "num_barcodes",
             "good_barcodes",
+            "delta_PSI_mean",
+            "z_score_corr",
             "stabilised",
             "destabilised",
-            "z_score",
-            "z_score_corr",
         ]
     ]
     .drop_duplicates()
     .reset_index(drop=True)
 )
+
+# Round delta_PSI_mean and z_score_corr to 3 decimal places
+df_rank["delta_PSI_mean"] = df_rank["delta_PSI_mean"].round(3)
+df_rank["z_score_corr"] = df_rank["z_score_corr"].round(3)
 
 # Create separate rankings for stabilised and destabilised hits
 df_rank_stab = (
