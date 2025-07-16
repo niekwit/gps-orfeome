@@ -141,7 +141,9 @@ if df.shape[0] == 0:
     )
 
 low_counts = nrows - df.shape[0]
-logging.info(f"  Barcodes with low counts in {reference}: {low_counts}")
+logging.info(
+    f"  Barcodes with low counts in both reference and test condition: {low_counts}"
+)
 
 # Remove barcodes with no test count reads in any bin (to avoid division by zero)
 nrows = df.shape[0]
@@ -237,14 +239,10 @@ df[f"PSI_{test}_mean"] = df.groupby("orf_id")[f"PSI_{test}"].transform("mean")
 df["deltaPSI"] = df[f"PSI_{test}"] - df[f"PSI_{reference}"]
 
 # Calculate mean deltaPSI values for each ORF
-# exclude barcodes with twin peaks (PSI value are still calculated for 
+# exclude barcodes with twin peaks (PSI value are still calculated for
 # these barcodes, but should be excluded from deltaPSI calculation)
 # Compute mean deltaPSI for each ORF, excluding barcodes with twin peaks
-delta_psi_mean = (
-    df[df["twin_peaks"] == False]
-    .groupby("orf_id")["deltaPSI"]
-    .mean()
-)
+delta_psi_mean = df[df["twin_peaks"] == False].groupby("orf_id")["deltaPSI"].mean()
 df["delta_PSI_mean"] = df["orf_id"].map(delta_psi_mean)
 
 # Calculate SD of PSI values for each condition of each ORF
@@ -255,9 +253,7 @@ logging.info("Calculating z-scores")
 # https://en.wikipedia.org/wiki/Median_absolute_deviation
 # https://en.wikipedia.org/wiki/Robust_measures_of_scale
 mad = abs(df["delta_PSI_mean"] - df["delta_PSI_mean"].median())
-df["z_score"] = (
-    df["delta_PSI_mean"] - df["delta_PSI_mean"].median()
-) / (
+df["z_score"] = (df["delta_PSI_mean"] - df["delta_PSI_mean"].median()) / (
     mad.median() * 1.4826
 )  # 1.4826 is a constant to make MAD comparable to standard deviation
 
@@ -277,7 +273,7 @@ logging.info("Correcting z-scores for intra ORF variability")
 # This avoids inflation of z-scores when delta_PSI_SD is very low
 sd_floor = hit_th * 0.15
 df["z_score_corr"] = df["z_score_corr"] / df["delta_PSI_SD"].clip(lower=sd_floor)
-#df["z_score_corr"] = df["z_score_corr"] / np.sqrt(df["delta_PSI_SD"] ** 2 + sd_floor ** 2)
+# df["z_score_corr"] = df["z_score_corr"] / np.sqrt(df["delta_PSI_SD"] ** 2 + sd_floor ** 2)
 
 logging.info("Correcting z-scores for deltaPSI")
 # Multiply z-scores by absolute delta_PSI value
@@ -356,17 +352,25 @@ df["high_confidence"] = (abs(df["delta_PSI_mean"]) >= sd_th * df["delta_PSI_SD"]
 hc_stabilised = len(
     df[(df[f"stabilised_in_{comparison}"]) & (df["high_confidence"])]["orf_id"].unique()
 )
-logging.info(f"  Number of high confidence stabilised ORFs in {comparison}: {hc_stabilised}")
+logging.info(
+    f"  Number of high confidence stabilised ORFs in {comparison}: {hc_stabilised}"
+)
 hc_destabilised = len(
-    df[(df[f"destabilised_in_{comparison}"]) & (df["high_confidence"])]["orf_id"].unique()
+    df[(df[f"destabilised_in_{comparison}"]) & (df["high_confidence"])][
+        "orf_id"
+    ].unique()
 )
 logging.info(
     f"  Number of high confidence destabilised ORFs in {comparison}: {hc_destabilised}"
 )
 
 # Make separate columns for high confidence hits (easier for plotting)
-df[f"stabilised_in_{comparison}_hc"] = df[f"stabilised_in_{comparison}"] & df["high_confidence"]
-df[f"destabilised_in_{comparison}_hc"] = df[f"destabilised_in_{comparison}"] & df["high_confidence"]
+df[f"stabilised_in_{comparison}_hc"] = (
+    df[f"stabilised_in_{comparison}"] & df["high_confidence"]
+)
+df[f"destabilised_in_{comparison}_hc"] = (
+    df[f"destabilised_in_{comparison}"] & df["high_confidence"]
+)
 df = df.drop(columns=["high_confidence"])
 
 
