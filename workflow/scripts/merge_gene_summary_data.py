@@ -24,8 +24,8 @@ for i, df in enumerate(dfs):
     # Append the condition to the columns named delta_PSI_mean and z_score_corr
     df.rename(
         columns={
-            "delta_PSI_mean": f"delta_PSI_mean_in_{condition}",
-            "z_score_corr": f"z_score_corr_in_{condition}",
+            "delta_PSI_mean": f"delta_PSI_mean_{condition}",
+            "z_score_corr": f"z_score_corr_{condition}",
         },
         inplace=True,
     )
