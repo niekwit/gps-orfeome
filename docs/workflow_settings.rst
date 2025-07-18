@@ -95,6 +95,25 @@ Workflow setting are in `config.yaml`:
       # Keep ORFs with at least bc_threshold barcodes
       bc_threshold: 2
 
+      # Multi condition heatmap settings
+      # Use R-style boolean values
+      heatmap:
+        # Show row names in the heatmap
+        rownames: TRUE
+
+        # Font size of the row names
+        row_font_size: 4
+        
+        # Number of clusters for gene clustering
+        # This number is used for writing the clusters to a csv file
+        clusters: 6
+
+        # Height of the heatmap in inches
+        height: 8
+        
+        # Width of the heatmap in inches
+        width: 4
+
 Sample names
 --------------------------------------------------------------------------------
 The `conditions` section defines the conditions in the experiment. The sample files should be placed in the `reads/` directory and should follow the naming convention ``<condition>_<bin_number>.fastq.gz``, where ``<condition>`` is one of the conditions defined in the `config.yaml` file (e.g. `Test_1.fastq.gz`, `Control_1.fastq.gz`, etc.).
@@ -329,4 +348,41 @@ This correction applies a mild penalty to the z-score of ORFs with fewer good ba
 ~~~~~~~~~~~~~~~~~
 
 The ``bc_threshold`` is the minimum number of 'good' barcodes required to keep an ORF.
+
+
+``heatmap``
+~~~~~~~~~~~~~~~~~
+
+When multiple conditions are present, the workflow generates a heatmap of :math:`\Delta\Psi_i` values for each ORF found as hits in either test conditions. The `heatmap` section defines the settings for the heatmap generation.
+
+.. code-block:: yaml
+
+   heatmap:
+     # Show row names in the heatmap
+     rownames: TRUE
+
+     # Font size of the row names
+     row_font_size: 4
+     
+     # Number of clusters for gene clustering
+     # This number is used for writing the clusters to a csv file
+     clusters: 6
+
+     # Height of the heatmap in inches
+     height: 8
+     
+     # Width of the heatmap in inches
+     width: 4
+
+
+The ``clusters`` parameter defines the number of clusters for gene clustering. The best value for this depdends on how many comparisons are present and if all comparisons have proteins stabilised/destabilised. For example, with two comparisons that both have proteins stabilised and destabilised, a value of 6 is recommended:
+
+1. Both comparisons have proteins stabilised.
+2. Both comparisons have proteins destabilised.
+3. One comparison has proteins stabilised, the other has proteins destabilised/no effect/not found.
+4. One comparison has proteins stabilised, the other has proteins stabilised/no effect/not found.
+5. One comparison has proteins destabilised, the other has proteins destabilised/no effect/not found.
+6. One comparison has proteins destabilised, the other has proteins stabilised/no effect/not found.
+
+If there are more comparisons or not all comparisons have proteins stabilised/destabilised, the number of clusters has to be adjusted accordingly.
 
