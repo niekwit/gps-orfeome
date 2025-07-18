@@ -76,7 +76,12 @@ annotation_row_df <- data.frame(
   Cluster = factor(clusters) # Convert cluster assignments to a factor
 )
 
-cluster_colours <- brewer.pal(k, "Set2")
+cluster_colours <- if (k <= 8) {
+  brewer.pal(k, "Set2")
+} else {
+  rainbow(k)
+}
+
 names(cluster_colours) <- levels(annotation_row_df$Cluster)
 results <- pheatmap(
   data,
@@ -101,13 +106,12 @@ results <- pheatmap(
 )
 
 
-# Add dPSI and z-scores
+# Add dPSI values
 data$gene_id <- rownames(data)
 df <- df %>%
   left_join(data, by = "gene_id") %>%
   # convert zero values back to NA
-  mutate(across(starts_with("delta_PSI_mean_"), ~ ifelse(. == 0, NA, .))) %>%
-  mutate(across(starts_with("z_score_corr_"), ~ ifelse(. == 0, NA, .)))
+  mutate(across(starts_with("delta_PSI_mean_"), ~ ifelse(. == 0, NA, .)))
 
 # Write output
 write_csv(df, snakemake@output[["csv"]])
