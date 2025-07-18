@@ -90,6 +90,9 @@ psi:
     # Show row names in the heatmap
     rownames: TRUE
 
+    # Font size of the row names
+    row_font_size: 4
+
     # Number of clusters for gene clustering
     # This number is used for writing the clusters to a csv file
     clusters: 6
