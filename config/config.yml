@@ -84,3 +84,21 @@ psi:
   # Keep ORFs with at least bc_threshold barcodes
   bc_threshold: 2
   
+  # Multi condition heatmap settings
+  # Use R-style boolean values
+  heatmap:
+    # Show row names in the heatmap
+    rownames: TRUE
+
+    # Font size of the row names
+    row_font_size: 4
+
+    # Number of clusters for gene clustering
+    # This number is used for writing the clusters to a csv file
+    clusters: 6
+
+    # Height of the heatmap in inches
+    height: 8
+    
+    # Width of the heatmap in inches
+    width: 4

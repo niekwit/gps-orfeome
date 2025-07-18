@@ -207,14 +207,7 @@ def targets():
                 [
                     "results/qc/pca_plot.pdf",
                     expand(
-                        "results/psi_plots_multi_conditions/hit-th{ht}_prop_th{pt}_pen_th{pnth}/plotting_done.txt",
-                        zip,
-                        ht=HIT_TH,
-                        pt=PROP_TH,
-                        pnth=PEN_TH,
-                    ),
-                    expand(
-                        "results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/gene.summary_all_conditions.csv",
+                        "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/heatmap.pdf",
                         zip,
                         ht=HIT_TH,
                         pt=PROP_TH,

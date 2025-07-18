@@ -156,6 +156,29 @@ properties:
         type: integer
         minimum: 0
         default: 2
+      heatmap:
+        description: Multi condition heatmap settings
+        type: object
+        properties:
+          rownames:
+            description: Show row names in the heatmap
+            type: boolean
+          row_font_size:
+            type: number
+            description: "Font size for each row in the output"
+            minimum: 0.5
+          clusters:
+            description: Number of clusters for gene clustering
+            type: integer
+            minimum: 1
+          height:
+            description: Height of the heatmap in inches
+            type: number
+            minimum: 1
+          width:
+            description: Width of the heatmap in inches
+            type: number
+            minimum: 1
 
     required:
       - sob_threshold
