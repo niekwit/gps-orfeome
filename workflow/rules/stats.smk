@@ -243,44 +243,6 @@ else:
             "../scripts/plot_barcode_profiles.R"
 
     # category: Analysis
-    rule plot_barcode_multi_conditions_profiles:
-        input:
-            ranked=expand(
-                "results/psi/hit-th{{ht}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_gene.summary.csv",
-                comparison=COMPARISONS,
-            ),
-            proportions=expand(
-                "results/psi/hit-th{{ht}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_barcode.summary.csv",
-                comparison=COMPARISONS,
-            ),
-        output:
-            pdf=report(
-                directory(
-                    "results/psi_plots_multi_conditions/hit-th{ht}_prop_th{pt}_pen_th{pnth}/"
-                ),
-                patterns=["{name}.pdf"],
-                caption="../report/profiles_multi_conditions.rst",
-                category="Barcode profiles multi conditions",
-            ),
-            flag=temp(
-                touch(
-                    "results/psi_plots_multi_conditions/hit-th{ht}_prop_th{pt}_pen_th{pnth}/plotting_done.txt"
-                )
-            ),
-        params:
-            outdir=lambda wc, output: os.path.dirname(output["flag"]),
-            bin_number=config["bin_number"],
-        threads: 6
-        resources:
-            runtime=60,
-        conda:
-            "../envs/stats.yaml"
-        log:
-            "logs/plot_psi_multi_conditions/hit-th{ht}_prop_th{pt}_pen_th{pnth}.log",
-        script:
-            "../scripts/plot_barcode_multi_conditions_profiles.R"
-
-    # category: Analysis
     rule plot_dotplot:
         input:
             csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
@@ -369,3 +331,38 @@ else:
             "logs/merge_rank_data_all_conditions/hit-th{ht}_prop_th{pt}_pen_th{pnth}.log",
         script:
             "../scripts/merge_gene_summary_data.py"
+
+    # category: Analysis
+    rule plot_heatmap:
+        input:
+            csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/gene.summary_all_conditions.csv",
+        output:
+            pdf=report(
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/heatmap.pdf"
+                ,
+                caption="../report/heatmap.rst",
+                category="Heatmap multi conditions",
+                subcategory="{ht}_{pt}_{pnth}",
+                labels={
+                    "Hit threshold": "{ht}",
+                    "Proportion threshold": "{pt}",
+                    "Penalty threshold": "{pnth}",
+                    "Figure": "Heatmap of dPSI values",
+                },
+            ),
+            csv="results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/heatmap_data.csv",
+        params:
+            bin_number=config["bin_number"],
+            clusters=config["psi"]["heatmap"]["clusters"],
+            rownames=config["psi"]["heatmap"]["rownames"],
+            width=config["psi"]["heatmap"]["width"],
+            height=config["psi"]["heatmap"]["height"],
+        threads: 1
+        resources:
+            runtime=10,
+        conda:
+            "../envs/stats.yaml"
+        log:
+            "logs/plot_heatmap/hit-th{ht}_prop_th{pt}_pen_th{pnth}.log",
+        script:
+            "../scripts/plot_heatmap.R"
