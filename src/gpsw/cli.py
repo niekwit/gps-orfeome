@@ -11,7 +11,33 @@ from . import utils
 
 
 def fetch_code(args):
-    """_summary_"""
+    """
+    Fetches a specific release of the GPSW workflow code from GitHub.
+
+    This function downloads the specified release tag (or the latest release)
+    of the 'niekwit/gps-orfeome' repository, extracts its core components,
+    and places them into a designated local directory. It includes options
+    to either set up the workflow with test data or a minimal configuration
+    for custom data.
+
+    Args:
+        args: An argparse.Namespace object containing the following attributes:
+            - tag (str): The specific release tag (e.g., "1.0.0") to fetch,
+                         or "latest" to download the most recent release.
+            - directory (str): The local directory path where the workflow
+                               files should be extracted.
+            - test_data (bool): If True, also copies test data directories
+                                (.test/config, .test/reads, .test/resources);
+                                otherwise, creates empty 'resources' and 'reads'
+                                directories for user-provided data.
+
+    Raises:
+        SystemExit: If an invalid tag format is provided.
+        requests.exceptions.RequestException: If there's an issue downloading
+                                             the release tarball.
+        tarfile.ReadError: If there's an issue unpacking the tarball.
+        OSError: If there are issues with directory creation or file copying.
+    """
     if args.tag == "latest":
 
         tag = utils.get_latest_release_tag()
@@ -80,9 +106,24 @@ def fetch_code(args):
 
 def run_workflow(args):
     """
+    Executes the Snakemake workflow based on the provided arguments.
+
+    This function orchestrates the workflow execution, including an optional
+    dry run, generation of a rule graph, the main workflow execution, and
+    final report creation. It handles command line argument parsing for Snakemake
+    and error handling during subprocess calls.
 
     Args:
-        args (_type_): _description_
+        args (argparse.Namespace): An object containing command-line arguments,
+                                   expected to have the following attributes:
+            - dry_run (bool): If True, performs a dry run of the workflow before execution.
+            - snakemake_args (str, optional): Additional arguments to pass directly to Snakemake.
+            - quiet (bool): If True, runs Snakemake and report generation in quiet mode.
+            - profile (str, optional): Path to a Snakemake profile to use.
+
+    Raises:
+        SystemExit: If any Snakemake subprocess command fails,
+                    the script exits with a status code of 1.
     """
     # --- Dry-run workflow ---
     if args.dry_run:
@@ -100,7 +141,7 @@ def run_workflow(args):
     if args.snakemake_args is not None:
         # Use shlex for robust argument parsing
         command.extend(shlex.split(args.snakemake_args))
-    
+
     if args.quiet:
         command.extend(["--quiet", "all"])
     else:
@@ -211,11 +252,6 @@ def main():
     ):
         # If no subcommand was given (and it wasn't just --version) print help
         parser.print_help()
-    # add logic here based on args.command if not using set_defaults
-    # elif args.command == 'fetch':
-    #    fetch_code(args)
-    # elif args.command == 'dry-run':
-    #     ... etc ...
 
 
 if __name__ == "__main__":
