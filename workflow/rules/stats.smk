@@ -199,7 +199,6 @@ else:
         script:
             "../scripts/calculate_psi.py"
 
-
     # category: Analysis
     rule plot_barcode_profiles:
         input:
@@ -338,8 +337,7 @@ else:
             csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/gene.summary_all_conditions.csv",
         output:
             pdf=report(
-                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/heatmap.pdf"
-                ,
+                "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/heatmap.pdf",
                 caption="../report/heatmap.rst",
                 category="Heatmap multi conditions",
                 subcategory="{ht}_{pt}_{pnth}",
