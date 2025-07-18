@@ -90,7 +90,7 @@ results <- pheatmap(
   color = colour_palette,
   breaks = as.numeric(custom_breaks),
   show_rownames = show_row_names,
-  fontsize_row = 4,
+  fontsize_row = snakemake@params[["row_font_size"]],
   filename = snakemake@output[["pdf"]],
   width = snakemake@params[["width"]],
   height = snakemake@params[["height"]],

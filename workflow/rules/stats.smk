@@ -355,6 +355,7 @@ else:
             bin_number=config["bin_number"],
             clusters=config["psi"]["heatmap"]["clusters"],
             rownames=config["psi"]["heatmap"]["rownames"],
+            fontsize=config["psi"]["heatmap"]["row_font_sizesnake"],
             width=config["psi"]["heatmap"]["width"],
             height=config["psi"]["heatmap"]["height"],
         threads: 1
