@@ -78,7 +78,6 @@ annotation_row_df <- data.frame(
 
 cluster_colours <- brewer.pal(k, "Set2")
 names(cluster_colours) <- levels(annotation_row_df$Cluster)
-
 results <- pheatmap(
   data,
   angle_col = 45,
@@ -90,7 +89,7 @@ results <- pheatmap(
   color = colour_palette,
   breaks = as.numeric(custom_breaks),
   show_rownames = show_row_names,
-  fontsize_row = snakemake@params[["row_font_size"]],
+  fontsize_row = snakemake@params[["fontsize"]],
   filename = snakemake@output[["pdf"]],
   width = snakemake@params[["width"]],
   height = snakemake@params[["height"]],
