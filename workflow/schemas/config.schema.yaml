@@ -163,6 +163,10 @@ properties:
           rownames:
             description: Show row names in the heatmap
             type: boolean
+          row_font_size:
+            type: number
+            description: "Font size for each row in the output"
+            minimum: 0.5
           clusters:
             description: Number of clusters for gene clustering
             type: integer
