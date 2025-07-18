@@ -5,7 +5,7 @@ GPSW was designed by Dr. Niek Wit, with input from Dr. Hudson Coates, Dr. Richar
 
 Lab websites:
 
-- `Nathan lab <https://www.immunology.cam.ac.uk/Networkdirectory/jan33%40cam.ac.ukrichar>`_
+- `Nathan lab <https://www.immunology.cam.ac.uk/Networkdirectory/jan33%40cam.ac.uk>`_
 - `Timms lab <https://www.timmslab.com/>`_
 - `Lehner lab <https://www.lehnerlab.com/>`_
 
