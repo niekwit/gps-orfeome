@@ -500,19 +500,27 @@ The `psi_plots` directory contains the following subdirectories for each combina
 
      Histogram of PSI values.
 
-- `Test_vs_Control_dpsi_histogram.png`: a PNG file with a histogram of the :math:`\Delta\Psi_i` values for all genes.
+- `Test_vs_Control_dpsi_histogram.pdf`: a PDF file with a histogram of the :math:`\Delta\Psi_i` values for all genes.
 
   .. figure:: images/dpsi_histogram.png
      :alt: Histogram of delta PSI values
 
      Histogram of delta PSI values.
 
-- `Test_vs_Control_dpsi_sd_histogram.png`: a PNG file with a histogram of the :math:`\Delta\Psi_i` SD values for all genes.
+- `Test_vs_Control_dpsi_sd_histogram.pdf`: a PDF file with a histogram of the :math:`\Delta\Psi_i` SD values for all genes.
 
   .. figure:: images/sd_histogram.png
      :alt: Histogram of delta PSI SD values
 
      Histogram of delta PSI SD values.
+
+- `Test_vs_Control_sob_histogram.pdf`: a PDF file with a histogram of the sum of barcodes (SOB) values for all genes per condition.
+
+  .. figure:: images/sob_histogram.png
+     :alt: Histogram of SOB values
+
+     Histogram of SOB values. Only the 99.9th percentile of SOB values is shown in the histogram.
+
 
 QC
 --------------------------------------------------------------------------------
