@@ -189,6 +189,9 @@ else:
         output:
             csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
             ranked="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
+            sums=temp(
+                "results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_sums.csv"
+            ),
         threads: 1
         resources:
             runtime=10,
@@ -271,6 +274,7 @@ else:
     rule plot_histograms:
         input:
             csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
+            sums="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_sums.csv",
         output:
             psi=report(
                 "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_psi_histogram.pdf",
@@ -302,6 +306,18 @@ else:
                     "Figure": "Histogram of dPSI SD values",
                 },
             ),
+            sob=report(
+                "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_sob_histogram.pdf",
+                caption="../report/histograms.rst",
+                category="Histograms",
+                subcategory="{comparison}",
+                labels={
+                    "Comparison": "{comparison}",
+                    "Figure": "Histogram of SOB values",
+                },
+            ),
+        params:
+            sob_threshold=config["psi"]["sob_threshold"],
         threads: 1
         resources:
             runtime=10,

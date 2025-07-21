@@ -125,6 +125,12 @@ for sample in [reference, test]:
     sample_sums[f"SOB_{sample}"] = df.filter(regex=f"^{sample}_").sum(axis=1)
 df = pd.concat([df, pd.DataFrame(sample_sums)], axis=1)
 
+# Write csv with just the sums of bins for each condition of all orfs
+# This is for plotting histogram
+df[["orf_id", "gene"] + [f"SOB_{s}" for s in [reference, test]]].to_csv(
+    snakemake.output["sums"], index=False
+)
+
 # Remove barcodes where there are low counts in the reference sample
 nrows = df.shape[0]
 df = df[df[f"SOB_{reference}"] > MIN_SOB_THRESHOLD].reset_index(drop=True)

@@ -200,6 +200,14 @@ def targets():
                     pt=PROP_TH,
                     pnth=PEN_TH,
                 ),
+                expand(
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_sob_histogram.pdf",
+                    zip,
+                    comparison=COMPARISONS,
+                    ht=HIT_TH,
+                    pt=PROP_TH,
+                    pnth=PEN_TH,
+                ),
             ]
         )
         if multiple_conditions(COMPARISONS):
