@@ -28,6 +28,29 @@ output_file_rank = snakemake.output["ranked"]
 
 
 def identify_twin_peaks(row, condition, cutoff):
+    """
+    Identify whether a given row contains "twin peaks" for a specified condition.
+
+    A "twin peak" is defined as the presence of two highest values (peaks) in the row's columns
+    corresponding to the given condition, where:
+    - The second highest value is above a specified fraction (`cutoff`) of the highest value.
+    - The positions (keys) of these two peaks differ by at least 2.
+
+    Parameters
+    ----------
+    row : pandas.Series
+        A row from a DataFrame containing columns named with the pattern '{condition}_<bin>'.
+    condition : str
+        The prefix for the columns to consider (e.g., 'sample1').
+    cutoff : float
+        The minimum fraction of the highest value that the second highest value must exceed
+        to be considered a "twin peak".
+
+    Returns
+    -------
+    bool
+        True if the row contains twin peaks for the specified condition, False otherwise.
+    """
     # Get values and bin names
     values = list(row.filter(regex=f"^{condition}_").values)
     keys = list(row.filter(regex=f"^{condition}_").keys())
@@ -55,12 +78,22 @@ def identify_twin_peaks(row, condition, cutoff):
 
 def compute_psi(row, condition):
     """
-    Compute PSI values for a row and one condition.
-    https://www.science.org/doi/10.1126/science.aaw4912#sec-11
+    Calculate the Protein Stability Index (PSI) value for a given row and condition.
 
-    For each sample bin, divide the bin count by
-    the sum of all bins for that sample.
-    Multiple by bin number and sum all values for each sample.
+    The PSI value is computed by:
+    1. For each bin (from 1 to MAX_BIN), dividing the count in that bin by the sum of all bins for the sample (SOB).
+    2. Multiplying the resulting proportion by the bin number.
+    3. Summing these values across all bins to obtain the PSI score.
+
+    Args:
+        row (pd.Series): A pandas Series containing bin counts and the sum of bins (SOB) for a sample under a specific condition.
+        condition (str): The condition name used to access the relevant columns in the row.
+
+    Returns:
+        float: The computed PSI score for the given row and condition.
+
+    Reference:
+        https://www.science.org/doi/10.1126/science.aaw4912#sec-11
     """
     sob = row[f"SOB_{condition}"]
     psi_score = 0
