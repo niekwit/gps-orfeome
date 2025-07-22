@@ -10,6 +10,16 @@ from github import Github
 
 
 def get_package_version():
+    """
+    Retrieve the version of the 'gpsw' package.
+
+    Attempts to obtain the installed version of the 'gpsw' package using the package metadata.
+    If the package is not installed (e.g., when running locally in a development environment),
+    returns a default development version string.
+
+    Returns:
+        str: The version string of the 'gpsw' package, or "v0.0.0-dev" if the package is not installed.
+    """
     try:
         return version("gpsw")
     except PackageNotFoundError:
@@ -19,6 +29,15 @@ def get_package_version():
 
 
 def get_latest_release_tag():
+    """
+    Fetches the latest release tag name from the 'gps-orfeome' repository on GitHub.
+
+    Uses the PyGithub library to access the 'niekwit/gps-orfeome' repository and retrieve the tag name of the latest release.
+    If an error occurs during the process, prints the error and returns None.
+
+    Returns:
+        str or None: The tag name of the latest release if successful, otherwise None.
+    """
     try:
         g = Github()
 
@@ -195,7 +214,7 @@ def create_rule_graph():
 
         f.write("}\n")
 
-    # Optional: create PDF
+    # Create PDF
     graphs = pydot.graph_from_dot_file(dot_path)
     graphs[0].write_pdf("images/rulegraph.pdf")
 
