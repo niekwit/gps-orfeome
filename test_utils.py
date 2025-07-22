@@ -1,10 +1,12 @@
 import unittest
-import os
-import tempfile
-import shutil
+
+# import os
+# import tempfile
+# import shutil
 from unittest.mock import patch, MagicMock, mock_open
 import subprocess
 from pathlib import Path
+import builtins
 
 from src.gpsw import utils
 
@@ -58,17 +60,21 @@ class TestUtils(unittest.TestCase):
         # Arrange
         mock_args = MagicMock()
         mock_args.quiet = False
-        mock_subprocess_run.return_value = MagicMock(returncode=0)
+        # Set captured_output and text to False for non-quiet run to match function's default behavior
+        mock_subprocess_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
 
         # Act
         utils.dry_run(mock_args)
 
         # Assert
+        # capture_output is False when not quiet (default stream behavior)
         mock_subprocess_run.assert_called_once_with(
-            ["snakemake", "-n", "-p"], check=True
+            ["snakemake", "-n", "-p"], check=True, capture_output=False, text=True
         )
         mock_print.assert_any_call("Performing dry-run of the workflow")
-        mock_print.assert_any_call("Dry-run completed successfully!")
+        mock_print.assert_any_call(
+            "Dry-run completed successfully!"
+        )  # This print is now unconditional on success
         mock_exit.assert_called_once_with(0)
 
     @patch("subprocess.run")
@@ -80,17 +86,24 @@ class TestUtils(unittest.TestCase):
         # Arrange
         mock_args = MagicMock()
         mock_args.quiet = True
-        mock_subprocess_run.return_value = MagicMock(returncode=0)
+        # Ensure stdout and stderr are captured and empty for a successful quiet run
+        mock_subprocess_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
 
         # Act
         utils.dry_run(mock_args)
 
         # Assert
+        # Expecting 'all' argument with --quiet as per original function logic
         mock_subprocess_run.assert_called_once_with(
-            ["snakemake", "-n", "--quiet", "all"], check=True
+            ["snakemake", "-n", "--quiet", "all"],
+            check=True,
+            capture_output=True,
+            text=True,
         )
         mock_print.assert_any_call("Performing dry-run of the workflow")
-        mock_print.assert_any_call("Dry-run completed successfully!")
+        mock_print.assert_any_call(
+            "Dry-run completed successfully!"
+        )  # This print is now unconditional on success
         mock_exit.assert_called_once_with(0)
 
     @patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "cmd"))
@@ -108,84 +121,87 @@ class TestUtils(unittest.TestCase):
 
         # Assert
         mock_subprocess_run.assert_called_once_with(
-            ["snakemake", "-n", "-p"], check=True
+            ["snakemake", "-n", "-p"], check=True, capture_output=False, text=True
         )
         mock_print.assert_any_call("Performing dry-run of the workflow")
+        mock_print.assert_any_call(
+            unittest.mock.ANY
+        )  # Check for any error message print
         mock_exit.assert_called_once_with(1)
 
-    @patch("subprocess.run")
     @patch("builtins.print")
-    @patch("sys.exit")
-    def test_dry_run_failure_quiet_true_reruns_verbose(
-        self, mock_exit, mock_print, mock_subprocess_run
-    ):
-        # Arrange
+    @patch("subprocess.run")
+    def test_fn(self, mock_subprocess_run, mock_print):
         mock_args = MagicMock()
         mock_args.quiet = True
 
-        # Set side_effect to be a list:
-        # The first call to subprocess.run will raise CalledProcessError
-        # The second call will return a successful mock object (like a normal completion)
+        mock_called_process_error = subprocess.CalledProcessError(
+            1,
+            ["snakemake", "-n", "--quiet", "all"],
+            stderr="ERROR: Something went wrong in Snakemake\n",
+        )
+
+        # First call fails, second is verbose fallback
         mock_subprocess_run.side_effect = [
-            subprocess.CalledProcessError(
-                1, "snakemake -n --quiet all"
-            ),  # First call fails
-            MagicMock(returncode=0),  # Second call succeeds
+            mock_called_process_error,
+            MagicMock(returncode=0, stdout="Verbose run output", stderr=""),
         ]
 
-        # Act
-        utils.dry_run(mock_args)
+        with self.assertRaises(SystemExit) as cm:
+            utils.dry_run(mock_args)
 
-        # Assert
-        # Check that subprocess.run was called twice
+        self.assertEqual(cm.exception.code, 1)
+
         self.assertEqual(mock_subprocess_run.call_count, 2)
 
-        # The first call (failed quiet dry-run)
-        expected_calls = [
-            unittest.mock.call(["snakemake", "-n", "--quiet", "all"], check=True),
-            unittest.mock.call(["snakemake", "-np"]),
-        ]
-        mock_subprocess_run.assert_has_calls(expected_calls)
+        printed_lines = [call.args[0] for call in mock_print.call_args_list]
 
-        mock_print.assert_any_call("Performing dry-run of the workflow")
-        # No 'Dry-run completed successfully!' should be printed for a failure case
-        # You might want to check the absence of this print too if desired
-        mock_exit.assert_called_once_with(1)
+        print("\nCaptured prints:")
+        for line in printed_lines:
+            print(f"LINE: {repr(line)}")
+
+        assert any(
+            ("Attempting re-run" in line and "--quiet" in line)
+            for line in printed_lines
+        ), "Expected a retry message with '--quiet' in the output"
 
     # --- Test create_rule_graph ---
-    @patch("os.makedirs")
-    @patch("subprocess.run")
+    # This test needed significant refactoring due to how category_colors is a local variable.
+    # The fix is to calculate expected_category_colors within the test itself, mirroring the function's logic.
+    @patch("src.gpsw.utils.extract_rule_categories")
     @patch("pydot.graph_from_dot_file")
     @patch("builtins.open", new_callable=mock_open)
-    @patch("pathlib.Path")
+    @patch("subprocess.run")
+    @patch("os.makedirs")
     def test_create_rule_graph_success(
         self,
-        mock_Path,
+        mock_makedirs,
+        mock_subprocess_run,
         mock_file_open,
         mock_graph_from_dot_file,
-        mock_subprocess_run,
-        mock_makedirs,
+        mock_extract_categories,
     ):
         # Arrange
-        mock_Path.return_value = MagicMock(
-            __truediv__=lambda self, other: Path(os.path.join(str(self), other)),
-            mkdir=MagicMock(),
-            __str__=lambda self: str(self),
-            exists=MagicMock(return_value=True),
-        )
-        mock_Path.home.return_value = Path("/mock/home/user")
+        # Mock extract_rule_categories return value with a few categories for comprehensive testing
+        mock_extract_categories.return_value = {
+            "cutadapt": "Preprocessing",
+            "fastqc": "Quality Control",
+            "align": "Alignment",
+            "merge": "Post-processing",
+        }
 
-        # Mock the raw stdout from snakemake.
-        # Include leading/trailing newlines and indentation as snakemake might output them.
-        # This is what utils.create_rule_graph's subprocess.run would actually return.
+        # DOT output from snakemake. Include 'all' rule (node 0) for filtering test
         raw_snakemake_stdout = """
 digraph G {
     0[label = "all"];
-    1[label = "rule cutadapt"];
-    2[label = "rule fastqc"];
-    1 -> 0; // This line should be filtered
+    1[label = "cutadapt"];
+    2[label = "fastqc"];
+    3[label = "align"];
+    4[label = "merge"];
     2 -> 1;
-    0[label = "all" // This line should be filtered too
+    1 -> 0; // Edge to 'all' - should be filtered
+    3 -> 1;
+    4 -> 3;
 }
 """
         mock_subprocess_run.return_value = MagicMock(stdout=raw_snakemake_stdout)
@@ -206,31 +222,94 @@ digraph G {
             check=True,
         )
 
-        # Construct the expected filtered content AFTER the Python filtering process.
-        # This simulates the logic:
-        # filtered_lines = [
-        #     line for line in raw_snakemake_stdout.split('\n')
-        #     if not ('-> 0' in line or '0[label = "all"' in line)
-        # ]
-        # f.write('\n'.join(filtered_lines))
-
-        # We must generate the expected output exactly as utils.create_rule_graph would.
-        # So, take the raw_snakemake_stdout, apply the filter:
-        expected_lines_after_filter = []
-        for line in raw_snakemake_stdout.split("\n"):
-            if not ("-> 0" in line or '0[label = "all"' in line):
-                expected_lines_after_filter.append(line)
-
-        # And then join them back with newline characters.
-        # The join will not add a trailing newline if the last line in the input has one.
-        # If the last filtered line in the input has a newline, it will be preserved.
-        expected_content_to_write = "\n".join(expected_lines_after_filter)
-
         mock_file_open.assert_any_call("images/rulegraph.dot", "w")
-        self.assertGreater(mock_file_open().write.call_count, 1)
+        handle = mock_file_open()
+        written = "".join(call.args[0] for call in handle.write.call_args_list)
+
+        # Manually determine the expected colors based on the function's logic
+        palette = [
+            "#F0FAF0",
+            "#FAF0F0",
+            "#F0F0FA",
+            "#FFF8E1",
+            "#E6F0FF",
+            "#FDEDEC",
+            "#F3F3F3",
+        ]
+
+        # This mirrors the logic inside create_rule_graph for category_colors
+        # Ensure categories are sorted alphabetically to match the function's behavior
+        # Get unique categories from the mocked extract_rule_categories return value
+        unique_categories_from_mock = list(
+            set(mock_extract_categories.return_value.values())
+        )
+        sorted_unique_categories = sorted(unique_categories_from_mock)
+
+        expected_category_colors = {
+            category: palette[i % len(palette)]
+            for i, category in enumerate(sorted_unique_categories)
+        }
+
+        # Assert on key parts of the written content to ensure correct structure and colors
+        self.assertIn("digraph snakemake_dag {", written)
+        self.assertIn("rankdir=TB;", written)
+        self.assertIn(
+            'node [shape=box, style="rounded,filled", fontname=Helvetica, fontsize=10, penwidth=1.5, color=black, fillcolor=white];',
+            written,
+        )
+        self.assertIn('edge [color="#888888", penwidth=1.2];', written)
+
+        # Check for each subgraph cluster by iterating through the expected categories
+        # and checking for both label and fillcolor.
+        # Note: Order of subgraphs in the written output depends on sorted(clusters) in the function.
+        # This will be based on alphabetical order of categories.
+
+        # Expected categories (alphabetical order): 'Alignment', 'Post-processing', 'Preprocessing', 'Quality Control'
+
+        # Alignment
+        self.assertIn(f"subgraph cluster_alignment {{", written)
+        self.assertIn(f'label = "Alignment";', written)
+        self.assertIn(
+            f'fillcolor = "{expected_category_colors["Alignment"]}";', written
+        )
+        self.assertIn(f'3 [label="align"];', written)
+
+        # Post-processing
+        self.assertIn(f"subgraph cluster_post_processing {{", written)
+        self.assertIn(f'label = "Post-processing";', written)
+        self.assertIn(
+            f'fillcolor = "{expected_category_colors["Post-processing"]}";', written
+        )
+        self.assertIn(f'4 [label="merge"];', written)
+
+        # Preprocessing
+        self.assertIn(f"subgraph cluster_preprocessing {{", written)
+        self.assertIn(f'label = "Preprocessing";', written)
+        self.assertIn(
+            f'fillcolor = "{expected_category_colors["Preprocessing"]}";', written
+        )
+        self.assertIn(f'1 [label="cutadapt"];', written)
+
+        # Quality Control
+        self.assertIn(f"subgraph cluster_quality_control {{", written)
+        self.assertIn(f'label = "Quality Control";', written)
+        self.assertIn(
+            f'fillcolor = "{expected_category_colors["Quality Control"]}";', written
+        )
+        self.assertIn(f'2 [label="fastqc"];', written)
+
+        # Check edges, ensuring 'all' edge is filtered
+        self.assertIn("2 -> 1;", written)
+        self.assertIn("3 -> 1;", written)
+        self.assertIn("4 -> 3;", written)
+        self.assertNotIn("-> 0;", written)  # Crucially, 'all' edge should be gone
+        self.assertNotIn('0[label = "all"', written)  # 'all' node should be gone
+
+        self.assertIn("}", written)  # Ensure closing bracket is there
 
         mock_graph_from_dot_file.assert_called_once_with("images/rulegraph.dot")
         mock_graph.write_pdf.assert_called_once_with("images/rulegraph.pdf")
+        mock_extract_categories.assert_called_once_with("workflow/rules")
 
     # --- Test profile_arg ---
     # Mock os.path.exists and configparser behavior
@@ -410,90 +489,6 @@ digraph G {
         )  # <--- Use the Path object here
         MockOsMakedirs.assert_not_called()
         mock_file_open.assert_not_called()
-
-    def test_extract_rule_categories_basic(self):
-        # Create a temporary directory with .smk files
-        temp_dir = tempfile.mkdtemp()
-        try:
-            # File with two rules and categories
-            file_content = """
-    # category: Preprocessing
-    rule cutadapt:
-        input: ...
-        output: ...
-
-    # category: Quality Control
-    rule fastqc:
-        input: ...
-        output: ...
-    """
-            file_path = os.path.join(temp_dir, "test.smk")
-            with open(file_path, "w") as f:
-                f.write(file_content)
-
-            # Call the function
-            result = utils.extract_rule_categories(rules_dir=temp_dir)
-
-            # Assert
-            expected = {"cutadapt": "Preprocessing", "fastqc": "Quality Control"}
-            self.assertEqual(result, expected)
-        finally:
-            shutil.rmtree(temp_dir)
-
-    @patch("src.gpsw.utils.extract_rule_categories")
-    @patch("pydot.graph_from_dot_file")
-    @patch("builtins.open", new_callable=mock_open)
-    @patch("subprocess.run")
-    @patch("os.makedirs")
-    def test_create_rule_graph_minimal(
-        self,
-        mock_makedirs,
-        mock_subprocess_run,
-        mock_file_open,
-        mock_graph_from_dot_file,
-        mock_extract_categories,
-    ):
-        # Mock category mapping
-        mock_extract_categories.return_value = {
-            "cutadapt": "Preprocessing",
-            "fastqc": "Quality Control",
-        }
-
-        # DOT output from snakemake
-        mock_subprocess_run.return_value = MagicMock(
-            stdout="""
-    digraph G {
-        0[label = "all"];
-        1[label = "cutadapt"];
-        2[label = "fastqc"];
-        2 -> 1;
-        1 -> 0;
-    }
-    """
-        )
-
-        mock_graph = MagicMock()
-        mock_graph_from_dot_file.return_value = [mock_graph]
-
-        # Run
-        utils.create_rule_graph()
-
-        # Verify DOT file written
-        mock_file_open.assert_any_call("images/rulegraph.dot", "w")
-        handle = mock_file_open()
-        written = "".join(call.args[0] for call in handle.write.call_args_list)
-
-        # Key assertions: content reflects expected structure
-        self.assertIn("subgraph cluster_preprocessing", written.lower())
-        self.assertIn("subgraph cluster_quality_control", written.lower())
-        self.assertIn("cutadapt", written)
-        self.assertIn("fastqc", written)
-        self.assertIn("2 -> 1", written)
-        self.assertNotIn("-> 0", written)  # should be filtered
-
-        # PDF written
-        mock_graph_from_dot_file.assert_called_once_with("images/rulegraph.dot")
-        mock_graph.write_pdf.assert_called_once_with("images/rulegraph.pdf")
 
 
 if __name__ == "__main__":

@@ -68,10 +68,13 @@ def dry_run(args):
         print("Dry-run completed successfully!")
         sys.exit(0)
     except subprocess.CalledProcessError as e:
-        # If it was run quietly, we need to check the error message
-        # so run dry-run again without --quiet
         if args.quiet:
-            subprocess.run(["snakemake", "-np"])
+            print("\nError during dry-run:", e)
+            print("\nOriginal quiet run stderr:")
+            if e.stderr:
+                print(e.stderr)
+            print("\nAttempting re-run without --quiet for full error details:")
+            subprocess.run(["snakemake", "-np"], check=False)
         sys.exit(1)
 
 
