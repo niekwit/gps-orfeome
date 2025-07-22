@@ -161,7 +161,7 @@ def run_workflow(args):
             ["snakemake", "--report", "report.html", "--quiet", "all"], check=True
         )
     except subprocess.CalledProcessError as e:
-        print(f"Error creating report: {e}")
+        subprocess.run(["snakemake", "--report", "report.html"], check=True)
         sys.exit(1)
     print("Report (report.html) created successfully!")
 

@@ -62,7 +62,9 @@ def dry_run(args):
 
     # Run command and check for errors
     try:
-        subprocess.run(command, check=True)
+        subprocess.run(
+            command, check=True, capture_output=args.quiet, text=True
+        )
         print("Dry-run completed successfully!")
         sys.exit(0)
     except subprocess.CalledProcessError as e:
@@ -131,12 +133,18 @@ def create_rule_graph():
     rule_categories = extract_rule_categories("workflow/rules")
 
     # Run Snakemake and get DOT
-    result = subprocess.run(
-        ["snakemake", "--quiet", "all", "--forceall", "--rulegraph"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
+    try:
+        result = subprocess.run(
+            ["snakemake", "--quiet", "all", "--forceall", "--rulegraph"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        subprocess.run(
+            ["snakemake", "--forceall", "--rulegraph"],
+        )
+        sys.exit(1)
 
     # Filter out rule all
     lines = [
