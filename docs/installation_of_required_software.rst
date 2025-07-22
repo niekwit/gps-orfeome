@@ -37,15 +37,36 @@ The easiest wasy to install `GPSW` is via Conda, which will handle all dependenc
 Installation of development version
 --------------------------------------------------------------------------------
 
-First, create a Conda env with the dependencies:
+First, create a yaml file with the environment configuration, e.g. `gpsw.yaml`:
+
+.. code-block:: yaml
+   :substitutions:
+
+   name: gpsw
+   channels:
+      - conda-forge
+      - bioconda
+      - defaults
+   dependencies: 
+      - python=3.12
+      - pygithub=2.6.1
+      - pydot=3.0.4
+      - apptainer=1.4.0
+      - snakemake-minimal=|snakemake_version|
+      - numpy=2.2.6
+      - pandas=2.2.3
+      - pygments
+      - conda=24.7.1
+
+Then, create the environment using the yaml:
 
 .. code-block:: shell
    :substitutions:
 
-   $ conda create -n gpsw snakemake=|snakemake_version| apptainer=1.4.0 pandas=2.2.3 pygments=2.19.1 conda=24.7.1
+   $ conda env create -f gpsw.yaml
 
 .. important::
-   If you want to use Apptainer, it is essential to install Snakemake |snakemake_version|, as later versions might not work with the pre-build image.
+   If you want to use Apptainer, it is essential to install Snakemake |snakemake_version|, as other versions might not work with the pre-build image.
 
 To install `GPSW`:
 
