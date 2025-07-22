@@ -1,4 +1,4 @@
-""" 
+"""
 Rename all instances of sgRNA/gene to barcode/orf in all relevant files
 """
 

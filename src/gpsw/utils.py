@@ -62,9 +62,7 @@ def dry_run(args):
 
     # Run command and check for errors
     try:
-        subprocess.run(
-            command, check=True, capture_output=args.quiet, text=True
-        )
+        subprocess.run(command, check=True, capture_output=args.quiet, text=True)
         print("Dry-run completed successfully!")
         sys.exit(0)
     except subprocess.CalledProcessError as e:
