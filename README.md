@@ -23,3 +23,7 @@ It can deal with two types of experiments:
 # Documentation
 
 Documentation is available [here](https://gps-orfeome.readthedocs.io/).
+
+# Post-analysis scripts
+
+We are also developing post-analysis scripts to further analyse the output of `GPSW` or to prepare publication quality figures. These scripts are available in a separate repository: [gps-orfeome-tools](https://github.com/niekwit/gps-orfeome-tools).
