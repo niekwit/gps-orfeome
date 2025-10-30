@@ -1,5 +1,5 @@
 name: stats
-channels: 
+channels:
   - conda-forge
   - bioconda
   - defaults
@@ -17,3 +17,4 @@ dependencies:
   - bioconda::bowtie2=2.5.4
   - conda-forge::r-rcolorbrewer
   - conda-forge::r-pheatmap
+  - conda-forge::bash=5.2.37
