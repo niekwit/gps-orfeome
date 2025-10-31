@@ -20,6 +20,12 @@ It can deal with two types of experiments:
 
 2. **Pairwise comparison** of ORF counts between two conditions using MAGeCK/DrugZ 
 
+# Citation
+
+If you find this software helpful and use it in your publication, please cite it as follows:
+
+Wit, N. GPSW [Computer software]. https://doi.org/10.5281/zenodo.15473715
+
 # Documentation
 
 Documentation is available [here](https://gps-orfeome.readthedocs.io/).
