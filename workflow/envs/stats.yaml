@@ -18,3 +18,4 @@ dependencies:
   - conda-forge::r-rcolorbrewer
   - conda-forge::r-pheatmap
   - conda-forge::bash=5.2.37
+  - conda-forge::gzip=1.14
