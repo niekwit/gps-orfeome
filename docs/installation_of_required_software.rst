@@ -51,12 +51,17 @@ First, create a yaml file with the environment configuration, e.g. `gpsw.yaml`:
       - python=3.12
       - pygithub=2.6.1
       - pydot=3.0.4
-      - apptainer=1.4.0
+      - apptainer=1.4.0 # [linux]
       - snakemake-minimal=|snakemake_version|
       - numpy=2.2.6
       - pandas=2.2.3
       - pygments
       - conda=24.7.1
+
+
+.. note::
+   `Apptainer` will not be installed on non-Linux systems, as it is not available for MacOS.
+
 
 Then, create the environment using the yaml:
 
