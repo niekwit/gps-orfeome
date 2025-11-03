@@ -11,7 +11,7 @@ To set up a profile for custom `Snakemake` command line arguments, create a new 
    rerun-incomplete: True
    printshellcmds: True
    show-failed-logs: True
-   use-apptainer: True
+   use-apptainer: True # Set to False on MacOS or if you do not want to use Apptainer
 
 It is recommend to set both ``use-conda`` and ``use-apptainer`` to True, as this will ensure that the workflow runs in a reproducible environment.
 
