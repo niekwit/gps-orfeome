@@ -13,12 +13,13 @@
 
 # Description
 
-`GPSW` is a tool for analysing Global Protein Stability Profiling data.
+`GPSW` is a tool for analysing Global Protein Stability profiling data.
 
-It can deal with two types of experiments:
-1. **Protein stability profiling** using Protein Stability Index (PSI) as a metric, which is calculated from the proportion of reads across multiple bins. Publications that include this type of data are [Koren et al. Cell 2018](https://pubmed.ncbi.nlm.nih.gov/29779948/) and [Timms et al. Science 2019](https://pubmed.ncbi.nlm.nih.gov/31273098/).
 
-2. **Pairwise comparison** of ORF counts between two conditions using MAGeCK/DrugZ 
+# Documentation
+
+Extensive documentation is available [here](https://gps-orfeome.readthedocs.io/).
+
 
 # Citation
 
@@ -26,9 +27,6 @@ If you find this software helpful and use it in your publication, please cite it
 
 Wit, N. GPSW [Computer software]. https://doi.org/10.5281/zenodo.15473715
 
-# Documentation
-
-Documentation is available [here](https://gps-orfeome.readthedocs.io/).
 
 # Post-analysis scripts
 

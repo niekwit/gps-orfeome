@@ -19,12 +19,6 @@ Description
 
 :mod:`GPSW` is a Python package for analysing Global Protein Stability Profiling data as described in `Koren et al. Cell 2018 <https://pubmed.ncbi.nlm.nih.gov/29779948/>`_ and `Timms et al. Science 2019 <https://pubmed.ncbi.nlm.nih.gov/31273098/>`_. It employs the `Snakemake <https://snakemake.readthedocs.io/>`_ workflow management system to provide a reproducible and scalable analysis workflow.
 
-It can deal with two types of experiments:
-
-1. **Protein stability profiling** using Protein Stability Index (PSI) as a metric, which is calculated from the proportion of reads across multiple bins.
-
-2. **Pairwise comparison** of ORF counts between two conditions (or populations) using MAGeCK/DrugZ.
-
 
 .. grid:: 1 2 2 2
    :gutter: 4
