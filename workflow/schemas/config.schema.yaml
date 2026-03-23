@@ -13,7 +13,7 @@ properties:
       treatment:
         description: Treatment condition
         type: array
-  
+
   bin_number:
     description: Number of bins used for FACS
     type: integer
@@ -34,7 +34,10 @@ properties:
         type: integer
       l:
         description: Shorten reads to a specific length
-        type: integer
+        oneOf:
+          - type: integer
+          - type: string
+            maxLength: 0
       extra:
         description: Extra arguments for cutadapt
         type: string
@@ -104,7 +107,7 @@ properties:
       - extra_mageck_arguments
       - mageck_control_barcodes
       - fdr
-  
+
   drugz:
     description: DrugZ settings
     type: object
@@ -188,7 +191,7 @@ properties:
       - penalty_factor
       - bc_threshold
 
-required: 
+required:
   - bin_number
   - cutadapt
   - csv
