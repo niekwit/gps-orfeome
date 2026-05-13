@@ -491,7 +491,7 @@ The `psi_plots` directory contains the following subdirectories for each combina
 
 .. note::
 
-   Proteins whose :math:`|\Delta\Psi_i|` is smaller than the mean :math:`|\Delta\Psi_i|` are omitted from the plots to avoid visual clutter around the origin.
+   Proteins whose :math:`|dPSI_i|` is smaller than the mean :math:`|dPSI_i|` are omitted from the plots to avoid visual clutter around the origin.
 
 - `Test_vs_Control_psi_histogram.pdf`: a PDF file with a histogram of the :math:`\Psi_i` values for all genes.
 
@@ -500,14 +500,14 @@ The `psi_plots` directory contains the following subdirectories for each combina
 
      Histogram of PSI values.
 
-- `Test_vs_Control_dpsi_histogram.pdf`: a PDF file with a histogram of the :math:`\Delta\Psi_i` values for all genes.
+- `Test_vs_Control_dpsi_histogram.pdf`: a PDF file with a histogram of the :math:`dPSI_i` values for all genes.
 
   .. figure:: images/dpsi_histogram.png
      :alt: Histogram of delta PSI values
 
      Histogram of delta PSI values.
 
-- `Test_vs_Control_dpsi_sd_histogram.pdf`: a PDF file with a histogram of the :math:`\Delta\Psi_i` SD values for all genes.
+- `Test_vs_Control_dpsi_sd_histogram.pdf`: a PDF file with a histogram of the :math:`dPSI_i` SD values for all genes.
 
   .. figure:: images/sd_histogram.png
      :alt: Histogram of delta PSI SD values
@@ -640,15 +640,15 @@ The `qc/pca_plot.pdf` file contains a PCA plot of the ORF counts for all conditi
 
    PCA plot of the ORF counts for all conditions.
 
-Heatmap of :math:`\Delta\Psi_i` values of all comparisons
+Heatmap of :math:`dPSI_i` values of all comparisons
 ---------------------------------------------------------------------------------
 
-The `psi_plots` directory contains pdf/csv files with the heatmap data of :math:`\Delta\Psi_i` values for each ORF found as hits in any of the comparisons.
+The `psi_plots` directory contains pdf/csv files with the heatmap data of :math:`dPSI_i` values for each ORF found as hits in any of the comparisons.
 
 .. figure:: images/heatmap.png
    :alt: Heatmap of DeltaPSI values
 
-   Heatmap of :math:`\Delta\Psi_i` values for all comparisons.
+   Heatmap of :math:`dPSI_i` values for all comparisons.
 
 .. note::
-  As the clustering algorithm does not allow missing data (some genes are not found in all comparisons), missing data is replaced with :math:`\Delta\Psi_i = 0`.
+  As the clustering algorithm does not allow missing data (some genes are not found in all comparisons), missing data is replaced with :math:`dPSI_i = 0`.

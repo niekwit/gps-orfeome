@@ -1,7 +1,7 @@
 Workflow settings
 ================================================================================
 
-Workflow setting are in `config.yaml`:
+Workflow setting are in `config.yml`:
 
 .. dropdown:: Configuration file
   :icon: info
@@ -116,7 +116,7 @@ Workflow setting are in `config.yaml`:
 
 Sample names
 --------------------------------------------------------------------------------
-The `conditions` section defines the conditions in the experiment. The sample files should be placed in the `reads/` directory and should follow the naming convention ``<condition>_<bin_number>.fastq.gz``, where ``<condition>`` is one of the conditions defined in the `config.yaml` file (e.g. `Test_1.fastq.gz`, `Control_1.fastq.gz`, etc.).
+The `conditions` section defines the conditions in the experiment. The sample files should be placed in the `reads/` directory and should follow the naming convention ``<condition>_<bin_number>.fastq.gz``, where ``<condition>`` is one of the conditions defined in the `config.yml` file (e.g. `Test_1.fastq.gz`, `Control_1.fastq.gz`, etc.).
 
 .. code-block:: yaml
 
@@ -124,7 +124,7 @@ The `conditions` section defines the conditions in the experiment. The sample fi
      test: [Test]
      control: [Control]
 
-`GPSW` calculates :math:`\Delta\Psi_i` values by pairing corresponding test and control conditions. For instance, if you define tests as `[Test1, Test2]` and controls as `[Control1, Control2]`, `GPSW` will compare Test1 with Control1 and Test2 with Control2. It is essential that all samples share the same ``bin_number``.
+`GPSW` calculates :math:`dPSI` values by pairing corresponding test and control conditions. For instance, if you define tests as `[Test1, Test2]` and controls as `[Control1, Control2]`, `GPSW` will compare Test1 with Control1 and Test2 with Control2. It is essential that all samples share the same ``bin_number``.
 
 Bin number
 --------------------------------------------------------------------------------
@@ -207,7 +207,7 @@ Provide a CSV file with the ORF library information in `resources/` directory. T
      - IOH10004
      - RAB22A
 
-In `config/config.yaml` set the columns for this info as follows:
+In `config/config.yml` set the columns for this info as follows:
 
 .. code-block:: yaml
 
@@ -249,7 +249,7 @@ When `bin_number` is set to 1, the workflow runs MAGeCK/DrugZ. The `mageck` sect
 PSI settings
 --------------------------------------------------------------------------------
 
-The variables that control the PSI analysis are defined in the `psi` section of the `config.yaml` file. The PSI analysis is performed when ``bin_number`` is greater than 1, and it calculates the Protein Stability Index (PSI) for each ORF based on the proportion of reads across multiple bins.
+The variables that control the PSI analysis are defined in the `psi` section of the `config.yml` file. The PSI analysis is performed when ``bin_number`` is greater than 1, and it calculates the Protein Stability Index (PSI) for each ORF based on the proportion of reads across multiple bins.
 
 The values between square brackets (e.g. `[0.75, 1.0, 1.25]`) indicate that the workflow will run the analysis for each value in the list, allowing for multiple thresholds to be applied in the analysis. The results will be saved in separate files for each threshold.
 
@@ -289,7 +289,9 @@ More on the PSI analysis can be found in the :ref:`background` section.
 ``bin_number``
 ~~~~~~~~~~~~~~~
 
-When `bin_number` is greater than 1, the workflow performs a protein stability analysis using PSI as a metric. The `psi` section defines the settings for the PSI analysis. 
+When ``bin_number`` is set to 1, the workflow performs a pairwise comparison of ORF counts between the test and control conditions using MAGeCK and/or DrugZ (see :ref:`screen`). The ``psi`` section settings are ignored in this mode.
+
+When ``bin_number`` is greater than 1, the workflow performs a protein stability analysis using PSI as a metric. The ``psi`` section defines the settings for the PSI analysis.
 
 ``sob_threshold``
 ~~~~~~~~~~~~~~~~~~
@@ -299,7 +301,7 @@ The ``sob_threshold`` is the minimum value of the sum of barcode counts across a
 ``hit_threshold``
 ~~~~~~~~~~~~~~~~~~
 
-The ``hit_threshold`` defines the :math:`\Delta\Psi_i` thresholds value for calling a hits. For example, if the `hit_threshold` is set to 0.75, then an ORF will be considered a hit if its :math:`\Delta\Psi_i` value is greater than 0.75.
+The ``hit_threshold`` defines the :math:`dPSI_i` thresholds value for calling a hits. For example, if the `hit_threshold` is set to 0.75, then an ORF will be considered a hit if its :math:`dPSI_i` value is greater than 0.75.
 
 
 ``proportion_threshold``
@@ -310,7 +312,7 @@ The ``proportion_threshold`` is used in the twin peaks analysis. It defines the 
 .. _good_barcodes:
 
 .. note::
-   Good barcodes are defined as those which do not have a twin peak in the distribution of their counts across bins. Barcodes with twin peaks are defined as having two peaks that are at least two bins apart (:math:`\Delta Bin > 1`) and the second peak has to be a minimum proportion of the highest peak. This proportion is defined by the user in the config.yaml file (``proportion_threshold``). See the example below for a visual representation of this. Not all twin peaks are marked in this example.
+   Good barcodes are defined as those which do not have a twin peak in the distribution of their counts across bins. Barcodes with twin peaks are defined as having two peaks that are at least two bins apart (:math:`\Delta Bin > 1`) and the second peak has to be a minimum proportion of the highest peak. This proportion is defined by the user in the config.yml file (``proportion_threshold``). See the example below for a visual representation of this. Not all twin peaks are marked in this example.
 
    .. figure:: images/twin_peak_example.png
       :alt: Twin peaks example
@@ -339,7 +341,7 @@ Where:
 - :math:`z` is the z-score.
 - :math:`n` is the number of `good barcodes`.
 - :math:`m` is the median of `good barcodes` of all ORFs.
-- :math:`p` is a user-defined penalty factor (``penalty_factor`` in `config.yaml`).
+- :math:`p` is a user-defined penalty factor (``penalty_factor`` in `config.yml`).
 
 This correction applies a mild penalty to the z-score of ORFs with fewer good barcodes, which helps to account for the reduced reliability of the PSI analysis in those cases. The recommended value for ``penalty_factor`` is 4, but it can be adjusted based on the specific requirements of the analysis (a lower value gives a higher penalty).
 
@@ -353,7 +355,7 @@ The ``bc_threshold`` is the minimum number of 'good' barcodes required to keep a
 ``heatmap``
 ~~~~~~~~~~~~~~~~~
 
-When multiple conditions are present, the workflow generates a heatmap of :math:`\Delta\Psi_i` values for each ORF found as hits in either test conditions. The `heatmap` section defines the settings for the heatmap generation.
+When multiple conditions are present, the workflow generates a heatmap of :math:`dPSI_i` values for each ORF found as hits in either test conditions. The `heatmap` section defines the settings for the heatmap generation.
 
 .. code-block:: yaml
 

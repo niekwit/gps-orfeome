@@ -20,7 +20,7 @@ To quantify the stability of each individual ORF in the experiment, the protein 
 
 .. math::
 
-   \Psi=\sum_{i=1}^nR_i \times i
+   PSI=\sum_{i=1}^nR_i \times i
 
 where:
 
@@ -33,11 +33,32 @@ Between two experimental conditions (e.g., a test condition and a control condit
 
 .. math::
 
-   \Delta\Psi = \Psi_{test} - \Psi_{control}
+   dPSI = PSI_{test} - PSI_{control}
 
-Negative :math:`\Delta\Psi` values indicate that the ORF is less stable in the test condition compared to the control, while positive values indicate greater stability in the test condition.
+Negative :math:`dPSI_i` values indicate that the ORF is less stable in the test condition compared to the control, while positive values indicate greater stability in the test condition.
 
-:math:`\Delta\Psi` values are generated for each barcode of an individual ORF, after which the mean is calculated, :math:`\Delta\Psi_i`.
+dPSI values are generated for each barcode of an individual ORF, after which the mean is calculated, :math:`dPSI_i`.
 
-In the :ref:`next section <zscore>`, we will discuss how :math:`\Delta\Psi_i` values are converted to robust z-scores, which standardize the data and allow for meaningful comparisons across different datasets.
+In the :ref:`next section <zscore>`, we will discuss how :math:`dPSI_i` values are converted to robust z-scores, which standardise the data and allow for meaningful comparisons across different datasets.
+
+.. _screen:
+
+Single-bin screen analysis (``bin_number: 1``)
+==================================================
+
+When cells are not sorted into multiple bins — for example in a straightforward positive or negative selection screen — set ``bin_number: 1`` in ``config/config.yml``. In this mode the workflow skips the PSI analysis entirely and instead performs a pairwise comparison of ORF counts between the test and control conditions.
+
+The count table is built with one column per sample (no bin dimension), and either or both of the following tools can be used for statistical analysis:
+
+**MAGeCK**
+
+`MAGeCK <https://sourceforge.net/p/mageck/wiki/Home/>`_ (*Model-based Analysis of Genome-wide CRISPR Knockout*) uses a negative binomial model to rank ORFs by their degree of enrichment or depletion between conditions. It produces a gene-level summary (``gene_summary.txt``) and a barcode-level summary (``barcode_summary.txt``), together with log-fold-change (LFC) plots and a barcode rank plot. Enable it by setting ``mageck: run: True`` in the config.
+
+**DrugZ**
+
+`DrugZ <https://github.com/hart-lab/drugz>`_ is a complementary method that converts per-barcode fold changes into normally distributed z-scores and then aggregates them to a gene-level *drugZ score*. Enable it by setting ``drugz: run: True`` in the config.
+
+Both tools can be run simultaneously; their outputs are written to ``results/mageck/`` and ``results/drugz/``, respectively.
+
+The remainder of this documentation focuses on the analysis of multi-bin GPS profiling screens, which is the default mode of the workflow.
 

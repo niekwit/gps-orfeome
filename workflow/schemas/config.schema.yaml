@@ -10,8 +10,8 @@ properties:
       control:
         description: Control condition
         type: array
-      treatment:
-        description: Treatment condition
+      test:
+        description: Test condition
         type: array
 
   bin_number:
@@ -74,11 +74,26 @@ properties:
       - barcode_id_column
       - sequence_column
 
-  mismatch:
-    description: Mismatches allowed during alignment
-    type: integer
-    minimum: 0
-    default: 0
+  orfeome_name:
+    description: Name of the ORFeome library
+    type: string
+
+  bowtie2:
+    description: Bowtie2 alignment settings
+    type: object
+    properties:
+      mismatch:
+        description: Mismatches allowed during alignment
+        type: integer
+        minimum: 0
+        default: 0
+      extra:
+        description: Extra arguments for bowtie2
+        type: string
+        default: ""
+    required:
+      - mismatch
+      - extra
 
   mageck:
     description: MAGeCK settings
@@ -192,10 +207,11 @@ properties:
       - bc_threshold
 
 required:
+  - orfeome_name
   - bin_number
   - cutadapt
   - csv
-  - mismatch
+  - bowtie2
   - mageck
   - drugz
   - psi
