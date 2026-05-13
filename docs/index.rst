@@ -132,7 +132,7 @@ To download the workflow code:
 
    $ gpsw fetch
 
-Configure your analysis in `config/config.yaml`, place your sequencing data in `reads`, and provide ORF metadata in a csv file in `resources`. Then run the workflow with:
+Configure your analysis in `config/config.yml`, place your sequencing data in `reads`, and provide ORF metadata in a csv file in `resources`. Then run the workflow with:
 
 
 ::

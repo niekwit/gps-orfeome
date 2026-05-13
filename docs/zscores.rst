@@ -14,13 +14,13 @@ Initial z-score derivation
 The raw robust z-score is calculated as follows:
 
 .. math::
-   z_{raw} = \frac{\Delta\Psi_i - \text{median}(\Delta\Psi_j)}{k \times \text{median}(|\Delta\Psi_j - \text{median}(\Delta\Psi_j)|)}
+   z_{raw} = \frac{dPSI_i - \text{median}(dPSI_j)}{k \times \text{median}(|dPSI_j - \text{median}(dPSI_j)|)}
 
 
 Where:
 
-- :math:`\Delta\Psi_i` represents a single :math:`\Delta\Psi` value for a given ORF :math:`i`.
-- :math:`\Delta\Psi_j` represents :math:`\Delta\Psi` values for all ORFs.
+- :math:`dPSI_i` represents a single :math:`dPSI` value for a given ORF :math:`i`.
+- :math:`dPSI_j` represents :math:`dPSI` values for all ORFs.
 - :math:`k` is a standard scaling constant (:math:`1.4826`). It is approximately :math:`1/(\Phi^{-1}(3/4))`, where :math:`\Phi^{-1}` is the inverse of the cumulative distribution function for a standard normal distribution. 
 
 z-score corrections
@@ -30,7 +30,7 @@ We next apply several corrections to the z-scores to account for specific charac
 
 1. Correction for low number of `good barcodes`: ORFs with a low number of `good barcodes` (see :ref:`here <good_barcodes>` for definition) are corrected to avoid skewing the z-score.
 2. Intra-ORF variability.
-3. Low :math:`\Delta\Psi_i` values
+3. Low :math:`dPSI_i` values
 
 Good barcodes correction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -50,7 +50,7 @@ Where:
 - :math:`z_{raw}` is the uncorrected z-score.
 - :math:`n` is the number of `good barcodes`.
 - :math:`m` is the median of `good barcodes` of all ORFs.
-- :math:`p` is a user-defined penalty factor (`penalty_factor` in `config.yaml`).
+- :math:`p` is a user-defined penalty factor (`penalty_factor` in `config.yml`).
 
 
 Intra-ORF variability correction
@@ -70,21 +70,21 @@ Where:
 The use of :math:`\sigma_{floor}` prevents artificial inflation from very low variability.
 
 
-Low :math:`\Delta\Psi_i` values correction
+Low :math:`dPSI` values correction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Some ORFs may have a high z-score but a low :math:`\Delta\Psi_i` value. This can occur if there is very low intra ORF variability, leading to a high z-score despite a low :math:`\Delta\Psi_i`, which can skew the results. To address this, we apply a correction based on the absolute value of :math:`\Delta\Psi_i` and a user-defined threshold for calling a hit:
+Some ORFs may have a high z-score but a low :math:`dPSI_i` value. This can occur if there is very low intra ORF variability, leading to a high z-score despite a low :math:`dPSI_i`, which can skew the results. To address this, we apply a correction based on the absolute value of :math:`dPSI_i` and a user-defined threshold for calling a hit:
 
 .. math::
 
-   z_{final} = z_{variability\_corrected} \times \frac{|\Delta\Psi_i|}{h}  
+   z_{final} = z_{variability\_corrected} \times \frac{|dPSI_i|}{h}  
 
 Where:
 
-- :math:`|\Delta\Psi_i|` is the absolute value of :math:`\Delta\Psi` for the individual ORF.
-- :math:`h` is a user-defined, absolute, :math:`\Delta\Psi` threshold for calling a hit (defined in `config.yaml`).
+- :math:`|dPSI_i|` is the absolute value of :math:`dPSI` for the individual ORF.
+- :math:`h` is a user-defined, absolute, :math:`dPSI` threshold for calling a hit (defined in `config.yml`).
 
-Applying this correction ensures that ORFs with very low :math:`\Delta\Psi_i` values are penalised, preventing them from having a disproportionately high z-score.
+Applying this correction ensures that ORFs with very low :math:`dPSI_i` values are penalised, preventing them from having a disproportionately high z-score.
 
 
 z-score scaling

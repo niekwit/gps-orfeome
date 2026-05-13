@@ -15,7 +15,7 @@ Download workflow code as follows:
 Configuring GPSW
 --------------------------------------------------------------------------------
 
-To configure GPSW, edit the `config/config.yaml` file. This file contains various parameters that control the workflow's behavior, as explained in the :doc:`workflow settings <workflow_settings>` section
+To configure GPSW, edit the `config/config.yml` file. This file contains various parameters that control the workflow's behavior, as explained in the :doc:`workflow settings <workflow_settings>` section
 
 
 Running the workflow
