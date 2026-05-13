@@ -35,7 +35,7 @@ Between two experimental conditions (e.g., a test condition and a control condit
 
    dPSI = PSI_{test} - PSI_{control}
 
-Negative :dPSI values indicate that the ORF is less stable in the test condition compared to the control, while positive values indicate greater stability in the test condition.
+Negative :math:`dPSI_i` values indicate that the ORF is less stable in the test condition compared to the control, while positive values indicate greater stability in the test condition.
 
 dPSI values are generated for each barcode of an individual ORF, after which the mean is calculated, :math:`dPSI_i`.
 
