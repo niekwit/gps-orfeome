@@ -298,9 +298,11 @@ logging.info("Correcting z-scores for number of barcodes")
 # Correct for number of barcodes, but only if good barcode number is less than median
 median = df["good_barcodes"].median()
 logging.info(f"  Median number of good barcodes: {median}")
+with np.errstate(invalid="ignore"):
+    correction = np.sqrt(1 + ((median - df["good_barcodes"]) / penalty_factor))
 df["z_score_corr"] = df["z_score"] / np.where(
     df["good_barcodes"] < median,
-    (np.sqrt(1 + ((median - df["good_barcodes"]) / penalty_factor))),
+    correction,
     1,  # No correction applied if good_barcodes >= median
 )
 
@@ -310,7 +312,6 @@ logging.info("Correcting z-scores for intra ORF variability")
 # This avoids inflation of z-scores when delta_PSI_SD is very low
 sd_floor = hit_th * 0.15
 df["z_score_corr"] = df["z_score_corr"] / df["delta_PSI_SD"].clip(lower=sd_floor)
-# df["z_score_corr"] = df["z_score_corr"] / np.sqrt(df["delta_PSI_SD"] ** 2 + sd_floor ** 2)
 
 logging.info("Correcting z-scores for deltaPSI")
 # Multiply z-scores by absolute delta_PSI value
@@ -360,7 +361,8 @@ df = df.drop(columns=[scaled_col])
 # Log2 transform z-scores, while preserving sign
 # Highest/lowest value is -2/2 so log2 is safe when taking absolute value
 # This transformation is done to make it easier to plot
-df["z_score_corr"] = np.log2(abs(df["z_score_corr"])) * np.sign(df["z_score_corr"])
+with np.errstate(divide="ignore"):
+    df["z_score_corr"] = np.log2(abs(df["z_score_corr"])) * np.sign(df["z_score_corr"])
 
 # Convert normalised counts to proportions of reads in bins
 # Do this in new df that will contain barcode-level results
