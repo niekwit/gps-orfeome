@@ -124,7 +124,7 @@ The `conditions` section defines the conditions in the experiment. The sample fi
      test: [Test]
      control: [Control]
 
-`GPSW` calculates :math:`\Delta\Psi_i` values by pairing corresponding test and control conditions. For instance, if you define tests as `[Test1, Test2]` and controls as `[Control1, Control2]`, `GPSW` will compare Test1 with Control1 and Test2 with Control2. It is essential that all samples share the same ``bin_number``.
+`GPSW` calculates :math:`dPSI` values by pairing corresponding test and control conditions. For instance, if you define tests as `[Test1, Test2]` and controls as `[Control1, Control2]`, `GPSW` will compare Test1 with Control1 and Test2 with Control2. It is essential that all samples share the same ``bin_number``.
 
 Bin number
 --------------------------------------------------------------------------------
@@ -289,7 +289,9 @@ More on the PSI analysis can be found in the :ref:`background` section.
 ``bin_number``
 ~~~~~~~~~~~~~~~
 
-When `bin_number` is greater than 1, the workflow performs a protein stability analysis using PSI as a metric. The `psi` section defines the settings for the PSI analysis. 
+When ``bin_number`` is set to 1, the workflow performs a pairwise comparison of ORF counts between the test and control conditions using MAGeCK and/or DrugZ (see :ref:`screen`). The ``psi`` section settings are ignored in this mode.
+
+When ``bin_number`` is greater than 1, the workflow performs a protein stability analysis using PSI as a metric. The ``psi`` section defines the settings for the PSI analysis.
 
 ``sob_threshold``
 ~~~~~~~~~~~~~~~~~~
@@ -299,7 +301,7 @@ The ``sob_threshold`` is the minimum value of the sum of barcode counts across a
 ``hit_threshold``
 ~~~~~~~~~~~~~~~~~~
 
-The ``hit_threshold`` defines the :math:`\Delta\Psi_i` thresholds value for calling a hits. For example, if the `hit_threshold` is set to 0.75, then an ORF will be considered a hit if its :math:`\Delta\Psi_i` value is greater than 0.75.
+The ``hit_threshold`` defines the :math:`dPSI_i` thresholds value for calling a hits. For example, if the `hit_threshold` is set to 0.75, then an ORF will be considered a hit if its :math:`dPSI_i` value is greater than 0.75.
 
 
 ``proportion_threshold``
@@ -353,7 +355,7 @@ The ``bc_threshold`` is the minimum number of 'good' barcodes required to keep a
 ``heatmap``
 ~~~~~~~~~~~~~~~~~
 
-When multiple conditions are present, the workflow generates a heatmap of :math:`\Delta\Psi_i` values for each ORF found as hits in either test conditions. The `heatmap` section defines the settings for the heatmap generation.
+When multiple conditions are present, the workflow generates a heatmap of :math:`dPSI_i` values for each ORF found as hits in either test conditions. The `heatmap` section defines the settings for the heatmap generation.
 
 .. code-block:: yaml
 

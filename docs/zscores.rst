@@ -56,7 +56,7 @@ Where:
 Intra-ORF variability correction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For each ORF, the :math:`\Delta\Psi` values are calculated for each individual good barcode. The intra-ORF variability is then assessed by calculating the standard deviation (:math:`\sigma`) of these :math:`\Delta\Psi` values. This standard deviation is then used to correct the z-score for intra-ORF variability:
+For each ORF, the :math:`dPSI` values are calculated for each individual good barcode. The intra-ORF variability is then assessed by calculating the standard deviation (:math:`\sigma`) of these :math:`dPSI` values. This standard deviation is then used to correct the z-score for intra-ORF variability:
 
 .. math::
 
@@ -64,8 +64,8 @@ For each ORF, the :math:`\Delta\Psi` values are calculated for each individual g
 
 Where:
 
-- :math:`\sigma_{i}` is the standard deviation of :math:`\Delta\Psi` values for an individual ORF.
-- :math:`\sigma_{floor}` is a minimum standard deviation floor, calculated as :math:`h \times 0.15` (where :math:`h` is the :math:`\Delta\Psi` hit threshold).
+- :math:`\sigma_{i}` is the standard deviation of :math:`dPSI` values for an individual ORF.
+- :math:`\sigma_{floor}` is a minimum standard deviation floor, calculated as :math:`h \times 0.15` (where :math:`h` is the :math:`dPSI` hit threshold).
 
 The use of :math:`\sigma_{floor}` prevents artificial inflation from very low variability.
 
