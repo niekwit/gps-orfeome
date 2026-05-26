@@ -5,8 +5,8 @@ sink(log, type = "message")
 
 
 library(tidyverse)
-library(cowplot)
 library(ggrepel)
+source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 
 # Load Snakemake variables
 counts <- snakemake@input[["counts"]]
@@ -74,7 +74,7 @@ colours <- c(
 )
 p <- ggplot(df, aes(x = PC1, y = PC2, color = Sample)) +
   geom_point(size = 7) +
-  theme_cowplot(16) +
+  theme_gpsw() +
   labs(
     title = "PCA of barcode profiles",
     x = paste0(

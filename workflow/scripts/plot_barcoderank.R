@@ -7,6 +7,7 @@ sink(log, type = "message")
 
 # Load required libraries
 library(tidyverse)
+source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 
 # Load data
 data <- read.delim(snakemake@input[[1]])
@@ -90,7 +91,7 @@ p <- ggplot() +
     expand = c(0, 0)
   ) +
   labs(x = "Log2(Fold change)", y = NULL) +
-  theme_bw(base_size = 14) +
+  theme_gpsw() +
   theme(legend.position = "none") +
   theme(
     panel.grid.major = element_blank(),

@@ -7,9 +7,10 @@ print(Sys.time())
 
 library(tidyverse)
 library(reshape2)
-library(cowplot)
 library(doParallel)
 library(foreach)
+source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
+theme_path <- file.path(snakemake@scriptdir, "theme_gpsw.R")
 
 #options(error = utils::dump.frames(dumpto="last.dump.rda"))
 
@@ -83,6 +84,7 @@ for (column in columns) {
     .packages = c("tidyverse", "reshape2", "cowplot", "scales")
   ) %dopar%
     {
+      source(theme_path)
       df <- tmp[tmp$gene.id == id, ]
       deltaPSI.mean <- round(unique(df$delta_PSI_mean), 2)
       deltaPSI.sd <- round(unique(df$delta_PSI_SD), 2)
@@ -121,7 +123,7 @@ for (column in columns) {
           geom_point(size = 4) +
           geom_line(linewidth = 1) +
           labs(title = id, y = "Proportion of reads", x = "Bin") +
-          theme_cowplot(18) +
+          theme_gpsw() +
           scale_colour_manual(values = c(red.colours, grey.colours)) +
           theme(plot.title = element_text(hjust = 0.5))
       } else {
@@ -139,7 +141,7 @@ for (column in columns) {
           geom_point(size = 6) +
           geom_line(linewidth = 1) +
           labs(title = id, y = "Proportion of reads", x = "Bin") +
-          theme_cowplot(18) +
+          theme_gpsw() +
           scale_colour_manual(values = c(red.colours, grey.colours)) +
           scale_alpha_manual(values = c(1, 0.1)) +
           scale_shape_manual(values = c(16, 15)) +

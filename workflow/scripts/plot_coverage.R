@@ -4,7 +4,7 @@ sink(log, type = "output")
 sink(log, type = "message")
 
 library(tidyverse)
-library(cowplot)
+source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 
 fasta <- snakemake@input[["fasta"]]
 bin.number <- snakemake@params[["bin_number"]]
@@ -40,8 +40,8 @@ for (n in seq(names(data))) {
 
 # Plot sequence coverage and save
 p <- ggplot(df, aes(x = sample, y = coverage)) +
-  geom_bar(stat = "identity", fill = "#419179", colour = "black") +
-  theme_cowplot(16) +
+  geom_bar_gpsw() +
+  theme_gpsw() +
   scale_x_discrete(guide = guide_axis(angle = 45)) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
   ylab("Fold sequence coverage") +

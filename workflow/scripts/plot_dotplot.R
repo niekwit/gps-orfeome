@@ -4,8 +4,8 @@ sink(log, type = "output")
 sink(log, type = "message")
 
 library(tidyverse)
-library(cowplot)
 library(ggrepel)
+source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 
 csv <- snakemake@input[["csv"]]
 csv.rank <- snakemake@input[["ranked"]]
@@ -111,7 +111,7 @@ vline_data <- data.frame(
 p <- ggplot(data, aes(y = abs(z_score_corr), x = delta_PSI_mean)) +
   geom_point(aes(colour = colour_group)) +
   facet_wrap(~category, scales = "free_x") +
-  theme_cowplot(15) +
+  theme_gpsw() +
   scale_color_manual(
     values = my.colours,
   ) +
