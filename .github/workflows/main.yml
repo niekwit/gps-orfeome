@@ -34,9 +34,9 @@ jobs:
 
       # 3. R Check (Fails the workflow if any file doesn't match Air style)
       - name: Set up Air
-        uses: mizuno-as/setup-air@v1
+        uses: posit-dev/setup-air@v1
         with:
-          air-version: "0.9.0"
+          version: "0.9.0"
 
       - name: Check R Formatting (Air)
         run: air format --check .
