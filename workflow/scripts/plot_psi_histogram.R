@@ -4,7 +4,7 @@ sink(log, type = "output")
 sink(log, type = "message")
 
 library(tidyverse)
-library(cowplot)
+source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 
 # Get column names that contain PSI values of test and control conditions
 comparison <- snakemake@wildcards[["comparison"]]
@@ -47,7 +47,7 @@ p <- ggplot(data_long, aes(x = psi, fill = condition)) +
         aes(y = ..density.., colour = condition, fill = NULL),
         alpha = 0.35
     ) +
-    theme_cowplot(16) +
+    theme_gpsw() +
     labs(
         x = "PSI",
         y = "Density",

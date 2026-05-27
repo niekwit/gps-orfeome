@@ -7,7 +7,7 @@ sink(log, type = "message")
 library(tidyverse)
 library(viridis)
 library(ggrepel)
-library(cowplot)
+source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 
 # Load data
 data <- read.delim(snakemake@input[[1]])
@@ -22,7 +22,7 @@ dot_plot <- function(df, df.label, filename) {
       y = "Log2(Fold Change)",
       fill = "-log10(p value)"
     ) +
-    theme_cowplot(16) +
+    theme_gpsw() +
     geom_text_repel(
       data = df.label,
       aes(x = `x`, y = `pos.lfc`, label = `id`)

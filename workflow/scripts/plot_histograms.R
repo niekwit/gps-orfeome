@@ -4,7 +4,7 @@ sink(log, type = "output")
 sink(log, type = "message")
 
 library(tidyverse)
-library(cowplot)
+source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 
 csv <- snakemake@input[["csv"]]
 comparison <- snakemake@wildcards[["comparison"]]
@@ -15,9 +15,9 @@ plot_histogram <- function(data, column, x_label, pdf) {
     geom_histogram(
       bins = 60,
       colour = "black",
-      fill = "#419179"
+      fill = GPSW_COLOUR
     ) +
-    theme_cowplot(16) +
+    theme_gpsw() +
     labs(x = x_label, y = "Count") +
     scale_y_continuous(expand = c(0, 0)) +
     geom_vline(
@@ -95,7 +95,7 @@ p <- ggplot(data, aes(x = psi, fill = condition)) +
     aes(y = ..density.., colour = condition, fill = NULL),
     alpha = 0.35
   ) +
-  theme_cowplot(16) +
+  theme_gpsw() +
   labs(
     x = "PSI",
     y = "Density",
@@ -139,7 +139,7 @@ p <- ggplot(data, aes(x = sob)) +
     aes(y = ..density.., colour = condition),
     alpha = 0.35
   ) +
-  theme_cowplot(16) +
+  theme_gpsw() +
   labs(
     x = "Sum of barcodes (SOB)",
     y = "Density",

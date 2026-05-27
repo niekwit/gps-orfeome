@@ -4,7 +4,7 @@ sink(log, type = "output")
 sink(log, type = "message")
 
 library(tidyverse)
-library(cowplot)
+source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 
 # get HISAT2 alignment rates (in log files)
 files <- snakemake@input
@@ -38,8 +38,8 @@ df$sample <- str_remove(df$sample, "^X")
 
 # create plot
 p <- ggplot(df, aes(x = sample, y = mapping.rate)) +
-  geom_bar(stat = "identity", fill = "#419179", colour = "black") +
-  theme_cowplot(16) +
+  geom_bar_gpsw() +
+  theme_gpsw() +
   scale_y_continuous(limits = c(0, 100), expand = expansion(mult = c(0, 0.1))) +
   scale_x_discrete(guide = guide_axis(angle = 45)) +
   ylab("Mapping rate (%)") +

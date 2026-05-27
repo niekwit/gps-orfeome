@@ -5,7 +5,7 @@ sink(log, type = "message")
 
 library(tidyverse)
 library(reshape2)
-library(cowplot)
+source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 
 bin.number <- snakemake@params[["bin_number"]]
 
@@ -55,8 +55,8 @@ if (bin.number == 1) {
 
 # Create bar graph
 p <- ggplot(data = df, aes(x = sample, y = value)) +
-  geom_bar(stat = "identity", fill = "#419179", colour = "black") +
-  theme_cowplot(16) +
+  geom_bar_gpsw() +
+  theme_gpsw() +
   xlab(NULL) +
   ylab("Missed barcodes") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
