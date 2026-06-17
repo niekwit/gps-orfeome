@@ -34,11 +34,11 @@ The easiest wasy to install `GPSW` is via Conda, which will handle all dependenc
    All available releases can be found on the `GitHub releases page <https://github.com/niekwit/gps-orfeome/releases>`_.
 
 
-For integration with `NGS Tracker` (https://github.com/niekwit/ngs-tracker), please also install its dependencies:    
+For integration with `NGS Tracker` (https://github.com/niekwit/ngs-tracker):
 
 .. code-block:: shell
 
-   $ pip install flask>=3.0.0 flask-sqlalchemy>=3.1.0 werkzeug>=3.0.0 pyyaml>=6.0 requests>=2.28 black>=22.0
+   $ pip install git+https://github.com/niekwit/ngs-tracker.git
 
 
 Installation of development version
