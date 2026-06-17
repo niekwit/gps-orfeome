@@ -111,6 +111,7 @@ def targets():
     TARGETS = [
         "results/qc/multiqc.html",
         "results/qc/alignment-rates.pdf",
+        "results/qc/alignment-rates.csv",
         "results/qc/sequence-coverage.pdf",
         "results/qc/missed-barcodes.pdf",
     ]
