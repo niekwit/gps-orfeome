@@ -121,7 +121,7 @@ ngs_tracker:
     - Test
 
   # Files to attach — paths relative to the working directory or absolute
-  # type: config | sample_info | qc | results | mapping_rates | other
+  # type: config | sample_info | qc | results | mapping_rates | snakemake_log | other
   files:
     - path: "config/config.yml"
       type: config
