@@ -34,6 +34,13 @@ The easiest wasy to install `GPSW` is via Conda, which will handle all dependenc
    All available releases can be found on the `GitHub releases page <https://github.com/niekwit/gps-orfeome/releases>`_.
 
 
+For integration with `NGS Tracker` (https://github.com/niekwit/ngs-tracker):
+
+.. code-block:: shell
+
+   $ pip install git+https://github.com/niekwit/ngs-tracker.git
+
+
 Installation of development version
 --------------------------------------------------------------------------------
 
@@ -42,7 +49,7 @@ First, create a yaml file with the environment configuration, e.g. `gpsw.yaml`:
 .. code-block:: yaml
    :substitutions:
 
-   name: gpsw
+   name: gpsw 
    channels:
       - conda-forge
       - bioconda

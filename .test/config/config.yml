@@ -8,11 +8,11 @@ conditions:
   test: [Test]
   control: [Control]
 
-# Number of bins set during sorting of cells 
+# Number of bins set during sorting of cells
 # (should be the same for each sample)
 # With bin_number higher than 1, it is assumed that the user wants to perform
 # a protein stability analysis using PSI (Protein Stability Index) as a metric.
-# With bin_number = 1, the user wants to perform a pairwise comparison 
+# With bin_number = 1, the user wants to perform a pairwise comparison
 # of ORF counts between two conditions using MAGeCK/DrugZ.
 bin_number: 6
 
@@ -20,26 +20,26 @@ cutadapt:
   # 5' adapter sequence to trim
   # Use "" to disable 5' adapter trimming
   g: CCAGTAGGTCCACTATGAGT
-  
+
   # 3' adapter sequence to trim
   # Use "" to disable 3' adapter trimming
   a: ""
 
   # Trim <INT> nucleotides (before a/g trimming)
   # If positive, remove bases from the beginning
-  # If negative, remove bases from the end. 
-  u: 0 
-  
+  # If negative, remove bases from the end.
+  u: 0
+
   # Shorten reads to <INT> nucleotides
-  # Positive values remove bases at the end 
+  # Positive values remove bases at the end
   # negative values remove bases at the beginning.
   # This and the following modifications are applied after adapter trimming (a,b).
-  l: 20 
+  l: 20
 
   # Extra arguments for cutadapt
   extra: "-q 20 --discard-untrimmed"
 
-csv: 
+csv:
   # CSV file with the gene/ORF/barcode information
   # 0-indexed column numbers (First column is 0)
   gene_column: 3 # Column number with gene names
@@ -55,7 +55,7 @@ bowtie2:
 # MAGeCK/DrugZ can be used when bin_number is set to 1
 mageck:
   run: True # Run MAGeCK analysis
-  extra_mageck_arguments: "--sort-criteria pos" 
+  extra_mageck_arguments: "--sort-criteria pos"
   mageck_control_barcodes: all # All or file with control barcodes
   fdr: 0.25 # FDR threshold for downstream mageck analysis
 
@@ -75,15 +75,15 @@ psi:
   # Exclude barcode with twin peaks
   exclude_twin_peaks: True
   # Proportion threshold for second peak of first peak
-  proportion_threshold: [0.4]  
-  
+  proportion_threshold: [0.4]
+
   # Penalty factor for having less than median number of good barcodes
   penalty_factor: [4]
 
   # Barcode threshold for hits
   # Keep ORFs with at least bc_threshold barcodes
   bc_threshold: 2
-  
+
   # Multi condition heatmap settings
   # Use R-style boolean values
   heatmap:
@@ -92,13 +92,47 @@ psi:
 
     # Font size of the row names
     row_font_size: 4
-    
+
     # Number of clusters for gene clustering
     # This number is used for writing the clusters to a csv file
     clusters: 6
 
     # Height of the heatmap in inches
     height: 8
-    
+
     # Width of the heatmap in inches
     width: 4
+
+# Integration with NGS Tracker for workflow registration and file attachment
+# https://github.com/niekwit/ngs-tracker
+ngs_tracker:
+  enabled: false # set to false to skip registration
+
+  # Connection
+  base_url: "http://127.0.0.1:5000/api" # change host/port if needed
+
+  # Run identity  (find project_id on the project detail page)
+  project_id: 3
+  workflow_name: "gps-orfeome"
+  workflow_tag: "v0.10.0"
+  workflow_system: "snakemake" # snakemake | nextflow | cwl | other
+  description: "Testing REST API integration with NGS Tracker"
+  tags:
+    - Test
+
+  # Files to attach — paths relative to the working directory or absolute
+  # type: config | sample_info | qc | results | mapping_rates | other
+  files:
+    - path: "config/config.yml"
+      type: config
+      description: "Workflow config"
+    - path: "results/qc/multiqc.html"
+      type: qc
+      description: "MultiQC report"
+    - path: "results/qc/alignment-rates.csv"
+      type: mapping_rates
+      description: "Bowtie2 alignment mapping rates"
+    - path: "results/qc/*.pdf"
+      type: qc
+    - path: logs/snakemake/*.log
+      type: snakemake_log
