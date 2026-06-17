@@ -56,6 +56,9 @@ onsuccess:
     except ImportError:
         pass
 
+    except Exception as exc:
+        logger.warning(f"NGS Tracker registration skipped: {exc}")
+
 
 onerror:
     shell("cp -v {log} {snake_log}")
@@ -67,3 +70,6 @@ onerror:
         register_run(config, status="failed", log_file=log)
     except ImportError:
         pass
+
+    except Exception as exc:
+        logger.warning(f"NGS Tracker registration skipped: {exc}")
