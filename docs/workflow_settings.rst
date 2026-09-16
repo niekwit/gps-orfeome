@@ -126,6 +126,11 @@ The `conditions` section defines the conditions in the experiment. The sample fi
 
 `GPSW` calculates :math:`dPSI` values by pairing corresponding test and control conditions. For instance, if you define tests as `[Test1, Test2]` and controls as `[Control1, Control2]`, `GPSW` will compare Test1 with Control1 and Test2 with Control2. It is essential that all samples share the same ``bin_number``.
 
+
+.. important::
+   With ``bin_number`` greater than 1 (see below), the raw data file names must include the bin number in the format ``<condition>_<bin_number>.fastq.gz``. For example, if you have 6 bins, the files should be named `Test_1.fastq.gz`, `Test_2.fastq.gz`, ..., `Test_6.fastq.gz` for the test condition and similarly for the control condition. The lowest bin_number must be the sorting bin with the lowest protein stability, and the highest bin_number must be the sorting bin with the highest protein stability. The workflow will automatically pair the corresponding bins for analysis.
+
+
 Bin number
 --------------------------------------------------------------------------------
 If the ``bin_number`` is set to 1, the workflow will perform a pairwise comparison of ORF counts between two conditions using MAGeCK/DrugZ. If the ``bin_number`` is greater than 1, the workflow will perform a protein stability analysis using Protein Stability Index (PSI) as a metric.
