@@ -282,8 +282,10 @@ df["deltaPSI"] = df[f"PSI_{test}"] - df[f"PSI_{reference}"]
 delta_psi_mean = df[df["twin_peaks"] == False].groupby("orf_id")["deltaPSI"].mean()
 df["delta_PSI_mean"] = df["orf_id"].map(delta_psi_mean)
 
-# Calculate SD of PSI values for each condition of each ORF
-df["delta_PSI_SD"] = df.groupby("orf_id")["deltaPSI"].transform("std")
+# Calculate SD of deltaPSI values for each ORF,
+# excluding barcodes with twin peaks (consistent with delta_PSI_mean)
+delta_psi_sd = df[df["twin_peaks"] == False].groupby("orf_id")["deltaPSI"].std()
+df["delta_PSI_SD"] = df["orf_id"].map(delta_psi_sd)
 
 logging.info("Calculating z-scores")
 # Calculate robust z-score based of median and Median Absolute Deviation (MAD)
