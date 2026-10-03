@@ -53,6 +53,12 @@ data <- data %>%
   left_join(data.ranked, by = "orf_id") %>%
   filter(complete.cases(.))
 
+# Ranks are NA for non-hits, so they are joined after the complete.cases filter
+data.ranks <- read_csv(rank.file) %>%
+  select(orf_id, stabilised_rank, destabilised_rank)
+data <- data %>%
+  left_join(data.ranks, by = "orf_id")
+
 # Check if barcodes with twin peaks have been removed
 # (assumes that at least one barcode with twin peaks in the entire data set exists)
 dpeak.values <- unique(data[["twin_peaks"]])
@@ -77,7 +83,10 @@ for (column in columns) {
 
   # Create ID (gene + ORF) for plots
   tmp <- tmp %>%
-    mutate(gene.id = paste0(gene, "_", orf_id))
+    mutate(
+      gene.id = paste0(gene, "_", orf_id),
+      rank = .data[[paste0(column, "_rank")]]
+    )
 
   foreach(
     id = tmp$gene.id,
@@ -86,6 +95,7 @@ for (column in columns) {
     {
       source(theme_path)
       df <- tmp[tmp$gene.id == id, ]
+      hit.rank <- unique(df$rank)
       deltaPSI.mean <- round(unique(df$delta_PSI_mean), 2)
       deltaPSI.sd <- round(unique(df$delta_PSI_SD), 2)
       df <- df %>%
@@ -163,7 +173,12 @@ for (column in columns) {
         )
 
       # Save plot
-      ggsave(file.path(dir, paste0(id, ".pdf")), p, width = 10, height = 6)
+      ggsave(
+        file.path(dir, paste0(hit.rank, "_", id, ".pdf")),
+        p,
+        width = 10,
+        height = 6
+      )
     }
 }
 
