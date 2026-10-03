@@ -75,10 +75,7 @@ psi:
   # Exclude barcode with twin peaks
   exclude_twin_peaks: True
   # Proportion threshold for second peak of first peak
-  proportion_threshold: [0.35, 0.4, 0.5]
-
-  # Penalty factor for having less than median number of good barcodes
-  penalty_factor: [4, 4, 4]
+  proportion_threshold: [0.3, 0.3, 0.3]
 
   # Barcode threshold for hits
   # Keep ORFs with at least bc_threshold barcodes
