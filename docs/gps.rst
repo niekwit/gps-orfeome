@@ -39,9 +39,6 @@ Negative :math:`dPSI_i` values indicate that the ORF is less stable in the test 
 
 dPSI values are generated for each barcode of an individual ORF, after which the mean is calculated, :math:`dPSI_i`.
 
-In the :ref:`next section <zscore>`, we will discuss how :math:`dPSI_i` values are converted to robust z-scores, which standardise the data and allow for meaningful comparisons across different datasets.
-
-.. _screen:
 
 Single-bin screen analysis (``bin_number: 1``)
 ==================================================

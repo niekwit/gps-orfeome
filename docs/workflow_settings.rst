@@ -81,18 +81,16 @@ Workflow setting are in `config.yml`:
       sob_threshold: 100
 
       # deltaPSI thresholds for hits
-      hit_threshold: [0.75, 1.0, 1.25]
+      hit_threshold: [0.5]
 
       # Exclude barcode with twin peaks
       exclude_twin_peaks: True
       # Proportion threshold for second peak of first peak
-      proportion_threshold: [0.5, 0.4, 0.35]
-
-      # Penalty factor for having less than median number of good barcodes
-      penalty_factor: [4, 4, 4]
+      proportion_threshold: [0.3]
 
       # Barcode threshold for hits
       # Keep ORFs with at least bc_threshold barcodes
+      # Note: if set to 1, no SD will be calculated for ORFs with only one barcode
       bc_threshold: 2
 
       # Multi condition heatmap settings

@@ -9,5 +9,4 @@ This section provides an overview of the Global Protein Stability Profiling (GPS
    :maxdepth: 2
 
    gps
-   zscores
    references
