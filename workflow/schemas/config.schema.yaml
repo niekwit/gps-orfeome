@@ -172,7 +172,7 @@ properties:
       bc_threshold:
         description: Barcode threshold for hits
         type: integer
-        minimum: 0
+        minimum: 1
         default: 2
       heatmap:
         description: Multi condition heatmap settings
