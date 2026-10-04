@@ -190,22 +190,22 @@ logging.info(f"  Barcodes with no counts for {test} in any bin: {nrows_no_test_c
 df["num_barcodes"] = df.groupby("orf_id")["barcode_id"].transform("count")
 
 # Remove ORFs with only one barcode
+norfs = df["orf_id"].nunique()
 df = df[df["num_barcodes"] > 1].reset_index(drop=True)
-nrows = df.shape[0]
-nrows_single_barcode = nrows - df.shape[0]  # CHECK THIS!!!
+norfs_single_barcode = norfs - df["orf_id"].nunique()
 logging.info(
-    f"  ORFs removed that have only one barcode after filtering: {nrows_single_barcode}"
+    f"  ORFs removed that have only one barcode after filtering: {norfs_single_barcode}"
 )
 
 # Remove ORFs with less than a specified number of barcodes
-nrows = df.shape[0]
+norfs = df["orf_id"].nunique()
 df = df[df["num_barcodes"] >= bc_threshold].reset_index(drop=True)
-nrows_low_barcodes = nrows - df.shape[0]  # CHECK THIS!!!
+norfs_low_barcodes = norfs - df["orf_id"].nunique()
 logging.info(
-    f"  ORFs removed with less than {bc_threshold} barcodes after filtering: {nrows_low_barcodes}"
+    f"  ORFs removed with less than {bc_threshold} barcodes after filtering: {norfs_low_barcodes}"
 )
 
-logging.info(f"  Number of barcodes present post-filtering: {nrows}")
+logging.info(f"  Number of barcodes present post-filtering: {df.shape[0]}")
 
 # Identify whether barcode distributions have twin peaks
 # i.e. two peaks with at least one bin between them
