@@ -10,19 +10,19 @@ if config["bin_number"] == 1:
                 gs="results/mageck/temp/{comparison}/{comparison}.gene_summary.txt",
                 ss="results/mageck/temp/{comparison}/{comparison}.sgrna_summary.txt",
                 norm="results/mageck/temp/{comparison}/{comparison}.normalized.txt",
+            log:
+                "logs/mageck/{comparison}.log",
+            conda:
+                "../envs/stats.yaml"
+            threads: 2
+            resources:
+                runtime=20,
             params:
                 control_genes=mageck_control(),
                 dir_name=lambda wc, output: os.path.dirname(output["rnw"]),
                 test_sample=lambda wc: wc.comparison.split("_vs_")[0],
                 control_sample=lambda wc: wc.comparison.split("_vs_")[1],
                 extra=config["mageck"]["extra_mageck_arguments"],
-            threads: 2
-            resources:
-                runtime=20,
-            conda:
-                "../envs/stats.yaml"
-            log:
-                "logs/mageck/{comparison}.log",
             shell:
                 "mageck test "
                 "--normcounts-to-file "
@@ -59,13 +59,13 @@ if config["bin_number"] == 1:
                         "Figure": "lfc plot depleted genes",
                     },
                 ),
+            log:
+                "logs/mageck_plots/lfc_{comparison}.log",
+            conda:
+                "../envs/stats.yaml"
             threads: 1
             resources:
                 runtime=5,
-            conda:
-                "../envs/stats.yaml"
-            log:
-                "logs/mageck_plots/lfc_{comparison}.log",
             script:
                 "../scripts/plot_lfc.R"
 
@@ -84,13 +84,13 @@ if config["bin_number"] == 1:
                         "Figure": "Barcode rank plot",
                     },
                 ),
+            log:
+                "logs/mageck_plots/barcode_rank_{comparison}.log",
+            conda:
+                "../envs/stats.yaml"
             threads: 1
             resources:
                 runtime=5,
-            conda:
-                "../envs/stats.yaml"
-            log:
-                "logs/mageck_plots/barcode_rank_{comparison}.log",
             script:
                 "../scripts/plot_barcoderank.R"
 
@@ -104,13 +104,13 @@ if config["bin_number"] == 1:
                 gs="results/mageck/{comparison}/{comparison}.gene_summary.txt",
                 ss="results/mageck/{comparison}/{comparison}.barcode_summary.txt",
                 norm="results/mageck/{comparison}/{comparison}.normalized.txt",
-            threads: 1
-            resources:
-                runtime=5,
             log:
                 "logs/rename_to_barcode/{comparison}.log",
             conda:
                 "../envs/stats.yaml"
+            threads: 1
+            resources:
+                runtime=5,
             script:
                 "../scripts/rename_to_barcode.py"
 
@@ -120,13 +120,13 @@ if config["bin_number"] == 1:
                 "results/count/counts-aggregated.tsv",
             output:
                 "results/count/barcode-counts-aggregated.tsv",
-            threads: 1
-            resources:
-                runtime=5,
             log:
                 "logs/rename_to_barcode/count_file.log",
             conda:
                 "../envs/stats.yaml"
+            threads: 1
+            resources:
+                runtime=5,
             shell:
                 "sed 's/sgRNA/barcode/' {input} > {output} 2> {log}"
 
@@ -138,11 +138,11 @@ if config["bin_number"] == 1:
                 directory("resources/drugz"),
             log:
                 "logs/drugz/install.log",
+            conda:
+                "../envs/stats.yaml"
             threads: 1
             resources:
                 runtime=5,
-            conda:
-                "../envs/stats.yaml"
             shell:
                 "git clone https://github.com/hart-lab/drugz.git {output} 2> {log}"
 
@@ -159,19 +159,19 @@ if config["bin_number"] == 1:
                     subcategory="{comparison}",
                     labels={"Comparison": "{comparison}", "Figure": "DrugZ output"},
                 ),
+            log:
+                "logs/drugz/{comparison}.log",
+            conda:
+                "../envs/stats.yaml"
+            threads: 2
+            resources:
+                runtime=15,
             params:
                 test=lambda wc, output: wc.comparison.split("_vs_")[0].replace("-", ","),
                 control=lambda wc, output: wc.comparison.split("_vs_")[1].replace(
                     "-", ","
                 ),
                 extra=config["drugz"]["extra"],
-            threads: 2
-            resources:
-                runtime=15,
-            conda:
-                "../envs/stats.yaml"
-            log:
-                "logs/drugz/{comparison}.log",
             shell:
                 "python {input.drugz}/drugz.py "
                 "-i {input.counts} "
@@ -187,30 +187,28 @@ else:
         input:
             counts="results/count/counts-aggregated.tsv",
         output:
-            csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
-            ranked="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
-            sums=temp(
-                "results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_sums.csv"
-            ),
+            csv="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_barcode.summary.csv",
+            ranked="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_gene.summary.csv",
+            sums=temp("results/psi/hit-th{ht}_prop_th{pt}/{comparison}_sums.csv"),
+        log:
+            "logs/calculate_psi/{comparison}/hit-th{ht}_prop_th{pt}.log",
+        conda:
+            "../envs/stats.yaml"
         threads: 1
         resources:
             runtime=10,
-        conda:
-            "../envs/stats.yaml"
-        log:
-            "logs/calculate_psi/{comparison}/hit-th{ht}_prop_th{pt}_pen_th{pnth}.log",
         script:
             "../scripts/calculate_psi.py"
 
     # category: Analysis
     rule plot_barcode_profiles:
         input:
-            ranked="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
-            proportions="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
+            ranked="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_gene.summary.csv",
+            proportions="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_barcode.summary.csv",
         output:
             d=report(
                 directory(
-                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}/destabilised/"
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}/destabilised/"
                 ),
                 patterns=["{name}.pdf"],
                 caption="../report/profiles.rst",
@@ -219,7 +217,7 @@ else:
             ),
             s=report(
                 directory(
-                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}/stabilised/"
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}/stabilised/"
                 ),
                 patterns=["{name}.pdf"],
                 caption="../report/profiles.rst",
@@ -228,56 +226,55 @@ else:
             ),
             flag=temp(
                 touch(
-                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}/plotting_done.txt"
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}/plotting_done.txt"
                 )
             ),
-        params:
-            outdir=lambda wc, output: os.path.dirname(output["flag"]),
-            bin_number=config["bin_number"],
+        log:
+            "logs/plot_psi/hit-th{ht}_prop_th{pt}_{comparison}.log",
+        conda:
+            "../envs/stats.yaml"
         threads: 18
         resources:
             runtime=60,
-        conda:
-            "../envs/stats.yaml"
-        log:
-            "logs/plot_psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
+        params:
+            outdir=lambda wc, output: os.path.dirname(output["flag"]),
+            bin_number=config["bin_number"],
         script:
             "../scripts/plot_barcode_profiles.R"
 
     # category: Analysis
-    rule plot_dotplot:
+    rule plot_dpsi_rank:
         input:
-            csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
-            ranked="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_gene.summary.csv",
+            ranked="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_gene.summary.csv",
         output:
             pdf=report(
-                "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_dotplot.pdf",
-                caption="../report/dotplot.rst",
-                category="PSI dot plots",
+                "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_dpsi_rank.pdf",
+                caption="../report/dpsi_rank.rst",
+                category="PSI rank plots",
                 subcategory="{comparison}",
                 labels={
                     "Comparison": "{comparison}",
-                    "Figure": "Dotplot of dPSI values",
+                    "Figure": "Ranked dPSI values",
                 },
             ),
+        log:
+            "logs/plot_psi/dpsi_rank_hit-th{ht}_prop_th{pt}_{comparison}.log",
+        conda:
+            "../envs/stats.yaml"
         threads: 1
         resources:
             runtime=5,
-        conda:
-            "../envs/stats.yaml"
-        log:
-            "logs/plot_psi/dotplot_hit-th{ht}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
         script:
-            "../scripts/plot_dotplot.R"
+            "../scripts/plot_dpsi_rank.R"
 
     # category: Analysis
     rule plot_histograms:
         input:
-            csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_barcode.summary.csv",
-            sums="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_sums.csv",
+            csv="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_barcode.summary.csv",
+            sums="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_sums.csv",
         output:
             psi=report(
-                "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_psi_histogram.pdf",
+                "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_psi_histogram.pdf",
                 caption="../report/histograms.rst",
                 category="Histograms",
                 subcategory="{comparison}",
@@ -287,7 +284,7 @@ else:
                 },
             ),
             dpsi=report(
-                "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_histogram.pdf",
+                "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_dpsi_histogram.pdf",
                 caption="../report/histograms.rst",
                 category="Histograms",
                 subcategory="{comparison}",
@@ -297,7 +294,7 @@ else:
                 },
             ),
             dpsi_sd=report(
-                "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_sd_histogram.pdf",
+                "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_dpsi_sd_histogram.pdf",
                 caption="../report/histograms.rst",
                 category="Histograms",
                 subcategory="{comparison}",
@@ -307,7 +304,7 @@ else:
                 },
             ),
             sob=report(
-                "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_sob_histogram.pdf",
+                "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_sob_histogram.pdf",
                 caption="../report/histograms.rst",
                 category="Histograms",
                 subcategory="{comparison}",
@@ -316,15 +313,15 @@ else:
                     "Figure": "Histogram of SOB values",
                 },
             ),
-        params:
-            sob_threshold=config["psi"]["sob_threshold"],
+        log:
+            "logs/plot_histograms/hit-th{ht}_prop_th{pt}_{comparison}.log",
+        conda:
+            "../envs/stats.yaml"
         threads: 1
         resources:
             runtime=10,
-        conda:
-            "../envs/stats.yaml"
-        log:
-            "logs/plot_histograms/hit-th{ht}_prop_th{pt}_pen_th{pnth}_{comparison}.log",
+        params:
+            sob_threshold=config["psi"]["sob_threshold"],
         script:
             "../scripts/plot_histograms.R"
 
@@ -332,39 +329,45 @@ else:
     rule merge_gene_summary_data:
         input:
             ranks=expand(
-                "results/psi/hit-th{{ht}}_prop_th{{pt}}_pen_th{{pnth}}/{comparison}_gene.summary.csv",
+                "results/psi/hit-th{{ht}}_prop_th{{pt}}/{comparison}_gene.summary.csv",
                 comparison=COMPARISONS,
             ),
         output:
-            "results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/gene.summary_all_conditions.csv",
+            "results/psi/hit-th{ht}_prop_th{pt}/gene.summary_all_conditions.csv",
+        log:
+            "logs/merge_rank_data_all_conditions/hit-th{ht}_prop_th{pt}.log",
+        conda:
+            "../envs/stats.yaml"
         threads: 1
         resources:
             runtime=5,
-        conda:
-            "../envs/stats.yaml"
-        log:
-            "logs/merge_rank_data_all_conditions/hit-th{ht}_prop_th{pt}_pen_th{pnth}.log",
         script:
             "../scripts/merge_gene_summary_data.py"
 
     # category: Analysis
     rule plot_heatmap:
         input:
-            csv="results/psi/hit-th{ht}_prop_th{pt}_pen_th{pnth}/gene.summary_all_conditions.csv",
+            csv="results/psi/hit-th{ht}_prop_th{pt}/gene.summary_all_conditions.csv",
         output:
             pdf=report(
-                "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/heatmap.pdf",
+                "results/psi_plots/hit-th{ht}_prop_th{pt}/heatmap.pdf",
                 caption="../report/heatmap.rst",
                 category="Heatmap multi conditions",
-                subcategory="{ht}_{pt}_{pnth}",
+                subcategory="{ht}_{pt}",
                 labels={
                     "Hit threshold": "{ht}",
                     "Proportion threshold": "{pt}",
-                    "Penalty threshold": "{pnth}",
                     "Figure": "Heatmap of dPSI values",
                 },
             ),
-            csv="results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/heatmap_data.csv",
+            csv="results/psi_plots/hit-th{ht}_prop_th{pt}/heatmap_data.csv",
+        log:
+            "logs/plot_heatmap/hit-th{ht}_prop_th{pt}.log",
+        conda:
+            "../envs/stats.yaml"
+        threads: 1
+        resources:
+            runtime=10,
         params:
             bin_number=config["bin_number"],
             clusters=config["psi"]["heatmap"]["clusters"],
@@ -372,12 +375,5 @@ else:
             fontsize=config["psi"]["heatmap"]["row_font_size"],
             width=config["psi"]["heatmap"]["width"],
             height=config["psi"]["heatmap"]["height"],
-        threads: 1
-        resources:
-            runtime=10,
-        conda:
-            "../envs/stats.yaml"
-        log:
-            "logs/plot_heatmap/hit-th{ht}_prop_th{pt}_pen_th{pnth}.log",
         script:
             "../scripts/plot_heatmap.R"

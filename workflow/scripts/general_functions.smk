@@ -157,52 +157,46 @@ def targets():
         TARGETS.extend(
             [
                 expand(
-                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}/plotting_done.txt",
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}/plotting_done.txt",
                     zip,
                     comparison=COMPARISONS,
                     ht=HIT_TH,
                     pt=PROP_TH,
-                    pnth=PEN_TH,
                 ),
                 expand(
-                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_dotplot.pdf",
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_dpsi_rank.pdf",
                     zip,
                     comparison=COMPARISONS,
                     ht=HIT_TH,
                     pt=PROP_TH,
-                    pnth=PEN_TH,
                 ),
                 expand(
-                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_psi_histogram.pdf",
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_psi_histogram.pdf",
                     zip,
                     comparison=COMPARISONS,
                     ht=HIT_TH,
                     pt=PROP_TH,
-                    pnth=PEN_TH,
                 ),
                 expand(
-                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_histogram.pdf",
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_dpsi_histogram.pdf",
                     zip,
                     comparison=COMPARISONS,
                     ht=HIT_TH,
                     pt=PROP_TH,
-                    pnth=PEN_TH,
                 ),
                 expand(
-                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_dpsi_sd_histogram.pdf",
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_dpsi_sd_histogram.pdf",
                     zip,
                     comparison=COMPARISONS,
                     ht=HIT_TH,
                     pt=PROP_TH,
-                    pnth=PEN_TH,
                 ),
                 expand(
-                    "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/{comparison}_sob_histogram.pdf",
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_sob_histogram.pdf",
                     zip,
                     comparison=COMPARISONS,
                     ht=HIT_TH,
                     pt=PROP_TH,
-                    pnth=PEN_TH,
                 ),
             ]
         )
@@ -211,11 +205,10 @@ def targets():
                 [
                     "results/qc/pca_plot.pdf",
                     expand(
-                        "results/psi_plots/hit-th{ht}_prop_th{pt}_pen_th{pnth}/heatmap.pdf",
+                        "results/psi_plots/hit-th{ht}_prop_th{pt}/heatmap.pdf",
                         zip,
                         ht=HIT_TH,
                         pt=PROP_TH,
-                        pnth=PEN_TH,
                     ),
                 ]
             )
@@ -327,12 +320,11 @@ def wildcard_values():
 
     hit_th = config["psi"]["hit_threshold"]
     prop_th = config["psi"]["proportion_threshold"]
-    pen_th = config["psi"]["penalty_factor"]
-    threshold_list = [hit_th, prop_th, pen_th]
+    threshold_list = [hit_th, prop_th]
 
     # All threshold lists should be the same length
     assert (
-        len(hit_th) == len(prop_th) == len(pen_th)
+        len(hit_th) == len(prop_th)
     ), "Threshold lists are not the same length"
 
     # As not all permutations are used (zip argument is used with Snakemake expand),
@@ -347,12 +339,7 @@ def wildcard_values():
     for i in threshold_list:
         extended_thresholds.append(i * len(COMPARISONS))
 
-    return (
-        extended_comparisons,
-        extended_thresholds[0],
-        extended_thresholds[1],
-        extended_thresholds[2],
-    )
+    return (extended_comparisons, *extended_thresholds)
 
 
 def mageck_control():

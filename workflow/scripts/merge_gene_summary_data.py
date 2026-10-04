@@ -25,7 +25,6 @@ for i, df in enumerate(dfs):
     df.rename(
         columns={
             "delta_PSI_mean": f"delta_PSI_mean_{condition}",
-            "z_score_corr": f"z_score_corr_{condition}",
         },
         inplace=True,
     )
