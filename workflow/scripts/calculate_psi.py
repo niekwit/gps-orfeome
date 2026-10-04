@@ -1,6 +1,5 @@
 import logging
 import pandas as pd
-import numpy as np
 
 # Set up logging
 log = snakemake.log[0]
@@ -20,7 +19,6 @@ test = comparison.split("_vs_")[0]
 exclude_twin_peaks = snakemake.config["psi"]["exclude_twin_peaks"]
 hit_th = float(snakemake.wildcards["ht"])
 pr_th = float(snakemake.wildcards["pt"])
-penalty_factor = float(snakemake.wildcards["pnth"])
 bc_threshold = snakemake.config["psi"]["bc_threshold"]
 MAX_BIN = snakemake.config["bin_number"]
 output_file_csv = snakemake.output["csv"]
@@ -287,85 +285,6 @@ df["delta_PSI_mean"] = df["orf_id"].map(delta_psi_mean)
 delta_psi_sd = df[df["twin_peaks"] == False].groupby("orf_id")["deltaPSI"].std()
 df["delta_PSI_SD"] = df["orf_id"].map(delta_psi_sd)
 
-logging.info("Calculating z-scores")
-# Calculate robust z-score based of median and Median Absolute Deviation (MAD)
-# https://en.wikipedia.org/wiki/Median_absolute_deviation
-# https://en.wikipedia.org/wiki/Robust_measures_of_scale
-mad = abs(df["delta_PSI_mean"] - df["delta_PSI_mean"].median())
-df["z_score"] = (df["delta_PSI_mean"] - df["delta_PSI_mean"].median()) / (
-    mad.median() * 1.4826
-)  # 1.4826 is a constant to make MAD comparable to standard deviation
-
-logging.info("Correcting z-scores for number of barcodes")
-# Correct for number of barcodes, but only if good barcode number is less than median
-median = df["good_barcodes"].median()
-logging.info(f"  Median number of good barcodes: {median}")
-with np.errstate(invalid="ignore"):
-    correction = np.sqrt(1 + ((median - df["good_barcodes"]) / penalty_factor))
-df["z_score_corr"] = df["z_score"] / np.where(
-    df["good_barcodes"] < median,
-    correction,
-    1,  # No correction applied if good_barcodes >= median
-)
-
-logging.info("Correcting z-scores for intra ORF variability")
-# Correct for delta_PSI_SD
-# Set a floor value for SD correction
-# This avoids inflation of z-scores when delta_PSI_SD is very low
-sd_floor = hit_th * 0.15
-df["z_score_corr"] = df["z_score_corr"] / df["delta_PSI_SD"].clip(lower=sd_floor)
-
-logging.info("Correcting z-scores for deltaPSI")
-# Multiply z-scores by absolute delta_PSI value
-# First, scale delta_PSI_mean:
-# delta_PSI that equal cutoff are scaled to 1 or above
-# This will penalise ORFS with very low delta_PSI values
-# ONLY DO THIS WITH DPSI < THRESHOLD?
-df["delta_PSI_mean_scaled"] = abs(df["delta_PSI_mean"]) / hit_th
-df["z_score_corr"] = df["z_score_corr"] * df["delta_PSI_mean_scaled"]
-df = df.drop(columns=["delta_PSI_mean_scaled"])
-
-logging.info("Scaling z-scores")
-# Scale values between -128 and 128:
-# Scale Negative and Positive Values Separately
-col = "z_score_corr"
-scaled_col = f"{col}_scaled"
-
-df[scaled_col] = np.nan  # Initialize column with NaN
-
-# Separate positive and negative values
-pos_mask = df[col] > 0
-neg_mask = df[col] < 0
-
-# Scale positive values (from 2 to 128)
-if df[pos_mask].shape[0] > 0:
-    pos_max = df.loc[pos_mask, col].max()
-    pos_min = df.loc[pos_mask, col].min()
-    df.loc[pos_mask, scaled_col] = 2 + (
-        (df.loc[pos_mask, col] - pos_min) / (pos_max - pos_min)
-    ) * (128 - 2)
-
-# Scale negative values (from -128 to -2)
-if df[neg_mask].shape[0] > 0:
-    neg_max = df.loc[neg_mask, col].max()
-    neg_min = df.loc[neg_mask, col].min()
-    df.loc[neg_mask, scaled_col] = -128 + (
-        (df.loc[neg_mask, col] - neg_min) / (neg_max - neg_min)
-    ) * (-2 + 128)
-
-# Ensure zero remains zero if present
-df.loc[df[col] == 0, scaled_col] = 0
-
-# Replace original z_score_corr with scaled values
-df[col] = df[scaled_col]
-df = df.drop(columns=[scaled_col])
-
-# Log2 transform z-scores, while preserving sign
-# Highest/lowest value is -2/2 so log2 is safe when taking absolute value
-# This transformation is done to make it easier to plot
-with np.errstate(divide="ignore"):
-    df["z_score_corr"] = np.log2(abs(df["z_score_corr"])) * np.sign(df["z_score_corr"])
-
 # Convert normalised counts to proportions of reads in bins
 # Do this in new df that will contain barcode-level results
 logging.info("Calculating proportions of reads in bins")
@@ -419,7 +338,6 @@ df_rank = (
             "gene",
             "good_barcodes",
             "delta_PSI_mean",
-            "z_score_corr",
             "stabilised",
             "destabilised",
         ]
@@ -428,21 +346,20 @@ df_rank = (
     .reset_index(drop=True)
 )
 
-# Round delta_PSI_mean and z_score_corr to 3 decimal places
+# Round delta_PSI_mean to 3 decimal places
 df_rank["delta_PSI_mean"] = df_rank["delta_PSI_mean"].round(3)
-df_rank["z_score_corr"] = df_rank["z_score_corr"].round(3)
 
 # Create separate rankings for stabilised and destabilised hits
 df_rank_stab = (
     df_rank[df_rank["stabilised"]]
-    .sort_values(by="z_score_corr", ascending=False)
+    .sort_values(by="delta_PSI_mean", ascending=False)
     .reset_index(drop=True)
 )
 df_rank_stab["stabilised_rank"] = df_rank_stab.index + 1
 
 df_rank_destab = (
     df_rank[df_rank["destabilised"]]
-    .sort_values(by="z_score_corr", ascending=True)
+    .sort_values(by="delta_PSI_mean", ascending=True)
     .reset_index(drop=True)
 )
 df_rank_destab["destabilised_rank"] = df_rank_destab.index + 1
