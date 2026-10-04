@@ -19,34 +19,9 @@ properties:
     type: integer
     minimum: 1
 
-  cutadapt:
-    description: Cutadapt settings
-    type: object
-    properties:
-      g:
-        description: 5' adapter sequence to trim
-        type: string
-      a:
-        description: 3' adapter sequence to trim
-        type: string
-      u:
-        description: Trim nucleotides from the beginning or end
-        type: integer
-      l:
-        description: Shorten reads to a specific length
-        oneOf:
-          - type: integer
-          - type: string
-            maxLength: 0
-      extra:
-        description: Extra arguments for cutadapt
-        type: string
-    required:
-      - g
-      - a
-      - u
-      - l
-      - extra
+  cutadapt_args:
+    description: Command line arguments for cutadapt
+    type: string
 
   csv:
     description: CSV settings
@@ -202,7 +177,7 @@ properties:
 required:
   - orfeome_name
   - bin_number
-  - cutadapt
+  - cutadapt_args
   - csv
   - bowtie2
   - mageck
