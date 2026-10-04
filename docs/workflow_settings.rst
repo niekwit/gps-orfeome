@@ -275,12 +275,9 @@ The values between square brackets (e.g. `[0.75, 1.0, 1.25]`) indicate that the 
      # Proportion threshold for second peak of first peak
      proportion_threshold: [0.5, 0.4, 0.35]
 
-     # Penalty factor for having less than median number of good barcodes
-     penalty_factor: [4, 4, 4]
-
      # Barcode threshold for hits
      # Keep ORFs with at least bc_threshold barcodes
-     bc_threshold: 2
+     bc_threshold: 1
 
      # SD threshold for most stringent hits
      # mean deltaPSI > sd_threshold * SD

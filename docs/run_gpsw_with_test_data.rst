@@ -71,7 +71,7 @@ This will download the workflow code, configuration files and test data, and sho
          │   ├── plot_barcode_profiles.R
          │   ├── plot_barcoderank.R
          │   ├── plot_coverage.R
-         │   ├── plot_dotplot.R
+         │   ├── plot_dpsi_rank.R
          │   ├── plot_lfc.R
          │   ├── plot_missed_barcodes.R
          │   ├── plot_pca.R
