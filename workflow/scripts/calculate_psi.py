@@ -189,14 +189,6 @@ logging.info(f"  Barcodes with no counts for {test} in any bin: {nrows_no_test_c
 # Add total number of barcodes for each ORF
 df["num_barcodes"] = df.groupby("orf_id")["barcode_id"].transform("count")
 
-# Remove ORFs with only one barcode
-norfs = df["orf_id"].nunique()
-df = df[df["num_barcodes"] > 1].reset_index(drop=True)
-norfs_single_barcode = norfs - df["orf_id"].nunique()
-logging.info(
-    f"  ORFs removed that have only one barcode after filtering: {norfs_single_barcode}"
-)
-
 # Remove ORFs with less than a specified number of barcodes
 norfs = df["orf_id"].nunique()
 df = df[df["num_barcodes"] >= bc_threshold].reset_index(drop=True)
