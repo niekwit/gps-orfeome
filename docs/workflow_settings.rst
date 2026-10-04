@@ -279,10 +279,6 @@ The values between square brackets (e.g. `[0.75, 1.0, 1.25]`) indicate that the 
      # Keep ORFs with at least bc_threshold barcodes
      bc_threshold: 1
 
-     # SD threshold for most stringent hits
-     # mean deltaPSI > sd_threshold * SD
-     sd_threshold: [2, 2, 2.5]
-
 
 More on the PSI analysis can be found in the :ref:`background` section.
 
@@ -318,32 +314,6 @@ The ``proportion_threshold`` is used in the twin peaks analysis. It defines the 
       :alt: Twin peaks example
 
       Twin peaks example
-
-
-``penalty_factor``
-~~~~~~~~~~~~~~~~~~~~~
-
-The ``penalty_factor`` is a list of values that defines the penalty factor for having less than the median number of good barcodes. This is used to penalize ORFs with fewer good barcodes, which can affect the reliability of the PSI analysis.
-
-The ``penalty_factor`` is applied as follows:
-
-.. math::
-
-   z_{c} =
-   \begin{cases}
-     \frac{z}{\sqrt{ \left( 1 + \frac{m - n}{p} \right) }} & \text{if } n < m \\
-     z & \text{if } n \ge m
-   \end{cases}
-
-Where:
-
-- :math:`z_{c}` is the corrected :math:`z`.
-- :math:`z` is the z-score.
-- :math:`n` is the number of `good barcodes`.
-- :math:`m` is the median of `good barcodes` of all ORFs.
-- :math:`p` is a user-defined penalty factor (``penalty_factor`` in `config.yml`).
-
-This correction applies a mild penalty to the z-score of ORFs with fewer good barcodes, which helps to account for the reduced reliability of the PSI analysis in those cases. The recommended value for ``penalty_factor`` is 4, but it can be adjusted based on the specific requirements of the analysis (a lower value gives a higher penalty).
 
 
 ``bc_threshold``
