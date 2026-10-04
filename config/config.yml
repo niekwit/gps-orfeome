@@ -16,28 +16,8 @@ conditions:
 # of ORF counts between two conditions using MAGeCK/DrugZ.
 bin_number: 6
 
-cutadapt:
-  # 5' adapter sequence to trim
-  # Use "" to disable 5' adapter trimming
-  g: CCAGTAGGTCCACTATGAGT
-
-  # 3' adapter sequence to trim
-  # Use "" to disable 3' adapter trimming
-  a: AGCTGTGTAAGCGGAACTAG
-
-  # Trim <INT> nucleotides (before a/g trimming)
-  # If positive, remove bases from the beginning
-  # If negative, remove bases from the end.
-  u: 0
-
-  # Shorten reads to <INT> nucleotides
-  # Positive values remove bases at the end
-  # negative values remove bases at the beginning.
-  # This and the following modifications are applied after adapter trimming (a,b).
-  l: 20
-
-  # Extra arguments for cutadapt
-  extra: "-q 20 --discard-untrimmed"
+# Command line arguments for cutadapt (adapter trimming, read shortening, etc.)
+cutadapt_args: "-g CCAGTAGGTCCACTATGAGT -a AGCTGTGTAAGCGGAACTAG -l 20 -q 20 --discard-untrimmed"
 
 csv:
   # CSV file with the gene/ORF/barcode information
