@@ -45,7 +45,7 @@ rule cutadapt:
         fastq=temp("results/trimmed/{sample}.fastq.gz"),
         qc="results/trimmed/{sample}.qc.txt",
     params:
-        extra=cut_adapt_arg(config),
+        extra=config["cutadapt_args"],
     log:
         "logs/cutadapt/{sample}.log",
     threads: 4  # Set desired number of threads here
