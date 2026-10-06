@@ -4,135 +4,90 @@ sink(log, type = "output")
 sink(log, type = "message")
 
 library(tidyverse)
-library(ggrepel)
 source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 
-csv <- snakemake@input[["csv"]]
 csv.rank <- snakemake@input[["ranked"]]
 dpsi.cutoff <- as.numeric(snakemake@wildcards[["ht"]])
 pdf <- snakemake@output[["pdf"]]
+N_LABELS <- 15 # Number of ORFs to label on either end
 
-# Load data
-data <- read_csv(csv)
-data.rank <- read_csv(csv.rank) %>%
-  select(orf_id, stabilised_rank, destabilised_rank)
-
-# Add rank to data
-data <- data %>%
-  left_join(data.rank, by = "orf_id") %>%
-  filter(!is.na(delta_PSI_mean))
-
-# Calculate the mean of delta_PSI_mean
-mean_dpsi <- mean(data$delta_PSI_mean, na.rm = TRUE)
-
-# Remove rows where delta_PSI_mean is between mean_dpsi and 0 (destabilised) or
-# zero and mean_dpsi (stabilised)
-# These proteins are not significantly stabilised or destabilised and can create a
-# visual artifact on the volcano plot, as the "volcano" does not have the centre at zero
-if (mean_dpsi > 0) {
-  data <- data %>%
-    filter(delta_PSI_mean >= mean_dpsi | delta_PSI_mean <= 0)
-} else {
-  data <- data %>%
-    filter(delta_PSI_mean <= mean_dpsi | delta_PSI_mean >= 0)
-}
-
-# Determine x min/x masx for delta_PSI_mean
-max <- ceiling(max(abs(data$delta_PSI_mean), na.rm = TRUE))
-
-# Create values for color
-data <- data %>%
+# Load ORF-level data and order by dPSI (lowest to highest)
+data <- read_csv(csv.rank, show_col_types = FALSE) %>%
+  filter(!is.na(delta_PSI_mean)) %>%
+  arrange(delta_PSI_mean) %>%
   mutate(
-    category = ifelse(delta_PSI_mean > 0, "Stabilised", "Destabilised"),
+    rank = row_number(),
     colour_group = factor(
       case_when(
-        category == "Stabilised" & delta_PSI_mean > dpsi.cutoff ~
-          "Significant Stabilised",
-        category == "Destabilised" & delta_PSI_mean < -dpsi.cutoff ~
-          "Significant Destabilised",
-        TRUE ~ "Other" # Catches all other cases
+        stabilised ~ "Stabilised",
+        destabilised ~ "Destabilised",
+        TRUE ~ "Other"
       ),
-      levels = c(
-        "Significant Stabilised",
-        "Significant Destabilised",
-        "Within Threshold",
-        "Other"
-      )
-    ) # Define factor levels for consistent legend order
+      levels = c("Stabilised", "Destabilised", "Other")
+    )
   )
 
 my.colours <- c(
-  "Significant Stabilised" = "green3",
-  "Significant Destabilised" = "red",
+  "Stabilised" = "green3",
+  "Destabilised" = "red",
   "Other" = "black"
 )
 
-# Create df for labels
-stabilised <- data %>%
-  filter(delta_PSI_mean > 0, z_score_corr > 0)
+# Labels for the (up to) N_LABELS destabilised/stabilised ORFs with the lowest/highest dPSI values
+# Labels are stacked in evenly spaced columns in the empty space above (lowest)
+# and below (highest) the curve, in the same order as the points so that the
+# connecting lines do not cross
+# Labels use a fixed spacing and start at the end of the column closest to the
+# points, so that a few labels stay together
+n.orfs <- nrow(data)
+median.dpsi <- median(data$delta_PSI_mean)
+y.range <- diff(range(data$delta_PSI_mean))
+low.start <- median.dpsi + 0.05 * y.range
+low.step <- (max(data$delta_PSI_mean) - low.start) / (N_LABELS - 1)
+high.end <- median.dpsi - 0.05 * y.range
+high.step <- (high.end - min(data$delta_PSI_mean)) / (N_LABELS - 1)
 
-labels.stabilised <- stabilised %>%
-  filter(stabilised_rank <= 7) %>%
-  select(
-    gene,
-    z_score_corr,
-    delta_PSI_mean,
-    delta_PSI_SD,
-    category
-  ) %>%
-  distinct()
-
-destabilised <- data %>%
-  filter(delta_PSI_mean < 0, z_score_corr < 0)
-
-labels.destabilised <- destabilised %>%
-  filter(destabilised_rank <= 7) %>%
-  select(
-    gene,
-    z_score_corr,
-    delta_PSI_mean,
-    delta_PSI_SD,
-    category
-  ) %>%
-  distinct()
-
-labels <- rbind(labels.stabilised, labels.destabilised)
-
-# Data for vertical lines
-vline_data <- data.frame(
-  category = factor(
-    c("Destabilised", "Stabilised"),
-    levels = c("Destabilised", "Stabilised")
-  ),
-  xintercept_value = c(-dpsi.cutoff, dpsi.cutoff)
-)
+labels.low <- data %>%
+  filter(destabilised) %>%
+  slice_head(n = N_LABELS) %>%
+  mutate(
+    label_x = n.orfs * 0.1,
+    label_y = low.start + (row_number() - 1) * low.step,
+    hjust = 0
+  )
+labels.high <- data %>%
+  filter(stabilised) %>%
+  slice_tail(n = N_LABELS) %>%
+  mutate(
+    label_x = n.orfs * 0.9,
+    label_y = high.end - (n() - row_number()) * high.step,
+    hjust = 1
+  )
+labels <- bind_rows(labels.low, labels.high)
 
 # Create plot
-p <- ggplot(data, aes(y = abs(z_score_corr), x = delta_PSI_mean)) +
-  geom_point(aes(colour = colour_group)) +
-  facet_wrap(~category, scales = "free_x") +
-  theme_gpsw() +
-  scale_color_manual(
-    values = my.colours,
-  ) +
-  labs(y = "|z-score|", x = "dPSI") +
-  guides(
-    colour = "none"
-  ) +
-  geom_vline(
-    data = vline_data,
-    aes(xintercept = xintercept_value),
+p <- ggplot(data, aes(x = rank, y = delta_PSI_mean)) +
+  geom_hline(
+    yintercept = c(-dpsi.cutoff, dpsi.cutoff),
     color = "grey",
     linetype = "dashed"
   ) +
-  geom_label_repel(
+  geom_segment(
     data = labels,
-    aes(label = gene, ),
-    box.padding = 0.5,
-    point.padding = 0.5,
-    size = 2.5,
-    max.overlaps = 20
-  )
+    aes(xend = label_x, yend = label_y),
+    colour = "grey50",
+    linewidth = 0.2
+  ) +
+  geom_point(aes(colour = colour_group), size = 0.8) +
+  geom_text(
+    data = labels,
+    aes(x = label_x, y = label_y, label = gene, hjust = hjust),
+    size = 2.5
+  ) +
+  theme_gpsw() +
+  scale_color_manual(values = my.colours) +
+  labs(x = "ORF rank", y = "dPSI") +
+  guides(colour = "none")
 
 # Save plot
-ggsave(pdf, p, width = 8, height = 5)
+ggsave(pdf, p, width = 8, height = 6)
