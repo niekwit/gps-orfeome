@@ -27,28 +27,8 @@ Workflow setting are in `config.yml`:
     # of ORF counts between two conditions using MAGeCK/DrugZ.
     bin_number: 6
 
-    cutadapt:
-      # 5' adapter sequence to trim
-      # Use "" to disable 5' adapter trimming
-      g: CCAGTAGGTCCACTATGAGT
-      
-      # 3' adapter sequence to trim
-      # Use "" to disable 3' adapter trimming
-      a: AGCTGTGTAAGCGGAACTAG
-
-      # Trim <INT> nucleotides (before a/g trimming)
-      # If positive, remove bases from the beginning
-      # If negative, remove bases from the end. 
-      u: 0 
-      
-      # Shorten reads to <INT> nucleotides
-      # Positive values remove bases at the end 
-      # negative values remove bases at the beginning.
-      # This and the following modifications are applied after adapter trimming (a,b).
-      l: 20 
-
-      # Extra arguments for cutadapt
-      extra: "-q 20 --discard-untrimmed" 
+    # Command line arguments for cutadapt (adapter trimming, read shortening, etc.)
+    cutadapt_args: "-g CCAGTAGGTCCACTATGAGT...AGCTGTGTAAGCGGAACTAG -m 20 -M 24 --discard-untrimmed"
 
     csv:
       # CSV file with the gene/ORF/barcode information
@@ -139,35 +119,17 @@ If the ``bin_number`` is set to 1, the workflow will perform a pairwise comparis
 
 Cutadapt settings
 --------------------------------------------------------------------------------
-The `cutadapt` section defines the settings for trimming the raw reads. The options correspond to command line arguments for `cutadapt`. The `g` and `a` fields specify the 5' and 3' adapter sequences to trim, respectively. If you want to disable trimming, set these fields to an empty string (`""`). The `u` field specifies the number of nucleotides to trim from the beginning or end of the reads, and the `l` field specifies the length to which the reads should be shortened.
-If `l` is positive, it removes bases from the end of the reads; if negative, it removes bases from the beginning.
+The ``cutadapt_args`` field contains the command line arguments that are passed to `cutadapt <https://cutadapt.readthedocs.io/>`_ for trimming the raw reads. Any valid `cutadapt` argument can be used. In the example below:
 
-Extra arguments for `cutadapt` can be specified in the ``extra`` field.
+- ``-g`` and ``-a`` specify the 5' and 3' adapter sequences to trim, respectively. Leave out the argument to disable trimming of that adapter.
+- ``-l`` shortens the reads to the given length after adapter trimming (positive values remove bases from the end, negative values from the beginning).
+- ``-q`` trims low-quality bases from the 3' end of the reads.
+- ``--discard-untrimmed`` discards reads in which no adapter was found.
 
 .. code-block:: yaml
 
-  cutadapt:
-    # 5' adapter sequence to trim
-    # Use "" to disable 5' adapter trimming
-    g: CCAGTAGGTCCACTATGAGT
-    
-    # 3' adapter sequence to trim
-    # Use "" to disable 3' adapter trimming
-    a: AGCTGTGTAAGCGGAACTAG
-
-    # Trim <INT> nucleotides (before a/g trimming)
-    # If positive, remove bases from the beginning
-    # If negative, remove bases from the end. 
-    u: 0 
-    
-    # Shorten reads to <INT> nucleotides
-    # Positive values remove bases at the end 
-    # negative values remove bases at the beginning.
-    # This and the following modifications are applied after adapter trimming (a,b).
-    l: 20 
-
-    # Extra arguments for cutadapt
-    extra: "-q 20 --discard-untrimmed"
+  # Command line arguments for cutadapt (adapter trimming, read shortening, etc.)
+  cutadapt_args: "-g CCAGTAGGTCCACTATGAGT -a AGCTGTGTAAGCGGAACTAG -l 20 -q 20 --discard-untrimmed"
 
 ORF library information
 --------------------------------------------------------------------------------
@@ -224,7 +186,7 @@ In `config/config.yml` set the columns for this info as follows:
 
 Alignment settings
 --------------------------------------------------------------------------------
-`GPSW` uses `Bowtie2` for aligning the reads to the ORF library. The `bowtie2` section defines the settings for the alignment. ``mismatch`` is the number of mismatches allowed in the alignment, and `extra` can be used to specify additional arguments for `Bowtie2`.
+`GPSW` uses `Bowtie2` for aligning the reads to the ORF library. The `bowtie2` section defines the settings for the alignment. ``mismatch`` is the maximum number of mismatches allowed over the whole read (default: 0, i.e. only perfectly matching reads are counted), and `extra` can be used to specify additional arguments for `Bowtie2`. Reads that match more than one barcode equally well are assigned to one of them at random, so barcodes with identical sequences share their reads.
 
 .. code-block:: yaml
 
