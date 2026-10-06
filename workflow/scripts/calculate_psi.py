@@ -142,13 +142,15 @@ largest_sample = df.iloc[:, 3:].sum().idxmax()
 logging.info(f"  Largest sample: {largest_sample} with {largest_sum} reads")
 
 # Normalise reads to largest data set
-for col in df.columns:
-    # Only columns with count data
-    if df[col].dtype == "int64":
-        correction_factor = largest_sum / df[col].sum()
-        logging.info(f" Normalising {col} by {correction_factor}")
-        df[col] = df[col].multiply(correction_factor)
-        df[col] = df[col].astype(int)
+# Count columns are selected by name, as counts may be stored as floats
+count_cols = [
+    col for col in df.columns if col.startswith((f"{reference}_", f"{test}_"))
+]
+for col in count_cols:
+    correction_factor = largest_sum / df[col].sum()
+    logging.info(f" Normalising {col} by {correction_factor}")
+    df[col] = df[col].multiply(correction_factor)
+    df[col] = df[col].round().astype(int)
 
 # Compute sum of bins for each condition
 sample_sums = {}
@@ -330,6 +332,7 @@ df_rank = (
             "gene",
             "good_barcodes",
             "delta_PSI_mean",
+            "delta_PSI_SD",
             "stabilised",
             "destabilised",
         ]
