@@ -268,6 +268,32 @@ else:
             "../scripts/plot_dpsi_rank.R"
 
     # category: Analysis
+    rule plot_ddpsi_twin_peaks:
+        input:
+            csv="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_barcode.summary.csv",
+        output:
+            pdf=report(
+                "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_ddpsi_twin_peaks.pdf",
+                caption="../report/ddpsi_twin_peaks.rst",
+                category="PSI rank plots",
+                subcategory="{comparison}",
+                labels={
+                    "Comparison": "{comparison}",
+                    "Figure": "dPSI difference +/- twin peaks",
+                },
+            ),
+            csv="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_ddpsi_twin_peaks.csv",
+        log:
+            "logs/plot_psi/ddpsi_twin_peaks_hit-th{ht}_prop_th{pt}_{comparison}.log",
+        conda:
+            "../envs/stats.yaml"
+        threads: 1
+        resources:
+            runtime=5,
+        script:
+            "../scripts/plot_ddpsi_twin_peaks.R"
+
+    # category: Analysis
     rule plot_histograms:
         input:
             csv="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_barcode.summary.csv",

@@ -79,6 +79,7 @@ The `logs/` directory contains the log files of the workflow.
       ├── plot_histograms
       │   └── hit-th1.25_prop_th0.4.log
       ├── plot_psi
+      │   ├── ddpsi_twin_peaks_hit-th1.25_prop_th0.4_Test_vs_Control.log
       │   ├── dpsi_rank_hit-th1.25_prop_th0.4.log
       │   └── hit-th1.25_prop_th0.4.log
       └── snakemake
@@ -146,6 +147,7 @@ The output files of the workflow are stored in the `results/` directory. The str
       ├── psi
       │   └── hit-th1.25_prop_th0.4
       │       ├── Test_vs_Control_barcode.summary.csv
+      │       ├── Test_vs_Control_ddpsi_twin_peaks.csv
       │       └── Test_vs_Control_gene.summary.csv
       ├── psi_plots
       │   └── hit-th1.25_prop_th0.4
@@ -170,6 +172,7 @@ The output files of the workflow are stored in the `results/` directory. The str
       │       │       ├── CHST9_IOH80001.pdf
       │       │       ├── SLC31A2_U13112.pdf
       │       │       └── XKR8_IOH14631.pdf
+      │       ├── Test_vs_Control_ddpsi_twin_peaks.pdf
       │       ├── Test_vs_Control_dpsi_histogram.pdf
       │       ├── Test_vs_Control_dpsi_rank.pdf
       │       ├── Test_vs_Control_dpsi_sd_histogram.pdf
@@ -470,6 +473,8 @@ The `psi_plots` directory contains the following subdirectories for each combina
      :alt: Ranked dPSI values of all ORFs in the test condition compared to the control condition
 
      Ranked dPSI values of all ORFs in the test condition compared to the control condition.
+
+- `Test_vs_Control_ddpsi_twin_peaks.pdf` (only when ``exclude_twin_peaks`` is ``True``): a PDF file with a dot plot of the difference in mean dPSI of each ORF with twin peak barcodes included versus excluded (ddPSI = included - excluded), ordered from lowest to highest. ORFs without twin peak barcodes have a ddPSI of 0. ORFs whose absolute dPSI passes the hit threshold in only one of the two analyses are coloured red and counted, and those with the largest ddPSI at either end are labelled. The underlying data is written to `results/psi/hit-th{ht}_prop_th{pt}/Test_vs_Control_ddpsi_twin_peaks.csv`.
 
 .. note::
 

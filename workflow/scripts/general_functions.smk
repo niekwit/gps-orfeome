@@ -200,6 +200,18 @@ def targets():
                 ),
             ]
         )
+        if config["psi"]["exclude_twin_peaks"]:
+            TARGETS.extend(
+                [
+                    expand(
+                        "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_ddpsi_twin_peaks.pdf",
+                        zip,
+                        comparison=COMPARISONS,
+                        ht=HIT_TH,
+                        pt=PROP_TH,
+                    ),
+                ]
+            )
         if multiple_conditions(COMPARISONS):
             TARGETS.extend(
                 [

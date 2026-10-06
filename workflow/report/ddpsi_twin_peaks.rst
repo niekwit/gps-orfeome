@@ -1,0 +1,1 @@
+Difference in mean dPSI per ORF with twin peak barcodes included versus excluded (ddPSI = included - excluded), ordered from lowest to highest. ORFs without twin peak barcodes have a ddPSI of 0 (between the dotted lines). ORFs whose absolute dPSI passes the hit threshold in only one of the two analyses are coloured red, and those with the largest ddPSI at either end are labelled.
