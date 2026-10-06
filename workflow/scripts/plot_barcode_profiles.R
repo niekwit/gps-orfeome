@@ -51,7 +51,15 @@ data.ranked <- read_csv(rank.file) %>%
   select(orf_id, stabilised, destabilised)
 data <- data %>%
   left_join(data.ranked, by = "orf_id") %>%
-  filter(complete.cases(.))
+  # Only require the plotted bin proportions/twin_peaks/hit columns to be complete.
+  # delta_PSI_SD is legitimately NA for genes with a single good barcode (sd() of
+  # one value), so it must not be part of this completeness check, or such genes
+  # would be dropped entirely before they ever reach the plotting loop below.
+  filter(complete.cases(select(
+    .,
+    -delta_PSI_mean,
+    -delta_PSI_SD
+  )))
 
 # Ranks are NA for non-hits, so they are joined after the complete.cases filter
 data.ranks <- read_csv(rank.file) %>%
