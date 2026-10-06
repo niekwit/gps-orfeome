@@ -17,7 +17,7 @@ conditions:
 bin_number: 6
 
 # Command line arguments for cutadapt (adapter trimming, read shortening, etc.)
-cutadapt_args: "-g CCAGTAGGTCCACTATGAGT -l 20 -q 20 --discard-untrimmed"
+cutadapt_args: "-g CCAGTAGGTCCACTATGAGT...AGCTGTGTAAGCGGAACTAG -m 24 -M 30 --discard-untrimmed"
 
 csv:
   # CSV file with the gene/ORF/barcode information
