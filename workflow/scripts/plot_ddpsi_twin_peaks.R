@@ -13,12 +13,14 @@ pdf <- snakemake@output[["pdf"]]
 csv.out <- snakemake@output[["csv"]]
 N_LABELS <- 10 # Number of flagged ORFs to label on either end
 
-# ORF-level dPSI with twin peaks excluded is delta_PSI_mean (computed by
-# calculate_psi.py); with twin peaks included it is the mean over all barcodes
+# ORF-level dPSI with twin peaks excluded (equivalent to delta_PSI_mean of
+# calculate_psi.py) and included (mean over all barcodes). Both are computed
+# from the (rounded) barcode-level deltaPSI so that ORFs without twin peak
+# barcodes have a ddPSI of exactly 0
 data <- read_csv(csv.barcodes, show_col_types = FALSE) %>%
   group_by(orf_id, gene) %>%
   summarise(
-    twin_peaks_included_FALSE = first(delta_PSI_mean),
+    twin_peaks_included_FALSE = mean(deltaPSI[!twin_peaks]),
     twin_peaks_included_TRUE = mean(deltaPSI),
     .groups = "drop"
   ) %>%
@@ -33,7 +35,7 @@ data <- read_csv(csv.barcodes, show_col_types = FALSE) %>%
   ) %>%
   arrange(desc(deltaPSI_difference))
 
-write_csv(data, csv.out)
+write_csv(mutate(data, across(where(is.double), ~ round(.x, 3))), csv.out)
 
 # Label the flagged ORFs with the largest change at each end
 flagged <- filter(data, crosses_cutoff)

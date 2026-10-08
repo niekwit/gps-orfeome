@@ -24,6 +24,9 @@ MAX_BIN = snakemake.config["bin_number"]
 output_file_csv = snakemake.output["csv"]
 output_file_rank = snakemake.output["ranked"]
 
+# Number of decimal places for floats in output files (limits file size)
+DECIMALS = 3
+
 
 def identify_twin_peaks(row, condition, cutoff):
     """
@@ -315,8 +318,11 @@ for col in ref_cols:
 df_barcodes.insert(0, "Comparison", comparison)
 
 # Save barcode level results to file
+# (barcode counts can end up as floats, e.g. 3.0, so cast them back to integers)
+for col in ["num_barcodes", "good_barcodes"]:
+    df_barcodes[col] = df_barcodes[col].astype(int)
 logging.info(f"Writing barcode-level results to {output_file_csv}")
-df_barcodes.to_csv(output_file_csv, index=False, na_rep="NA")
+df_barcodes.round(DECIMALS).to_csv(output_file_csv, index=False, na_rep="NA")
 
 ### Hit identification
 logging.info("Calling hits")
@@ -361,8 +367,8 @@ df_rank = (
     .reset_index(drop=True)
 )
 
-# Round delta_PSI_mean to 3 decimal places
-df_rank["delta_PSI_mean"] = df_rank["delta_PSI_mean"].round(3)
+# Round floats (delta_PSI_mean, delta_PSI_SD) before ranking
+df_rank = df_rank.round(DECIMALS)
 
 # Create separate rankings for stabilised and destabilised hits
 df_rank_stab = (
