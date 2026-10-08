@@ -279,6 +279,17 @@ df["delta_PSI_mean"] = df["orf_id"].map(delta_psi_mean)
 delta_psi_sd = df[df["twin_peaks"] == False].groupby("orf_id")["deltaPSI"].std()
 df["delta_PSI_SD"] = df["orf_id"].map(delta_psi_sd)
 
+# Count good barcodes whose deltaPSI has the same sign as the ORF mean deltaPSI
+# (flags hits driven by a single barcode, which the SD alone cannot distinguish
+# from barcodes that agree in direction but differ in magnitude)
+df_good = df[df["twin_peaks"] == False]
+agreeing_barcodes = (
+    (df_good["deltaPSI"] * df_good["delta_PSI_mean"] > 0)
+    .groupby(df_good["orf_id"])
+    .sum()
+)
+df["agreeing_barcodes"] = df["orf_id"].map(agreeing_barcodes).fillna(0).astype(int)
+
 # Convert normalised counts to proportions of reads in bins
 # Do this in new df that will contain barcode-level results
 logging.info("Calculating proportions of reads in bins")
@@ -320,6 +331,13 @@ df["destabilised"] = df["delta_PSI_mean"] <= -hit_th
 destab = len(df[(df["destabilised"])]["orf_id"].unique())
 logging.info(f"  Number of destabilised ORFs in {comparison}: {destab}")
 
+# Flag hits supported by only one barcode in the hit direction
+df["single_barcode_hit"] = (df["stabilised"] | df["destabilised"]) & (
+    df["agreeing_barcodes"] < 2
+)
+single = len(df[df["single_barcode_hit"]]["orf_id"].unique())
+logging.info(f"  Number of hits supported by a single barcode: {single}")
+
 
 ### Ranking of hits
 logging.info("Ranking hits")
@@ -333,8 +351,10 @@ df_rank = (
             "good_barcodes",
             "delta_PSI_mean",
             "delta_PSI_SD",
+            "agreeing_barcodes",
             "stabilised",
             "destabilised",
+            "single_barcode_hit",
         ]
     ]
     .drop_duplicates()

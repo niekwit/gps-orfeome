@@ -412,7 +412,7 @@ For each combination of hit threshold, proportion threshold and penalty factor, 
         - 0.311
 
 
-- ``Test_vs_Control_gene.summary.csv``: a CSV file with the gene-level results. This file contains, among others, the z-scores for each gene, and whether a gene is stabilised/destabilised in the test condition compared to the control condition, as well as an associated ranking.
+- ``Test_vs_Control_gene.summary.csv``: a CSV file with the gene-level results. This file contains, among others, the mean dPSI for each gene, and whether a gene is stabilised/destabilised in the test condition compared to the control condition, as well as an associated ranking. ``agreeing_barcodes`` is the number of good barcodes whose dPSI has the same sign as the mean dPSI of the ORF, and ``single_barcode_hit`` is ``True`` for hits that are supported by fewer than two such barcodes (i.e. hits likely driven by a single barcode). These columns do not affect hit calling or ranking.
 
    .. list-table::
       :header-rows: 1
@@ -421,15 +421,19 @@ For each combination of hit threshold, proportion threshold and penalty factor, 
         - gene
         - delta_PSI_mean
         - good_barcodes
+        - agreeing_barcodes
         - stabilised
         - destabilised
+        - single_barcode_hit
         - stabilised_rank
         - destabilised_rank
       * - IOH10176
         - TYROBP
         - 1.637
         - 3
+        - 3
         - True
+        - False
         - False
         - 31
         - NA
@@ -437,7 +441,9 @@ For each combination of hit threshold, proportion threshold and penalty factor, 
         - C10orf54
         - 1.647
         - 3
+        - 3
         - True
+        - False
         - False
         - 22
         - NA
@@ -445,8 +451,10 @@ For each combination of hit threshold, proportion threshold and penalty factor, 
         - UBD
         - -1.882
         - 2
+        - 2
         - False
         - True
+        - False
         - NA
         - 1
 

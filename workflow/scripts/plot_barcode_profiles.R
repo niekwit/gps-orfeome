@@ -48,7 +48,7 @@ data <- read_csv(prop.file) %>%
 
 # Get columns that contain hit information
 data.ranked <- read_csv(rank.file) %>%
-  select(orf_id, stabilised, destabilised)
+  select(orf_id, stabilised, destabilised, good_barcodes, agreeing_barcodes)
 data <- data %>%
   left_join(data.ranked, by = "orf_id") %>%
   # Only require the plotted bin proportions/twin_peaks/hit columns to be complete.
@@ -106,6 +106,8 @@ for (column in columns) {
       hit.rank <- unique(df$rank)
       deltaPSI.mean <- round(unique(df$delta_PSI_mean), 2)
       deltaPSI.sd <- round(unique(df$delta_PSI_SD), 2)
+      n.good <- unique(df$good_barcodes)
+      n.agree <- unique(df$agreeing_barcodes)
       df <- df %>%
         dplyr::select(
           gene.id,
@@ -166,13 +168,24 @@ for (column in columns) {
           theme(plot.title = element_text(hjust = 0.5))
       }
 
-      # Add label for delta PSI +- SD inside top left plot
+      # Add label for delta PSI +- SD and number of good barcodes that agree
+      # in direction with the mean delta PSI inside top left plot
       p <- p +
         geom_text(
           aes(
             x = 1.5,
             y = max(df$value, na.rm = TRUE) * 0.95,
-            label = paste0("dPSI: ", deltaPSI.mean, " ± ", deltaPSI.sd)
+            label = paste0(
+              "dPSI: ",
+              deltaPSI.mean,
+              " ± ",
+              deltaPSI.sd,
+              "\n",
+              n.agree,
+              "/",
+              n.good,
+              " barcodes agree"
+            )
           ),
           colour = "black",
           size = 6,
