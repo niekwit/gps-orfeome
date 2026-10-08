@@ -84,7 +84,7 @@ psi:
 # Integration with NGS Tracker for workflow registration and file attachment
 # https://github.com/niekwit/ngs-tracker
 ngs_tracker:
-  enabled: true # set to false to skip registration
+  enabled: false # set to false to skip registration
 
   # Connection
   base_url: "http://127.0.0.1:5000/api" # change host/port if needed
