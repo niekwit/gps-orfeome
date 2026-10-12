@@ -210,6 +210,13 @@ def targets():
                         ht=HIT_TH,
                         pt=PROP_TH,
                     ),
+                    expand(
+                        "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_twin_peaks_sensitivity.pdf",
+                        zip,
+                        comparison=COMPARISONS,
+                        ht=HIT_TH,
+                        pt=PROP_TH,
+                    ),
                 ]
             )
         if multiple_conditions(COMPARISONS):
