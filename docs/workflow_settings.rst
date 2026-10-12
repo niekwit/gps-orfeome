@@ -277,6 +277,9 @@ The ``proportion_threshold`` is used in the twin peaks analysis. It defines the 
 
       Twin peaks example
 
+.. note::
+   When ``exclude_twin_peaks`` is set to ``True``, the workflow also runs a sensitivity analysis of ``proportion_threshold`` for each comparison/``hit_threshold`` combination: barcodes are re-flagged as twin peaks over a sweep of ratios (0.05-0.7), and each ratio is scored on the fraction of barcodes flagged, the ORFs lost, the within-ORF :math:`dPSI_i` SD reduction from removing the flagged barcodes relative to removing the same number of random barcodes, and the number of ORFs whose hit call changes. The ratio with the largest SD reduction is reported as the optimum, and a warning is written to the rule's log (``logs/twin_peaks_sensitivity/``) if the configured ``proportion_threshold`` is higher (more permissive) than this optimum. The result is written to ``results/psi/hit-th{ht}_prop_th{pt}/{comparison}_twin_peaks_sensitivity.csv`` and plotted in ``results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_twin_peaks_sensitivity.pdf``.
+
 
 ``bc_threshold``
 ~~~~~~~~~~~~~~~~~
