@@ -294,6 +294,47 @@ else:
             "../scripts/plot_ddpsi_twin_peaks.R"
 
     # category: Analysis
+    rule twin_peaks_sensitivity:
+        input:
+            counts="results/count/counts-aggregated.tsv",
+        output:
+            csv="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_twin_peaks_sensitivity.csv",
+        log:
+            "logs/twin_peaks_sensitivity/hit-th{ht}_prop_th{pt}_{comparison}.log",
+        conda:
+            "../envs/stats.yaml"
+        threads: 1
+        resources:
+            runtime=15,
+        script:
+            "../scripts/twin_peaks_sensitivity.py"
+
+    # category: Analysis
+    rule plot_twin_peaks_sensitivity:
+        input:
+            csv="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_twin_peaks_sensitivity.csv",
+        output:
+            pdf=report(
+                "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_twin_peaks_sensitivity.pdf",
+                caption="../report/twin_peaks_sensitivity.rst",
+                category="PSI rank plots",
+                subcategory="{comparison}",
+                labels={
+                    "Comparison": "{comparison}",
+                    "Figure": "Twin peak proportion_threshold sensitivity",
+                },
+            ),
+        log:
+            "logs/plot_psi/twin_peaks_sensitivity_hit-th{ht}_prop_th{pt}_{comparison}.log",
+        conda:
+            "../envs/stats.yaml"
+        threads: 1
+        resources:
+            runtime=5,
+        script:
+            "../scripts/plot_twin_peaks_sensitivity.R"
+
+    # category: Analysis
     rule plot_histograms:
         input:
             csv="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_barcode.summary.csv",
