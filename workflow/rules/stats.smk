@@ -268,6 +268,31 @@ else:
             "../scripts/plot_dpsi_rank.R"
 
     # category: Analysis
+    rule plot_dpsi_vs_sd:
+        input:
+            ranked="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_gene.summary.csv",
+        output:
+            pdf=report(
+                "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_dpsi_vs_sd.pdf",
+                caption="../report/dpsi_vs_sd.rst",
+                category="PSI rank plots",
+                subcategory="{comparison}",
+                labels={
+                    "Comparison": "{comparison}",
+                    "Figure": "dPSI vs dPSI SD",
+                },
+            ),
+        log:
+            "logs/plot_psi/dpsi_vs_sd_hit-th{ht}_prop_th{pt}_{comparison}.log",
+        conda:
+            "../envs/stats.yaml"
+        threads: 1
+        resources:
+            runtime=5,
+        script:
+            "../scripts/plot_dpsi_vs_sd.R"
+
+    # category: Analysis
     rule plot_ddpsi_twin_peaks:
         input:
             csv="results/psi/hit-th{ht}_prop_th{pt}/{comparison}_barcode.summary.csv",

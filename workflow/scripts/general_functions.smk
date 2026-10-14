@@ -171,6 +171,13 @@ def targets():
                     pt=PROP_TH,
                 ),
                 expand(
+                    "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_dpsi_vs_sd.pdf",
+                    zip,
+                    comparison=COMPARISONS,
+                    ht=HIT_TH,
+                    pt=PROP_TH,
+                ),
+                expand(
                     "results/psi_plots/hit-th{ht}_prop_th{pt}/{comparison}_psi_histogram.pdf",
                     zip,
                     comparison=COMPARISONS,
