@@ -62,6 +62,14 @@ test_column <- paste0("PSI_", test, "_mean")
 control <- str_split(comparison, "_vs_")[[1]][2]
 control_column <- paste0("PSI_", control, "_mean")
 
+# Named vector keyed by the actual test/control sample names, so test is
+# always red and control is always grey regardless of which sample name
+# happens to sort first alphabetically (an unnamed values vector would
+# otherwise be assigned to the alphabetically-sorted factor levels of
+# "condition", silently swapping the colours depending on sample naming;
+# see the same bug fixed in plot_barcode_profiles.R)
+condition_colours <- setNames(c("red", "grey"), c(test, control))
+
 # Load data
 data <- read_csv(csv, show_col_types = FALSE) %>%
   dplyr::select(
@@ -100,8 +108,8 @@ p <- ggplot(data, aes(x = psi, fill = condition)) +
     x = "PSI",
     y = "Density",
   ) +
-  scale_fill_manual(values = c("red", "grey")) +
-  scale_color_manual(values = c("red", "grey")) +
+  scale_fill_manual(values = condition_colours) +
+  scale_color_manual(values = condition_colours) +
   theme(
     legend.position = "top",
     legend.title = element_blank(),
@@ -144,8 +152,8 @@ p <- ggplot(data, aes(x = sob)) +
     x = "Sum of barcodes (SOB)",
     y = "Density",
   ) +
-  scale_fill_manual(values = c("red", "grey")) +
-  scale_color_manual(values = c("red", "grey")) +
+  scale_fill_manual(values = condition_colours) +
+  scale_color_manual(values = condition_colours) +
   theme(
     legend.position = "top",
     legend.title = element_blank(),
