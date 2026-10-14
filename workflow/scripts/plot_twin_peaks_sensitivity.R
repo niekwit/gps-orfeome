@@ -15,7 +15,7 @@ source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 # red) are marked on both panels. The optimum is the most permissive (highest)
 # ratio on the plateau starting at the best SD reduction found, walked
 # towards higher ratios for as long as each next 0.05 step drops by no more
-# than PLATEAU_STEP_TOLERANCE from the point before it (not from the best
+# than plateau_step_tolerance from the point before it (not from the best
 # value itself, so a real, sustained decline is not mistaken for a plateau
 # just because it stays within some fixed distance of the peak): since
 # sd_gain_vs_random is a noisy median-of-medians, adjacent ratios are often
@@ -28,7 +28,7 @@ pdf <- snakemake@output[["pdf"]]
 configured_pt <- as.numeric(snakemake@wildcards[["pt"]])
 hit_th <- as.numeric(snakemake@wildcards[["ht"]])
 comparison <- snakemake@wildcards[["comparison"]]
-PLATEAU_STEP_TOLERANCE <- 0.005
+plateau_step_tolerance <- 0.005
 
 results <- read_csv(csv, show_col_types = FALSE)
 
@@ -42,7 +42,7 @@ if (has_optimum) {
   if (best_idx < nrow(valid)) {
     for (i in seq(best_idx + 1, nrow(valid))) {
       step <- valid$sd_gain_vs_random[i - 1] - valid$sd_gain_vs_random[i]
-      if (step <= PLATEAU_STEP_TOLERANCE) {
+      if (step <= plateau_step_tolerance) {
         end_idx <- i
       } else {
         break

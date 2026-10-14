@@ -7,10 +7,10 @@ library(tidyverse)
 library(reshape2)
 source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 
-bin.number <- snakemake@params[["bin_number"]]
+bin_number <- snakemake@params[["bin_number"]]
 
 # Load count table
-if (bin.number == 1) {
+if (bin_number == 1) {
   counts <- read.delim(snakemake@input[[1]]) %>%
     dplyr::select(-all_of(c("sgRNA", "gene")))
 
@@ -33,20 +33,21 @@ if (bin.number == 1) {
   counts <- counts %>% select(all_of(conditions))
 
   # Get number of sgRNAs with zero counts for each condition
-  zeros.count <- colSums(counts == 0)
+  zeros_count <- colSums(counts == 0)
 
   # Count rows where all values are zero
-  zeros.count["Missing in\nall conditions"] <- sum(
+  zeros_count["Missing in\nall conditions"] <- sum(
     rowSums(counts == 0) == ncol(counts)
   )
 
   # Convert to data frame for plotting
   df <- data.frame(
-    sample = names(zeros.count),
-    value = as.numeric(zeros.count)
+    sample = names(zeros_count),
+    value = as.numeric(zeros_count)
   )
 
-  # Change order factor levels of sample column so that "Missing in all conditions" is last
+  # Change order factor levels of sample column so
+  # that "Missing in all conditions" is last
   df$sample <- factor(
     df$sample,
     levels = c(conditions, "Missing in\nall conditions")

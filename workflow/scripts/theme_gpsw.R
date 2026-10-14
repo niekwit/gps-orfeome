@@ -1,12 +1,12 @@
 library(cowplot)
 
-GPSW_COLOUR <- "#419179"
-GPSW_BASE_SIZE <- 16
+gpsw_colour <- "#419179"
+gpsw_base_size <- 16
 
 theme_gpsw <- function(...) {
-  theme_cowplot(GPSW_BASE_SIZE, ...)
+  theme_cowplot(gpsw_base_size, ...)
 }
 
 geom_bar_gpsw <- function(...) {
-  geom_bar(stat = "identity", fill = GPSW_COLOUR, colour = "black", ...)
+  geom_bar(stat = "identity", fill = gpsw_colour, colour = "black", ...)
 }

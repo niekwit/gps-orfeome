@@ -7,10 +7,10 @@ library(tidyverse)
 source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 
 fasta <- snakemake@input[["fasta"]]
-bin.number <- snakemake@params[["bin_number"]]
+bin_number <- snakemake@params[["bin_number"]]
 
 # Load count table
-if (bin.number == 1) {
+if (bin_number == 1) {
   data <- read.delim(snakemake@input[["tsv"]]) %>%
     dplyr::select(-all_of(c("sgRNA", "gene")))
 } else {
@@ -19,7 +19,8 @@ if (bin.number == 1) {
 }
 
 # Create df to store coverage
-# Remove prepended X from samples names (only happens when they start with a number)
+# Remove prepended X from samples names (only happens when
+# they start with a number)
 df <- as.data.frame(matrix(data = NA, ncol = 2, nrow = ncol(data))) %>%
   rename(sample = 1, coverage = 2) %>%
   mutate(sample = str_remove(names(data), "^X"))

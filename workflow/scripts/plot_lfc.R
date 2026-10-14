@@ -13,7 +13,7 @@ source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 data <- read.delim(snakemake@input[[1]])
 
 # Dot plot function
-dot_plot <- function(df, df.label, filename) {
+dot_plot <- function(df, df_label, filename) {
   # Create plot
   p <- ggplot(df, aes(x = x, y = log2fc, fill = log.p.value), ) +
     geom_point(size = 4, shape = 21) +
@@ -24,7 +24,7 @@ dot_plot <- function(df, df.label, filename) {
     ) +
     theme_gpsw() +
     geom_text_repel(
-      data = df.label,
+      data = df_label,
       aes(x = `x`, y = `pos.lfc`, label = `id`)
     ) +
     scale_fill_viridis(
@@ -44,11 +44,11 @@ enriched <- data %>%
   ) %>%
   arrange(x)
 
-df.label <- enriched %>%
+df_label <- enriched %>%
   arrange(desc(log2fc)) %>%
   slice(1:10)
 
-dot_plot(enriched, df.label, snakemake@output[["pos"]])
+dot_plot(enriched, df_label, snakemake@output[["pos"]])
 
 # Depleted genes
 depleted <- data %>%
@@ -60,11 +60,11 @@ depleted <- data %>%
   ) %>%
   arrange(x)
 
-df.label <- depleted %>%
+df_label <- depleted %>%
   arrange(log2fc) %>%
   slice(1:10)
 
-dot_plot(depleted, df.label, snakemake@output[["neg"]])
+dot_plot(depleted, df_label, snakemake@output[["neg"]])
 
 # Close redirection of output/messages
 sink(log, type = "output")

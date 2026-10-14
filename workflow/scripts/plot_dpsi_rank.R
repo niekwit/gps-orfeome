@@ -6,13 +6,13 @@ sink(log, type = "message")
 library(tidyverse)
 source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 
-csv.rank <- snakemake@input[["ranked"]]
-dpsi.cutoff <- as.numeric(snakemake@wildcards[["ht"]])
+csv_rank <- snakemake@input[["ranked"]]
+dpsi_cutoff <- as.numeric(snakemake@wildcards[["ht"]])
 pdf <- snakemake@output[["pdf"]]
-N_LABELS <- 15 # Number of ORFs to label on either end
+n_labels <- 15 # Number of ORFs to label on either end
 
 # Load ORF-level data and order by dPSI (lowest to highest)
-data <- read_csv(csv.rank, show_col_types = FALSE) %>%
+data <- read_csv(csv_rank, show_col_types = FALSE) %>%
   filter(!is.na(delta_PSI_mean)) %>%
   arrange(delta_PSI_mean) %>%
   mutate(
@@ -27,40 +27,41 @@ data <- read_csv(csv.rank, show_col_types = FALSE) %>%
     )
   )
 
-my.colours <- c(
+my_colours <- c(
   "Stabilised" = "green3",
   "Destabilised" = "red",
   "Other" = "black"
 )
 
-# Labels for the (up to) N_LABELS destabilised/stabilised ORFs with the lowest/highest dPSI values
+# Labels for the (up to) n_labels destabilised/stabilised ORFs
+# with the lowest/highest dPSI values
 # Labels are stacked in evenly spaced columns in the empty space above (lowest)
 # and below (highest) the curve, in the same order as the points so that the
 # connecting lines do not cross
 # Labels use a fixed spacing and start at the end of the column closest to the
 # points, so that a few labels stay together
-n.orfs <- nrow(data)
-median.dpsi <- median(data$delta_PSI_mean)
-y.range <- diff(range(data$delta_PSI_mean))
-low.start <- median.dpsi + 0.05 * y.range
-low.step <- (max(data$delta_PSI_mean) - low.start) / (N_LABELS - 1)
-high.end <- median.dpsi - 0.05 * y.range
-high.step <- (high.end - min(data$delta_PSI_mean)) / (N_LABELS - 1)
+n_orfs <- nrow(data)
+median_dpsi <- median(data$delta_PSI_mean)
+y_range <- diff(range(data$delta_PSI_mean))
+low_start <- median_dpsi + 0.05 * y_range
+low_step <- (max(data$delta_PSI_mean) - low_start) / (n_labels - 1)
+high_end <- median_dpsi - 0.05 * y_range
+high_step <- (high_end - min(data$delta_PSI_mean)) / (n_labels - 1)
 
 labels.low <- data %>%
   filter(destabilised) %>%
-  slice_head(n = N_LABELS) %>%
+  slice_head(n = n_labels) %>%
   mutate(
-    label_x = n.orfs * 0.1,
-    label_y = low.start + (row_number() - 1) * low.step,
+    label_x = n_orfs * 0.1,
+    label_y = low_start + (row_number() - 1) * low_step,
     hjust = 0
   )
 labels.high <- data %>%
   filter(stabilised) %>%
-  slice_tail(n = N_LABELS) %>%
+  slice_tail(n = n_labels) %>%
   mutate(
-    label_x = n.orfs * 0.9,
-    label_y = high.end - (n() - row_number()) * high.step,
+    label_x = n_orfs * 0.9,
+    label_y = high_end - (n() - row_number()) * high_step,
     hjust = 1
   )
 labels <- bind_rows(labels.low, labels.high)
@@ -68,7 +69,7 @@ labels <- bind_rows(labels.low, labels.high)
 # Create plot
 p <- ggplot(data, aes(x = rank, y = delta_PSI_mean)) +
   geom_hline(
-    yintercept = c(-dpsi.cutoff, dpsi.cutoff),
+    yintercept = c(-dpsi_cutoff, dpsi_cutoff),
     color = "grey",
     linetype = "dashed"
   ) +
@@ -85,7 +86,7 @@ p <- ggplot(data, aes(x = rank, y = delta_PSI_mean)) +
     size = 2.5
   ) +
   theme_gpsw() +
-  scale_color_manual(values = my.colours) +
+  scale_color_manual(values = my_colours) +
   labs(x = "ORF rank", y = "dPSI") +
   guides(colour = "none")
 

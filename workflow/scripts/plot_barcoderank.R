@@ -3,7 +3,9 @@ log <- file(snakemake@log[[1]], open = "wt")
 sink(log, type = "output")
 sink(log, type = "message")
 
-# ADAPTED (ANNOTATED AND SIMPLIFIED) FROM https://github.com/WubingZhang/MAGeCKFlute/blob/master/R/sgRankView.R
+# Inspired by
+# https://github.com/WubingZhang/MAGeCKFlute/blob/master/R/sgRankView.R
+# https://www.jci.org/articles/view/201639 Figure 1D
 
 # Load required libraries
 library(tidyverse)
@@ -26,20 +28,20 @@ df <- data %>%
   mutate(rank = cur_group_id())
 
 # Select top x genes with highest median lfc
-df.top <- df[df$rank > max(df$rank) - select, ] %>%
+df_top <- df[df$rank > max(df$rank) - select, ] %>%
   arrange(med.LFC)
 
 # Select top x genes with lowest median lfc
-df.bottom <- df %>%
+df_bottom <- df %>%
   filter(rank <= select) %>%
   arrange(med.LFC)
 
 # Add top and bottom genes data together and get genes to plot
-df.sub <- rbind(df.top, df.bottom)
-genes <- unique(df.sub$Gene)
+df_sub <- rbind(df_top, df_bottom)
+genes <- unique(df_sub$Gene)
 
 # Add index, y values for plotting and colour param
-df.sub <- df.sub %>%
+df_sub <- df_sub %>%
   mutate(
     Gene = factor(Gene, levels = genes),
     index = rep(1:length(genes), as.numeric(table(Gene)[genes])),
@@ -54,15 +56,16 @@ df.sub <- df.sub %>%
 a <- -Inf
 b <- Inf
 
-# Set values for rectangle dimensions (x/y values)/colour fill to plot sgRNAs lfc inside
-bgcol <- as.vector(sapply(seq(1, max(df.sub$index), 1), function(x) {
+# Set values for rectangle dimensions (x/y values)/colour fill to
+# plot sgRNAs lfc inside
+bgcol <- as.vector(sapply(seq(1, max(df_sub$index), 1), function(x) {
   rep(x, 4)
 })) %>%
   as.data.frame() %>%
   rename("id" = 1) %>%
   mutate(
-    x = rep(c(a, b, b, a), max(df.sub$index)),
-    y = as.vector(sapply(seq(1, max(df.sub$index), 1), function(x) {
+    x = rep(c(a, b, b, a), max(df_sub$index)),
+    y = as.vector(sapply(seq(1, max(df_sub$index), 1), function(x) {
       c(
         (interval + binwidth) * (x - 1),
         (interval + binwidth) * (x - 1),
@@ -82,7 +85,7 @@ p <- ggplot() +
   ) +
   geom_segment(
     aes_string("LFC", "y", xend = "LFC", yend = "yend", color = "colour"),
-    data = df.sub
+    data = df_sub
   ) +
   scale_color_manual(values = c("pos" = "#e41a1c", "neg" = "#377eb8")) +
   scale_y_continuous(

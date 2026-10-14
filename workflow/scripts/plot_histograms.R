@@ -15,7 +15,7 @@ plot_histogram <- function(data, column, x_label, pdf) {
     geom_histogram(
       bins = 60,
       colour = "black",
-      fill = GPSW_COLOUR
+      fill = gpsw_colour
     ) +
     theme_gpsw() +
     labs(x = x_label, y = "Count") +
