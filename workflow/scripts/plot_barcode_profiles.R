@@ -12,15 +12,14 @@ library(foreach)
 source(file.path(snakemake@scriptdir, "theme_gpsw.R"))
 theme_path <- file.path(snakemake@scriptdir, "theme_gpsw.R")
 
-#options(error = utils::dump.frames(dumpto="last.dump.rda"))
 
 # Load Snakemake variables
-bin.number <- snakemake@params[["bin_number"]]
-rank.file <- snakemake@input[["ranked"]]
-prop.file <- snakemake@input[["proportions"]]
+bin_number <- snakemake@params[["bin_number"]]
+rank_file <- snakemake@input[["ranked"]]
+prop_file <- snakemake@input[["proportions"]]
 comparison <- snakemake@wildcards[["comparison"]]
-test.sample <- str_split(comparison, "_vs_")[[1]][1]
-ref.sample <- str_split(comparison, "_vs_")[[1]][2]
+test_sample <- str_split(comparison, "_vs_")[[1]][1]
+ref_sample <- str_split(comparison, "_vs_")[[1]][2]
 outdir <- snakemake@params[["outdir"]]
 threads <- snakemake@threads
 
@@ -34,27 +33,28 @@ print(paste0("Creating output directory: ", outdir))
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
 # Load proportion data
-data <- read_csv(prop.file) %>%
+data <- read_csv(prop_file) %>%
   select(
     barcode_id,
     orf_id,
     gene,
-    starts_with(test.sample),
-    starts_with(ref.sample),
+    starts_with(test_sample),
+    starts_with(ref_sample),
     twin_peaks,
     delta_PSI_mean,
     delta_PSI_SD
   )
 
 # Get columns that contain hit information
-data.ranked <- read_csv(rank.file) %>%
+data_ranked <- read_csv(rank_file) %>%
   select(orf_id, stabilised, destabilised, good_barcodes, agreeing_barcodes)
 data <- data %>%
-  left_join(data.ranked, by = "orf_id") %>%
-  # Only require the plotted bin proportions/twin_peaks/hit columns to be complete.
-  # delta_PSI_SD is legitimately NA for genes with a single good barcode (sd() of
-  # one value), so it must not be part of this completeness check, or such genes
-  # would be dropped entirely before they ever reach the plotting loop below.
+  left_join(data_ranked, by = "orf_id") %>%
+  # Only require the plotted bin proportions/twin_peaks/hit
+  # columns to be complete. delta_PSI_SD is legitimately NA for genes
+  # with a single good barcode (sd() of one value), so it must not
+  # be part of this completeness check, or such genes would be dropped
+  # entirely before they ever reach the plotting loop below.
   filter(complete.cases(select(
     .,
     -delta_PSI_mean,
@@ -62,20 +62,21 @@ data <- data %>%
   )))
 
 # Ranks are NA for non-hits, so they are joined after the complete.cases filter
-data.ranks <- read_csv(rank.file) %>%
+data_ranks <- read_csv(rank_file) %>%
   select(orf_id, stabilised_rank, destabilised_rank)
 data <- data %>%
-  left_join(data.ranks, by = "orf_id")
+  left_join(data_ranks, by = "orf_id")
 
 # Check if barcodes with twin peaks have been removed
-# (assumes that at least one barcode with twin peaks in the entire data set exists)
-dpeak.values <- unique(data[["twin_peaks"]])
-if (length(dpeak.values) == 1) {
+# (assumes that at least one barcode with twin
+# peaks in the entire data set exists)
+dpeak_values <- unique(data[["twin_peaks"]])
+if (length(dpeak_values) == 1) {
   print("Barcode analysis with twin peaks detection was skipped...")
-  dpeaks.shapes.removed <- FALSE
+  dpeaks_shapes_removed <- FALSE
 } else {
   print("Barcodes with twin peaks detection was performed...")
-  dpeaks.shapes.removed <- TRUE
+  dpeaks_shapes_removed <- TRUE
 }
 
 # Plot each gene and its proportion of reads in bins
@@ -103,16 +104,16 @@ for (column in columns) {
     {
       source(theme_path)
       df <- tmp[tmp$gene.id == id, ]
-      hit.rank <- unique(df$rank)
-      deltaPSI.mean <- round(unique(df$delta_PSI_mean), 2)
-      deltaPSI.sd <- round(unique(df$delta_PSI_SD), 2)
-      n.good <- unique(df$good_barcodes)
-      n.agree <- unique(df$agreeing_barcodes)
+      hit_rank <- unique(df$rank)
+      dpsi_mean <- round(unique(df$delta_PSI_mean), 2)
+      dpsi_sd <- round(unique(df$delta_PSI_SD), 2)
+      n_good <- unique(df$good_barcodes)
+      n_agree <- unique(df$agreeing_barcodes)
       df <- df %>%
         dplyr::select(
           gene.id,
-          starts_with(ref.sample),
-          starts_with(test.sample),
+          starts_with(ref_sample),
+          starts_with(test_sample),
           twin_peaks
         ) %>%
         reshape2::melt() %>%
@@ -123,29 +124,29 @@ for (column in columns) {
 
       # Define colour gradient for lines. The colour scale below is a named
       # vector keyed by the actual test/ref barcode labels (not just
-      # concatenated in order), so test is always red and control is always
-      # black/grey
-      barcode.count <- length(unique(df$barcode)) / 2
-      grey.colours <- scales::seq_gradient_pal("black", "grey", "Lab")(seq(
+      # concatenated in order), so test is always red and control is
+      # always black/grey
+      barcode_count <- length(unique(df$barcode)) / 2
+      grey_colours <- scales::seq_gradient_pal("black", "grey", "Lab")(seq(
         0,
         1,
-        length.out = barcode.count
+        length.out = barcode_count
       ))
-      red.colours <- scales::seq_gradient_pal("red4", "red", "Lab")(seq(
+      red_colours <- scales::seq_gradient_pal("red4", "red", "Lab")(seq(
         0,
         1,
-        length.out = barcode.count
+        length.out = barcode_count
       ))
-      colour.values <- setNames(
-        c(red.colours, grey.colours),
+      colour_values <- setNames(
+        c(red_colours, grey_colours),
         c(
-          paste0(test.sample, "_", seq_len(barcode.count)),
-          paste0(ref.sample, "_", seq_len(barcode.count))
+          paste0(test_sample, "_", seq_len(barcode_count)),
+          paste0(ref_sample, "_", seq_len(barcode_count))
         )
       )
 
       # Create plot
-      if (dpeaks.shapes.removed == FALSE) {
+      if (dpeaks_shapes_removed == FALSE) {
         p <- ggplot(
           df,
           aes(x = bin, y = value, group = barcode, colour = barcode)
@@ -154,7 +155,7 @@ for (column in columns) {
           geom_line(linewidth = 1) +
           labs(title = id, y = "Proportion of reads", x = "Bin") +
           theme_gpsw() +
-          scale_colour_manual(values = colour.values) +
+          scale_colour_manual(values = colour_values) +
           theme(plot.title = element_text(hjust = 0.5))
       } else {
         p <- ggplot(
@@ -172,7 +173,7 @@ for (column in columns) {
           geom_line(linewidth = 1) +
           labs(title = id, y = "Proportion of reads", x = "Bin") +
           theme_gpsw() +
-          scale_colour_manual(values = colour.values) +
+          scale_colour_manual(values = colour_values) +
           scale_alpha_manual(values = c(1, 0.1)) +
           scale_shape_manual(values = c(16, 15)) +
           theme(plot.title = element_text(hjust = 0.5))
@@ -187,13 +188,13 @@ for (column in columns) {
             y = max(df$value, na.rm = TRUE) * 0.95,
             label = paste0(
               "dPSI: ",
-              deltaPSI.mean,
+              dpsi_mean,
               " ± ",
-              deltaPSI.sd,
+              dpsi_sd,
               "\n",
-              n.agree,
+              n_agree,
               "/",
-              n.good,
+              n_good,
               " barcodes agree"
             )
           ),
@@ -205,7 +206,7 @@ for (column in columns) {
 
       # Save plot
       ggsave(
-        file.path(dir, paste0(hit.rank, "_", id, ".pdf")),
+        file.path(dir, paste0(hit_rank, "_", id, ".pdf")),
         p,
         width = 10,
         height = 6
