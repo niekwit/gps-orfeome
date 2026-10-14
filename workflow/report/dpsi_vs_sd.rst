@@ -1,0 +1,1 @@
+Within-ORF dPSI SD plotted against mean dPSI for every ORF with at least two good barcodes. Stabilised and destabilised hits are coloured, and the top 10 hits on each side are labelled. Dotted vertical lines mark the hit threshold (±dPSI cutoff).
