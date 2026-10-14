@@ -121,7 +121,10 @@ for (column in columns) {
         # add replicate number to condition, e.g. Un_1
         mutate(barcode = paste0(barcode, "_", row_number()))
 
-      # Define colour gradient for lines
+      # Define colour gradient for lines. The colour scale below is a named
+      # vector keyed by the actual test/ref barcode labels (not just
+      # concatenated in order), so test is always red and control is always
+      # black/grey
       barcode.count <- length(unique(df$barcode)) / 2
       grey.colours <- scales::seq_gradient_pal("black", "grey", "Lab")(seq(
         0,
@@ -133,6 +136,13 @@ for (column in columns) {
         1,
         length.out = barcode.count
       ))
+      colour.values <- setNames(
+        c(red.colours, grey.colours),
+        c(
+          paste0(test.sample, "_", seq_len(barcode.count)),
+          paste0(ref.sample, "_", seq_len(barcode.count))
+        )
+      )
 
       # Create plot
       if (dpeaks.shapes.removed == FALSE) {
@@ -144,7 +154,7 @@ for (column in columns) {
           geom_line(linewidth = 1) +
           labs(title = id, y = "Proportion of reads", x = "Bin") +
           theme_gpsw() +
-          scale_colour_manual(values = c(red.colours, grey.colours)) +
+          scale_colour_manual(values = colour.values) +
           theme(plot.title = element_text(hjust = 0.5))
       } else {
         p <- ggplot(
@@ -162,7 +172,7 @@ for (column in columns) {
           geom_line(linewidth = 1) +
           labs(title = id, y = "Proportion of reads", x = "Bin") +
           theme_gpsw() +
-          scale_colour_manual(values = c(red.colours, grey.colours)) +
+          scale_colour_manual(values = colour.values) +
           scale_alpha_manual(values = c(1, 0.1)) +
           scale_shape_manual(values = c(16, 15)) +
           theme(plot.title = element_text(hjust = 0.5))
