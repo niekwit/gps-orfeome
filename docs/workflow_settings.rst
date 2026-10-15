@@ -71,7 +71,7 @@ Workflow setting are in `config.yml`:
       # Barcode threshold for hits
       # Keep ORFs with at least bc_threshold barcodes
       # Note: if set to 1, no SD will be calculated for ORFs with only one barcode
-      bc_threshold: 2
+      bc_threshold: 1
 
       # Multi condition heatmap settings
       # Use R-style boolean values
