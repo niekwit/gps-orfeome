@@ -8,8 +8,8 @@ These images are shared via [Docker Hub](https://hub.docker.com/repository/docke
 
 ```shell
 snakemake --containerize > Dockerfile
-docker build -t niekwit/gps-orfeome:0.11.0 .
+docker build -t niekwit/gps-orfeome:0.12.0 .
 docker login
-docker push niekwit/gps-orfeome:0.11.0
+docker push niekwit/gps-orfeome:0.12.0
 
 ```
